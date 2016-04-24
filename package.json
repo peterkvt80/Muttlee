@@ -1,0 +1,19 @@
+{
+  "name": "teletext",
+  "version": "1.0.0",
+  "description": "Teletext live on the web",
+  "main": "teletextserver.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "teletext",
+    "node"
+  ],
+  "author": "Peter Kwan",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.13.4",
+    "socket.io": "^1.4.5"
+  }
+}

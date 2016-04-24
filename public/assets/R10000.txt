@@ -1,0 +1,32 @@
+DE,Read back page10000
+PN,10000
+CT,10,C
+SC,0001
+PS,8000
+MS,1
+OL,1,G                                       
+OL,2,D] S  `pp0`p0`0  pp ppp pp p `0ppp      
+OL,3,D] S  "k7!sj5 jw{5##jw{5+t>!##      
+OL,4,D] S   j5 ssjupjws1  jws1~'o4        
+OL,5,D] S   "! "#!"## ##  #  ## # "! #       
+OL,6,D]        C  CITV THE WESTA  GX MEN     
+OL,7,A```````````````````````````````````````
+OL,8,E                                       
+OL,9,MYOUR IDEAL BREAK A MOUSE CLICK AWAY 522
+OL,10,                                        
+OL,11,E                                       
+OL,12,CLOVEFis in the air ` and S7Qh'U(?$S"#k
+OL,13,Fyou can woo your special S5U|tp*kW~54 
+OL,14,Fperson by mobile text    S5U#+/}Wovot 
+OL,15,Fthe Atlantic.            Vqp0 `ppp~
+OL,16,F                         Vt o
+OL,17,CUS/Canada flights   G235 V}|
+OL,18,CHoliday index       G200 V]W`0x|}p`00
+OL,19,E                                       
+OL,20,D]     FFULLCTELETEXTFCONTENTSG101      
+OL,21,A`````````Cwww.teletext.co.ukA``````````
+OL,22,B]DPWINH2IWWF tickets for 30 May!!!AP355
+OL,23,D]G    CAPITAL ONE BANK. SEECC4 p682    
+OL,24,ATV Plus   BSport   CNews   FHolidays   
+FL,110,400,300,200,101,F
+@
