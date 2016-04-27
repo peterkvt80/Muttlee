@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 # Muttlee
 Multi User Teletext Live Edit Environment
 The advantage of Teletext is that it is easy to view. Most people already know how to do that.
@@ -36,3 +37,12 @@ It runs on the node.js environment with Express for web services and socket.io f
 As it happens to be running on Google's Compute Engine it is also using the cloud for data storage,
 In this case it is datastore and it is based on NoSQL.
 Express is used to serve static http from the Public folder.
+=======
+# 1 - Muttlee
+
+This folder contains my efforts to install [Muttlee][step-1]
+tutorial. Please refer to the tutorial for instructions on configuring, running,
+and deploying this sample.
+
+[step-1]: https://cloud.google.com/nodejs/getting-started/hello-world
+>>>>>>> Stashed changes
