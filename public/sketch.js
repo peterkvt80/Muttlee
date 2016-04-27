@@ -20,7 +20,8 @@ function setup()
 {
   // Try to make a debug and on-air version
 //  socket=io.connect('http://192.168.1.11:3010');
-  socket=io.connect('http://muttlee-1290.appspot.com:3010');
+//  socket=io.connect('http://muttlee-1290.appspot.com:3010');
+  socket=io.connect('http://localhost:80');
   createCanvas(600,500);
   background(0);
   // font metrics
