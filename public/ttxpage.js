@@ -9,48 +9,141 @@ function toggle()
 function page()
 {
   this.cursor=new myCursor();
+  
+  this.redLink=100;
+  this.greenLink=100;
+  this.yellowLink=100;
+  this.cyanLink=100;
+
   // @todo check range
   this.init=function(number)
   {
     this.pageNumber=number;
+	this.subpage=0; // @todo Carousels
+	this.service=0; // @todo Services
     this.rows = new Array();
-    for (var i=0;i<25;i++)
+	// As rows go from 0 to 31 and pages start at 100, we can use the same parameter for both
+    this.rows.push(new row(number,0,"Pnn     CEEFAX 1 100 Sun 08 Jan 12:58/57"));
+    for (var i=1;i<26;i++)
     {
-      this.rows.push(new row(i,"1234567890123456789012345678901234567890"));
+      this.rows.push(new row(number,i,"~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„"));
     }
     
+  }
+  
+  /** @brief Change the page number for this page and all child rows
+   */
+  this.setPage=function(p)
+  {
+	this.pageNumber=p;
+	for (var r=0;r<this.rows.length;r++)
+	{
+		this.rows[r].page=p;
+	}
+  }
+
+  /** @brief Set row r to txt
+   */
+   
+  this.setRow=function(r,txt)
+  {
+	if (r>=0 && r<=24)
+	{
+		this.rows[r].setrow(txt);
+	}
+	else
+		console.log('not setting row '+r+' to '+txt);
   }
   
   
   this.draw=function()
   {
-    for (var row=0;row<25;row++)
+    for (var row=0;row<this.rows.length;row++)
     {
+	// console.log("drawing row "+row+" of "+this.rows.length);
       var cpos=-1;
-      if (row==this.cursor.y) cpos=this.cursor.x;
+	  if (!this.cursor.hide && row==this.cursor.y) // If in edit mode and it is the correct row...
+		cpos=this.cursor.x;
       this.rows[row].draw(cpos);
-    }
-    
+    }    
   }
+  
   this.drawchar=function(ch,x,y)
   {
     //console.log('Attempting to draw row '+y);
     this.rows[y].setchar(ch,x);
   }
   
+  /**
+   * @brief Clear all rows to blank spaces
+   */
+  this.setBlank=function()
+  {
+    for (var y=1;y<this.rows.length;y++)
+		this.rows[y].setrow('                                        ');
+	this.rows[0].setrow('Pnn     CEEFAX 1 100 Sun 08 Jan 12:58/57'); // @todo Add proper header control		
+  }
+  
+  
 } // page
 
-function row(row,str)
+function row(page,y,str)
 {
-  this.row=row;
+  this.page=page;
+  this.row=y;
   this.txt=str;
+  console.log('Setting row to '+this.page+' '+this.row+' '+this.txt);
   this.setchar=function(ch,n)
   {
     this.txt=setCharAt(this.txt,n,ch);
   }
-  /// \param cpos is the cursor column position to highlight
+
+  this.setrow=function(txt)
+  {
+    this.txt=txt;
+  }
+
+  /// @param cpos is the cursor column position to highlight
   this.draw=function(cpos)
   {
+	var txt=this.txt; // Copy the row text because a header row will modify it
+	if (this.row==0 && cpos<0) // This is the header row
+	{
+		// Replace the first eight characters with the page number
+		txt=replace(txt,'P'+nf(this.page,3)+'    ',0);
+		
+		// Substitute mpp for the page number
+		var ix;
+		if ((ix=txt.indexOf('mpp'))>0)
+			txt=replace(txt,nf(this .page,3),ix)
+		// Substitute dd for the day 1..31
+		if (ix=txt.indexOf('dd'))
+			txt=replace(txt,nf(day(),2),ix)
+		// Substitute DAY for the three letter abbreviated day 
+		ix=txt.indexOf('DAY');
+		if (ix>0)
+		{
+			var week = new Date().getDay(); 
+			var str="MonTueWedThuFriSatSun".substr((week-1)*3,3);
+			txt=replace(txt,str,ix);
+		}
+		// Substitute MTH for the three letter abbreviated month 
+		ix=txt.indexOf('MTH');
+		if (ix>0)
+		{
+			var str="JanFebMarAprMayJunJulAugSepOctNovDec".substr((month()-1)*3,3);
+			txt=replace(txt,str,ix)
+		}
+		// Substitute hh for the two digit hour 
+		if ((ix=txt.indexOf('hh'))>0)
+			txt=replace(txt,nf(hour(),2),ix)
+		// Substitute nn for the two digit minutes
+		if ((ix=txt.indexOf('nn'))>0)
+			txt=replace(txt,nf(minute(),2),ix)
+		// Substitute ss for the two digit seconds
+		if ((ix=txt.indexOf('ss'))>0)
+			txt=replace(txt,nf(second(),2),ix)
+	}
     // Set up all the display mode initial defaults
     var fgColor=color(255,255,255); // Foreground defaults to white
     var bgColor=color(0); // Background starts black
@@ -63,8 +156,8 @@ function row(row,str)
     textSize(gTtxFontSize);
     for (var i=0;i<40;i++)
     {
-      var ch=this.txt.charAt(i);
-      var ic=this.txt.charCodeAt(i);
+      var ch=txt.charAt(i);
+      var ic=txt.charCodeAt(i);
       var printable=false;
       switch (ic)
       {
@@ -141,14 +234,18 @@ function row(row,str)
   }
   this.drawchar=function(ch,x,y)
   {
-    text(ch,x*gTtxW,y*gTtxH);
+    text(ch,x*gTtxW,(y+1)*gTtxH);
   }
   this.mapchar=function(ch)
   {
+// Temporary mappings for Germany
+switch(ch)
+{
+	case '|':  return char(0x00f6); // 7/C o umlaut
+    case '}':  return char(0x00fc); // 7/D u umlaut	
+	}
     switch (ch)
     {
-    
-
     case '#': return 'Â£';
     case '[': return char(0x2190); // 5/B Left arrow.
     case '\\': return char(0xbd);   // 5/C Half
@@ -161,6 +258,7 @@ function row(row,str)
     case '}':  return char(0xbe);   // 7/D Three quarters
     case '~':  return char(0x00f7); // 7/E Divide 
     }
+	
     return ch;
   }
 }
@@ -168,5 +266,12 @@ function row(row,str)
 function setCharAt(str,index,chr) {
     if(index > str.length-1) return str;
     return str.substr(0,index) + chr + str.substr(index+1);
+}
+
+/// @brief replace the characters in str at index with those in str2
+function replace(str,str2,index) {
+	var len=str2.length;
+    if (index+len > str.length) return str;
+    return str.substr(0,index) + str2 + str.substr(index+len);
 }
 
