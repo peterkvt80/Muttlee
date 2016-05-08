@@ -49,7 +49,7 @@ function setup()
   socket.on('row',setRow);
   socket.on('blank',setBlank);
   socket.on('fastext',setFastext);
-  hdr=new header(0,1,0,0);
+  //hdr=new header(0,1,0,0);
   // Set page defaults
   var data=
   {
