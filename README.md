@@ -13,6 +13,8 @@ Just
 A complete teletext service in your browser. It will allow you to view or edit a teletext service on a single browser page,
 not even a save button.
 
+Please see the test server at http://23.251.131.26:8080/ This responds to pages 100 to 125.
+
 The rest is a statement of intent. Not much of this is implemented yet...
 
 This is what it does 
@@ -37,12 +39,10 @@ It runs on the node.js environment with Express for web services and socket.io f
 As it happens to be running on Google's Compute Engine it is also using the cloud for data storage,
 In this case it is datastore and it is based on NoSQL.
 Express is used to serve static http from the Public folder.
-=======
-# 1 - Muttlee
 
-This folder contains my efforts to install [Muttlee][step-1]
-tutorial. Please refer to the tutorial for instructions on configuring, running,
-and deploying this sample.
-
-[step-1]: https://cloud.google.com/nodejs/getting-started/hello-world
->>>>>>> Stashed changes
+Keep alive
+The system stays alive by using PM2. My environment is Debian so this is what worked for me.
+sudo npm pm2@latest -g
+pm2 start teletextserver.js
+pm2 startup ubuntu
+pm2 save
