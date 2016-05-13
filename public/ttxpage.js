@@ -199,6 +199,7 @@ function row(page,y,str)
       case 29 : bgColor=fgColor;break; // 29: new background
       case 30 : holdGfx=true;break; // 30: Hold graphics mode
       case 31 : holdGfx=false;break; // 31 Release hold mode
+	  case 32 : break; // Space is not printable
       default:
         printable=true;
       } // case
@@ -208,7 +209,7 @@ function row(page,y,str)
       // except if this is the cursor position
       if (cpos==i && flashState) fill(255);
       this.drawchar(String.fromCharCode(0xe6df),i,this.row);
-      if (printable && (flashState || !flashMode))
+      if (printable && (flashState || !flashMode)) 
       {
         fill(fgColor);
         if (textmode || ch>='A' && ch<='Z')
@@ -218,6 +219,7 @@ function row(page,y,str)
         }
         else
         {
+		  
           fill(fgColor);
           if (contiguous)
           {

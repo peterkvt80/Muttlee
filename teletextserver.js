@@ -31,13 +31,26 @@ function newConnection(socket)
   }
   socket.on('load', doLoad);
 
+
+}
+
   function doLoad(data)
   {
 	var filename='BBCNEWS/BBC'+data.p+'.ttix';
     console.log('doLoad called '+filename+' data.x='+data.x);
+		console.log(data);
+	if (data.y==0 && data.p==400) // Special hack. Intercept P100. First time we will load weather
+		data.x=-1;
+	// The next time x=1 so we will load the page we just created.
     if (data.x<0)
 	{
 		filename='BBCNEWS/BBC404.ttix';
+		// filename='http://localhost:8080/weather.tti';
+		if (data.p==400)
+		{
+			doloadweather(0,0);
+			return;
+		}
 	}
 	io.sockets.emit('blank',data); // Clear down the old data.
 	var fail=false;
@@ -129,6 +142,112 @@ function newConnection(socket)
 	});
 
   }
+
+/**--/Weather Stuff is below/--**/
+// io stream
+//var fs=require('fs');
+//var readline=require('readline');
+//var stream=require('stream');
+var request=require('request');
+
+var gResponse;
+
+// express
+//var express=require('express');
+//var app=express();
+
+// server
+// var server=app.listen(3020);
+//console.log('Server is running');
+
+// app.get('/',mypage);
+app.get('/weather.tti',doloadweather);
+
+// Request weather from Darren Storer's server
+function doloadweather(req,res)
+{
+	gResponse=res;
+	var weatherdata="http://g7lwt.com/realtime.txt";
+	request.get(weatherdata, gotWeather);
 }
 
+// Got the weather, tokenise it and generate teletext
+function gotWeather(error, res, body)
+{
+	if (!error && res.statusCode==200)
+	{
+		var weather=body.split(' ');
+		console.log("weather="+weather);
+	}
+	mypage(weather);
+}
 
+function mypage(w)
+{
+	var page="DE,Description goes here\r\n\
+DS,inserter\r\n\
+SP,E:\dev\muttlee\weather.tti\r\n\
+CT,8,T\r\n\
+PS,8000\r\n\
+RE,0\r\n\
+PN,40000\r\n\
+SC,0000\r\n\
+OL,0,XXXXXXXXTEDFAX mpp DAY dd MTH C hh:nn.ss\r\n\
+OL,1,SxCWEATHERC"+w[1]+"S$\r\n\
+OL,2,Q|||C   C      in    out  feels like    \r\n\
+OL,3,Q|||GTempBG"+w[22]+"BG"+w[2]+"RBG"+w[54]+"BG   \r\n\
+OL,4,Qj|||||||||||||||||||||||||||\r\n\
+OL,5,Q|||C mph     now    ave.    gust    dir\r\n\
+OL,6,Q|||GWindFG"+w[6]+"FG"+w[5]+"FG"+w[32]+"FG"+w[11]+"\r\n\
+OL,7,Qj|||||||||||||||||||||||||||\r\n\
+OL,8,Q|||C   %      in    out      dew       \r\n\
+OL,9,Q|||GHum EG"+w[23]+"%EG"+w[3]+"%EG"+w[4]+"EG   \r\n\
+OL,10,Qj|||||||||||||||||||||||||||\r\n\
+OL,11,Q|||C  mm   today    hour               \r\n\
+OL,12,Q|||GRainDG"+w[9]+"DG "+w[8]+"DG    DG   \r\n\
+OL,13,Qj|||||||||||||||||||||||||||\r\n\
+OL,14,Q|||C hPa      now   trend              \r\n\
+OL,15,Q|||GPresAG"+w[10]+"AG"+w[18]+"AG   AG   \r\n\
+OL,16,Qj|||||||||||||||||||||||||||\r\n\
+OL,17,Q|||G                                   \r\n\
+OL,18,QGWind chill: "+w[24]+"C                   \r\n\
+OL,19,QGHeat index: "+w[41]+"                   \r\n\
+OL,20,QGUV Index  :   "+w[43]+"                   \r\n\
+OL,21,QF]DWeather station: No data       \r\n\
+OL,22,QF]Dhttp://g7lwt.com/realtime.txt    \r\n\
+OL,23,Q+]                                   \r\n\
+OL,24,ARefreshBFirst storyCHeadlinesFMain Menu\r\n\
+FL,400,104,102,120,100,100";
+		
+	console.log("got here");
+	if (gResponse!=0)	
+	{
+		gResponse.writeHead(200, {'Content-Type': 'application/octet-stream'});
+		//Content-Disposition: attachment;filename=\"weather.tti\"
+		gResponse.write(page);
+		gResponse.end();
+	}
+	else
+	{
+		var outstream;
+		var filename="BBCNEWS/BBC400.ttix";
+		outstream = fs.createWriteStream(filename);
+		fs.writeFile(filename,page,function (err){
+		if (!err)
+		{
+			console.log("Page written OK");
+			var data={
+				S:0,
+				p:400,
+				s:0,
+				y:1,
+				x:1 // Signal that we can now render the page
+			};
+			doLoad(data);			
+		}
+		else	
+			console.log('error='+err);
+		});
+
+	}
+}
