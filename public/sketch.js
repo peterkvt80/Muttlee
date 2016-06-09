@@ -33,7 +33,8 @@ function setup()
 {
   // Try to make a debug and on-air version
 //  socket=io.connect('http://192.168.1.11:3010');
-  socket=io.connect('http://23.251.131.26:8080');
+  socket=io.connect(':8080');
+//  socket=io.connect('http://23.251.131.26:8080');
   // socket=io.connect('http://localhost:80');
   createCanvas(600,550);
   background(0);
@@ -56,13 +57,13 @@ function setup()
   var data=
   {
 	S: 0, // Default to service 0
-	p: 100, // Page mpp. 
+	p: 100, // Page mpp
 	s:0,	// subpage 0
 	x:2000,
 	y: 0,
 	rowText: ''
   }
-  socket.emit('load',data); // 
+  socket.emit('load',data); // @todo Extend this to send a page header so as to request a particular page
   // dom
   redButton=select('#red');
   redButton.mousePressed(fastextR);
@@ -145,6 +146,7 @@ function setFastext(data)
 
 function draw()
 {
+  // @todo We only need to update this during updates. No more than twice a second. Could save a lot of CPU
   background(0);
   noStroke();
   fill(255,255,255);
@@ -176,7 +178,7 @@ function newChar(data) // 'keystroke'
 // A whole line is updated at a time
 function setRow(r) // 'row'
 {
-  console.log("Going to set row="+(r.rowNumber));
+  // console.log("Going to set row="+(r.rowNumber));
   if (!matchpage(r)) return;
   mypage.setRow(r.y,r.rowText);
 }

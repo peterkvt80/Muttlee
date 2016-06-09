@@ -14,6 +14,8 @@ function page()
   this.greenLink=100;
   this.yellowLink=100;
   this.cyanLink=100;
+  
+  this.description='none';
 
   // @todo check range
   this.init=function(number)
