@@ -34,6 +34,7 @@ function setup()
   // Try to make a debug and on-air version
 //  socket=io.connect('http://192.168.1.11:3010');
   socket=io.connect(':8080');
+//  socket=io.connect('http://23.251.131.26:8080');
   // socket=io.connect('http://localhost:80');
   createCanvas(600,550);
   background(0);
@@ -49,6 +50,8 @@ function setup()
   socket.on('row',setRow);
   socket.on('blank',setBlank);
   socket.on('fastext',setFastext);
+  socket.on('setpage',setPageNumber);
+  socket.on('description',setDescription);
   //hdr=new header(0,1,0,0);
   // Set page defaults
   var data=
@@ -56,7 +59,7 @@ function setup()
 	S: 0, // Default to service 0
 	p: 100, // Page mpp
 	s:0,	// subpage 0
-	x:0,
+	x:2000,
 	y: 0,
 	rowText: ''
   }
@@ -70,6 +73,19 @@ function setup()
   yellowButton.mousePressed(fastextY);
   cyanButton=select('#cyan');
   cyanButton.mousePressed(fastextC);
+}
+
+function setDescription(desc)
+{
+	// console.log('[setDescription]setting page description to '+desc);
+	mypage.description=desc;
+	document.getElementById('description').innerHTML = 'Page info: '+desc;
+}
+
+function setPageNumber(data)
+{
+	console.log('[setPageNumber]setting page to '+data.p);
+	mypage.setPage(data.p);
 }
 
 // Handle the button UI
@@ -130,6 +146,7 @@ function setFastext(data)
 
 function draw()
 {
+  // @todo We only need to update this during updates. No more than twice a second. Could save a lot of CPU
   background(0);
   noStroke();
   fill(255,255,255);

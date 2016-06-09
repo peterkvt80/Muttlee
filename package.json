@@ -23,9 +23,10 @@
     "datastore": "^1.1.1",
     "express": "^4.13.4",
     "gcloud": "^0.31.0",
-    "socket.io": "^1.4.5"
+    "request": "^2.72.0",
+    "socket.io": "^1.4.6"
   },
-    "engines": {
+  "engines": {
     "node": ">=0.12.7"
   }
 }
