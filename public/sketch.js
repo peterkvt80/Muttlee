@@ -49,18 +49,20 @@ function setup()
   socket.on('row',setRow);
   socket.on('blank',setBlank);
   socket.on('fastext',setFastext);
+  socket.on('setpage',setPageNumber);
+  socket.on('description',setDescription);
   //hdr=new header(0,1,0,0);
   // Set page defaults
   var data=
   {
 	S: 0, // Default to service 0
-	p: 100, // Page mpp
+	p: 100, // Page mpp. 
 	s:0,	// subpage 0
-	x:0,
+	x:2000,
 	y: 0,
 	rowText: ''
   }
-  socket.emit('load',data); // @todo Extend this to send a page header so as to request a particular page
+  socket.emit('load',data); // 
   // dom
   redButton=select('#red');
   redButton.mousePressed(fastextR);
@@ -70,6 +72,19 @@ function setup()
   yellowButton.mousePressed(fastextY);
   cyanButton=select('#cyan');
   cyanButton.mousePressed(fastextC);
+}
+
+function setDescription(desc)
+{
+	// console.log('[setDescription]setting page description to '+desc);
+	mypage.description=desc;
+	document.getElementById('description').innerHTML = 'Page info: '+desc;
+}
+
+function setPageNumber(data)
+{
+	console.log('[setPageNumber]setting page to '+data.p);
+	mypage.setPage(data.p);
 }
 
 // Handle the button UI
@@ -161,7 +176,7 @@ function newChar(data) // 'keystroke'
 // A whole line is updated at a time
 function setRow(r) // 'row'
 {
-  // console.log("Going to set row="+(r.rowNumber));
+  console.log("Going to set row="+(r.rowNumber));
   if (!matchpage(r)) return;
   mypage.setRow(r.y,r.rowText);
 }
