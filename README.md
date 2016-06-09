@@ -40,6 +40,11 @@ As it happens to be running on Google's Compute Engine it is also using the clou
 In this case it is datastore and it is based on NoSQL.
 Express is used to serve static http from the Public folder.
 
+Install express and socket.io using the node package manager:
+npm install express --save
+npm install socket.io --save
+npm install request --save
+
 Keep alive
 The system stays alive by using PM2. My environment is Debian so this is what worked for me.
 sudo npm pm2@latest -g
