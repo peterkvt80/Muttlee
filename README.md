@@ -7,13 +7,12 @@ teletext's features. edit.tf lets you create pages without even needing an insta
 The difficulty is running your own service. It is hard to believe but there are people who couldn't 
 open an SSH session to save their life. People who think that VIM is for cleaning the bathroom.
 
-Imagine if your teletext viewer could turn into an editor. An editor with no complicated menus or options.
-Just 
+Just imagine if your teletext viewer could turn into an editor. An editor with no complicated menus or options.
 
 A complete teletext service in your browser. It will allow you to view or edit a teletext service on a single browser page,
 not even a save button.
 
-Please see the test server at http://23.251.131.26:8080/ This responds to pages 100 to 125.
+The code here is proof of concept and not anywhere near a release.
 
 The rest is a statement of intent. Not much of this is implemented yet...
 
