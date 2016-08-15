@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 # Muttlee
 Multi User Teletext Live Edit Environment
 The advantage of Teletext is that it is easy to view. Most people already know how to do that.
@@ -34,10 +33,9 @@ The server records this keystroke and updates its copy of the page.
 The server forwards the same message packet to all clients.
 The clients pick up the packet, and if it is for their current page then the keystroke is applied to the page.
 The server is also javascript.
-It runs on the node.js environment with Express for web services and socket.io for message passing.
-As it happens to be running on Google's Compute Engine it is also using the cloud for data storage,
-In this case it is datastore and it is based on NoSQL.
-Express is used to serve static http from the Public folder.
+It ran on the node.js environment with Express for web services and socket.io for message passing.
+It was run for a while on Google's Compute Engine with Bitnami Node.js.
+Express is used to serve static http from the Public folder
 
 Install express and socket.io using the node package manager:
 npm install express --save
@@ -45,7 +43,7 @@ npm install socket.io --save
 npm install request --save
 
 Keep alive
-The system stays alive by using PM2. My environment is Debian so this is what worked for me.
+The system stays alive by using PM2. The environment is Debian so this is what worked for me.
 sudo npm pm2@latest -g
 pm2 start teletextserver.js
 pm2 startup ubuntu
