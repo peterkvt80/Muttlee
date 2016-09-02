@@ -37,6 +37,7 @@
 	*/
 	this.findPage=function(mpp)
 	{
+		console.log("[Service::findPage] looking for page "+mpp);
 		// Page out of range?
 		if (mpp<0x100 || mpp>0x7ff)
 		{
@@ -47,11 +48,11 @@
 		{
 			if (this.pages[p].pageNumber==mpp)
 			{
-				console.log("Found page "+mpp);
+				console.log("[Service::findPage]Found page "+mpp);
 				return this.pages[p];
 			}
 		}
-		console.log("Failed to find page "+mpp);
+		console.log("[Service::findPage]Failed to find page "+mpp);
 		return false;
 		
 	}

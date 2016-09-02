@@ -65,8 +65,6 @@ service=queryString['service'];
 	{
 		p: initialPage
 	}
-	  var data=
-
 	io.sockets.emit('setpage',data);
   }
   else
