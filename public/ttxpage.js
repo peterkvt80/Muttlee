@@ -89,6 +89,12 @@ function page()
   
 } // page
 
+function isMosaic(ch)
+{
+    ch=ch.charCodeAt() & 0x7f;
+    return (ch>=0x20 && ch<0x40) || ch>=0x60;
+}
+
 function row(page,y,str)
 {
   this.page=page;
@@ -152,6 +158,7 @@ function row(page,y,str)
     var textmode=true; // If false it is graphics mode
     var contiguous=true; // if false it is separated graphics
     var holdGfx=false;
+		var holdChar=' ';
     var flashMode=false;
     var dblHeight=false;
     textFont(ttxFont);
@@ -161,17 +168,21 @@ function row(page,y,str)
       var ch=txt.charAt(i);
       var ic=txt.charCodeAt(i);
       var printable=false;
+			// Do the set-before codes
       switch (ic)
       {
-      case  0 : fgColor=color(0);textmode=true;break; // 0: black. Only for level 1 rebels.
-      case  1 : fgColor=color(255,0,0);textmode=true;break; // 1:red 
-      case  2 : fgColor=color(0,255,0);textmode=true;break; // 2:green
-      case  3 : fgColor=color(255,255,0);textmode=true;break; // 3:yellow
-      case  4 : fgColor=color(0,0,255);textmode=true;break; // 4:blue
-      case  5 : fgColor=color(255,0,255);textmode=true;break; // 5:magenta
-      case  6 : fgColor=color(0,255,255);textmode=true;break; // 6:cyan
-      case  7 : fgColor=color(255,255,255);textmode=true;break; // 7:white
-      case  8 : flashMode=true;break; // 8:flash
+      case  0 : ; // 0: black. Only for level 1 rebels.
+      case  1 : ; // 1:red 
+      case  2 : ; // 2:green
+      case  3 : ; // 3:yellow
+      case  4 : ; // 4:blue
+      case  5 : ; // 5:magenta
+      case  6 : ; // 6:cyan
+      case  7 : ; // 7:white
+				holdGfx=false;
+				break;
+      case  8 : flashMode=true; // 8:flash
+				break;
       case  9 : flashMode=false;break; // 9:steady
       case 10 : break; // 10:endbox
       case 11 : break; // 11:startbox
@@ -185,27 +196,39 @@ function row(page,y,str)
         textFont(ttxFontDH);
         textSize(gTtxFontSize*2);
         break; // 13:doubleheight
-      case 16 : fgColor=color(0);textmode=false;break;// 16: Farrimond gfxblack
-      case 17 : fgColor=color(255,0,0);textmode=false;break; // 16:gfxred 
-      case 18 : fgColor=color(0,255,0);textmode=false;break; // 17:gfxgreen
-      case 19 : fgColor=color(255,255,0);textmode=false;break; // 18:gfxyellow
-      case 20 : fgColor=color(0,0,255);textmode=false;break; // 19:gfxblue
-      case 21 : fgColor=color(255,0,255);textmode=false;break; // 20:gfxmagenta
-      case 22 : fgColor=color(0,255,255);textmode=false;break; // 21:gfxcyan
-      case 23 : fgColor=color(255,255,255);textmode=false;break; // 22:gfxwhite
-
+      case 16 : ;// 16: Farrimond gfxblack
+      case 17 : ; // 16:gfxred 
+      case 18 : ; // 17:gfxgreen
+      case 19 : ; // 18:gfxyellow
+      case 20 : ; // 19:gfxblue
+      case 21 : ; // 20:gfxmagenta
+      case 22 : ; // 21:gfxcyan
+      case 23 : ; // 22:gfxwhite
+				break;
       case 25 : contiguous=true;break; // 25: Contiguous graphics
       case 26 : contiguous=false;break; // 26: Separated graphics
 
       case 28 : bgColor=color(0);break; // 28 black background
       case 29 : bgColor=fgColor;break; // 29: new background
-      case 30 : holdGfx=true;break; // 30: Hold graphics mode
-      case 31 : holdGfx=false;break; // 31 Release hold mode
-	  case 32 : break; // Space is not printable
+      case 30 : holdGfx=true; // 30: Hold graphics mode (set at)
+      	printable=true; // Because this will be replaced
+      	break;
+      case 31 : break; // 31 Release hold mode (set after)
+	  case 32 : ; // Space is not printable but it is still a mosaic. Intentional fall through
       default:
+			  if (isMosaic(ch))
+				{
+					holdChar=ic;
+				}
+			
         printable=true;
       } // case
-      // Paint the background colour always
+			
+			// Mosaic hold is always printable
+			if (!textmode && holdGfx)
+        printable=true;
+
+				// Paint the background colour always
       noStroke();
       fill(bgColor);
       // except if this is the cursor position
@@ -219,21 +242,46 @@ function row(page,y,str)
           ch=this.mapchar(ch);
           this.drawchar(ch,i,this.row);
         }
-        else
+        else // mosaics
         {
 		  
           fill(fgColor);
+					var ic2=ic;
+					if (holdGfx)
+						ic2=holdChar; // hold char replaces
           if (contiguous)
           {
             stroke(fgColor);
-            this.drawchar(String.fromCharCode(ic+0x0e680-0x20),i,this.row);
+            this.drawchar(String.fromCharCode(ic2+0x0e680-0x20),i,this.row);
           }
           else
           {
-            this.drawchar(String.fromCharCode(ic+0x0e680),i,this.row);
+            this.drawchar(String.fromCharCode(ic2+0x0e680),i,this.row);
           }
         }        
       }
+			// Set-After codes go here
+			switch (ic)
+			{
+			case  0 : fgColor=color(0);textmode=true;break; // 0: black. Only for level 1 rebels.
+			case  1 : fgColor=color(255,0,0);textmode=true;break; // 1:red 
+			case  2 : fgColor=color(0,255,0);textmode=true;break; // 2:green
+			case  3 : fgColor=color(255,255,0);textmode=true;break; // 3:yellow
+			case  4 : fgColor=color(0,0,255);textmode=true;break; // 4:blue
+			case  5 : fgColor=color(255,0,255);textmode=true;break; // 5:magenta
+			case  6 : fgColor=color(0,255,255);textmode=true;break; // 6:cyan
+			case  7 : fgColor=color(255,255,255);textmode=true;break; // 7:white	
+      case 16 : fgColor=color(0);textmode=false;break;// 16: Farrimond gfxblack
+      case 17 : fgColor=color(255,0,0);textmode=false;break; // 16:gfxred 
+      case 18 : fgColor=color(0,255,0);textmode=false;break; // 17:gfxgreen
+      case 19 : fgColor=color(255,255,0);textmode=false;break; // 18:gfxyellow
+      case 20 : fgColor=color(0,0,255);textmode=false;break; // 19:gfxblue
+      case 21 : fgColor=color(255,0,255);textmode=false;break; // 20:gfxmagenta
+      case 22 : fgColor=color(0,255,255);textmode=false;break; // 21:gfxcyan
+      case 23 : fgColor=color(255,255,255);textmode=false;break; // 22:gfxwhite			
+      case 31 : holdGfx=false;break; // 31 Release hold mode (set after)
+			
+			}
     }
   }
   this.drawchar=function(ch,x,y)
