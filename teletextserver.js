@@ -30,8 +30,8 @@ var socket=require('socket.io');
 var io=socket(server);
 
 var initialPage=100;
-var service="BBCNEWS/BBC";
-
+// var service="BBCNEWS/BBC";
+var service="/var/www/onair/P";
 io.sockets.on('connection',newConnection);
 
 function newConnection(socket)
@@ -54,7 +54,7 @@ service=queryString['service'];
   if (typeof(p)=="undefined")
 	p=100;
   if (typeof(service)=="undefined")
-    service="BBCNEWS/BBC";
+    service="/var/www/onair/P";
   else
 	service="ITV/R"; // @todo Temporary measure 
   if (p>=100 && p<=999) // Only allow decimals (no Bamboozle cheating)
@@ -98,7 +98,7 @@ function doInitialLoad(data)
 		data.p=initialPage;
 		data.x=0;
 	}
-	filename=service+data.p+'.ttix';
+	filename=service+data.p+'.tti';
 	// !!! Here we want to check if the page is already in cache
 	var found=findService(service);
 	if (found===false)
