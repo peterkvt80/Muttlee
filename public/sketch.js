@@ -47,11 +47,12 @@ function setup()
   mypage.init(100);
   // message events
   socket.on('keystroke',newChar);
-  socket.on('row',setRow);
-  socket.on('blank',setBlank);
+  socket.on('row',setRow); // A teletext row
+  socket.on('blank',setBlank); // Clear the page
   socket.on('fastext',setFastext);
-  socket.on('setpage',setPageNumber);
+  socket.on('setpage',setPageNumber); // Allow the server to change the page number (Page 404 etc)
   socket.on('description',setDescription);
+  socket.on('subpage',setSubPage); // Subpage number for carousels (Expect two digits 00..99) [99 is higher than actual spec]
   //hdr=new header(0,1,0,0);
   // Set page defaults
   var data=
@@ -73,6 +74,11 @@ function setup()
   yellowButton.mousePressed(fastextY);
   cyanButton=select('#cyan');
   cyanButton.mousePressed(fastextC);
+}
+
+function setSubPage(subpage)
+{
+	mypage.setSubPage(parseInt(subpage));
 }
 
 function setDescription(desc)
@@ -160,7 +166,7 @@ function matchpage(data)
 	// console.log ("Matching data.p, mypage.pageNumber"+data.p+' '+mypage.pageNumber);
 	if (mypage.service!=data.S) return false;
 	if (mypage.pageNumber!=data.p) return false;
-	if (mypage.subpage!=data.s) return false;
+	// if (mypage.subPage!=data.s) return false; // This needs more thought now that we are implementing carousels
 	return true;
 }
 

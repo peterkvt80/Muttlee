@@ -16,57 +16,107 @@ function page()
   this.cyanLink=100;
   
   this.description='none';
+	
+	this.subPage=0; // This is used to address the sub page as we 
+	this.subPageList=new Array();
+	
+	this.iteration=0;
 
   // @todo check range
   this.init=function(number)
   {
     this.pageNumber=number;
-	this.subpage=0; // @todo Carousels
-	this.service=0; // @todo Services
-    this.rows = new Array();
-	// As rows go from 0 to 31 and pages start at 100, we can use the same parameter for both
-    this.rows.push(new row(number,0,"Pnn     CEEFAX 1 100 Sun 08 Jan 12:58/57"));
-    for (var i=1;i<26;i++)
-    {
-      this.rows.push(new row(number,i,"~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„"));
-    }
-    
+		this.service=0; // @todo Services
+
+		this.addPage(number);
   }
   
   /** @brief Change the page number for this page and all child rows
    */
   this.setPage=function(p)
   {
-	this.pageNumber=p;
-	for (var r=0;r<this.rows.length;r++)
-	{
-		this.rows[r].page=p;
-	}
+		this.subPage=0;
+		this.iteration=0;
+		this.pageNumber=p;
+		for (var r=0;r<this.rows.length;r++)
+		{
+			this.rows[r].page=p;
+		}
   }
+	
+	/** @brief Add a page to the sub page list
+	 */
+	this.addPage=function(number)
+	{
+    this.rows = new Array();
+	// As rows go from 0 to 31 and pages start at 100, we can use the same parameter for both
+    this.rows.push(new row(number,0,"Pnn     CEEFAX 1 100 Sun 08 Jan 12:58/57"));
+    for (var i=1;i<26;i++)
+    {
+      //this.rows.push(new row(number,i,"~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„"));
+      this.rows.push(new row(number,i,"                                        "));
+    }  
+		this.subPageList.push(this.rows);
+	}
+	
+	/**
+   * @param s Subpage number. All subsequent row/char updates go to this subpage.	
+	 */
+	this.setSubPage=function(s)
+	{
+		s=parseInt(s);
+		// console.log("[setSubPage] enters "+s);
+		if (s<0 || s>99)
+			s=0;
+		///@todo Check that s is in a subpage that exists and add it if needed.
+		if (this.subPageList.length<s)
+		{
+			this.addPage(this.pageNumber);
+			// console.log("[setSubPage] Need to add a new subpage: "+s);
+		}
+		this.subPage=s;
+	}
 
   /** @brief Set row r to txt
-   */
-   
+   */   
   this.setRow=function(r,txt)
   {
-	if (r>=0 && r<=24)
-	{
-		this.rows[r].setrow(txt);
-	}
-	else
-		console.log('not setting row '+r+' to '+txt);
+		if (r>=0 && r<=24)
+		{
+			this.rows[r].setrow(txt); // Old working code
+			// console.log ("Adding row "+r+" to sub page "+this.subPage);
+			var sp=this.subPage;
+			if (sp>0) sp=sp-1;
+			var v=this.subPageList[sp];
+			//console.log("v="+v);
+			v[r].setrow(txt); // New not tested code
+		}
+		else
+			return;
+		/*
+			// Might want to find out why this happens. Doesn't seem to matter
+			console.log('not setting row '+r+' to '+txt);
+			*/
   }
   
   
   this.draw=function()
   {
+		this.iteration++;
+		if (this.iteration % 30==0) // Approx 7 seconds
+		{
+			this.subPage=(this.subPage+1) % this.subPageList.length;			
+			console.log("iteration="+this.iteration/30+" Subpage="+this.subPage);
+		}
     for (var row=0;row<this.rows.length;row++)
     {
 	// console.log("drawing row "+row+" of "+this.rows.length);
       var cpos=-1;
-	  if (!this.cursor.hide && row==this.cursor.y) // If in edit mode and it is the correct row...
-		cpos=this.cursor.x;
-      this.rows[row].draw(cpos);
+			if (!this.cursor.hide && row==this.cursor.y) // If in edit mode and it is the correct row...
+			cpos=this.cursor.x;
+			this.rows[row].draw(cpos); // Original version
+			var v=this.subPageList[this.subPage>0?this.subPage-1:0];
+			v[row].draw(cpos);
     }    
   }
   
@@ -81,9 +131,13 @@ function page()
    */
   this.setBlank=function()
   {
-    for (var y=1;y<this.rows.length;y++)
-		this.rows[y].setrow('                                        ');
-	this.rows[0].setrow('Pnn     CEEFAX 1 100 Sun 08 Jan 12:58/57'); // @todo Add proper header control		
+		console.log(" Clear all rows to blank");
+		this.subPageList=new Array();
+		this.addPage(this.pageNumber);
+		
+//    for (var y=1;y<this.rows.length;y++)
+			//this.rows[y].setrow('                                        ');
+		//this.rows[0].setrow('Pnn     CEEFAX 1 100 Sun 08 Jan 12:58/57'); // @todo Add proper header control		
   }
   
   
@@ -100,7 +154,7 @@ function row(page,y,str)
   this.page=page;
   this.row=y;
   this.txt=str;
-  console.log('Setting row to '+this.page+' '+this.row+' '+this.txt);
+  // console.log('Setting row to '+this.page+' '+this.row+' '+this.txt);
   this.setchar=function(ch,n)
   {
     this.txt=setCharAt(this.txt,n,ch);
@@ -125,7 +179,7 @@ function row(page,y,str)
 		if ((ix=txt.indexOf('mpp'))>0)
 			txt=replace(txt,nf(this .page,3),ix)
 		// Substitute dd for the day 1..31
-		if (ix=txt.indexOf('dd'))
+		if ((ix=txt.indexOf('dd'))>0)
 			txt=replace(txt,nf(day(),2),ix)
 		// Substitute DAY for the three letter abbreviated day 
 		ix=txt.indexOf('DAY');
@@ -152,6 +206,25 @@ function row(page,y,str)
 		if ((ix=txt.indexOf('ss'))>0)
 			txt=replace(txt,nf(second(),2),ix)
 	}
+	// Non header substitutions
+	if (this.row>0 && this.row<25 && cpos<0) // This is the header row
+	{
+		// World time. (two values allowed per line
+  	for (var i=0;i<2;i++)
+			if ((ix=txt.indexOf('%t'))>0)
+			{
+				// Read the half hour offsets
+				var offset=txt.substring(ix+2,ix+5);
+				// console.log(offset);
+				// add the offset to the time
+				// show the HH:MM
+				var h=(hour()+int(parseInt(offset)/2)) % 24;
+				var m=minute();
+				if ( (parseInt(offset) % 2)==1)
+					m=(m+offset*30 ) % 60;
+				txt=replace(txt,nf(h,2)+':'+nf(m,2),ix);
+			}
+	}
     // Set up all the display mode initial defaults
     var fgColor=color(255,255,255); // Foreground defaults to white
     var bgColor=color(0); // Background starts black
@@ -166,7 +239,7 @@ function row(page,y,str)
     for (var i=0;i<40;i++)
     {
       var ch=txt.charAt(i);
-      var ic=txt.charCodeAt(i);
+      var ic=txt.charCodeAt(i) & 0x7f;
       var printable=false;
 			// Do the set-before codes
       switch (ic)

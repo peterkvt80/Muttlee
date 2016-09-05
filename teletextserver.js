@@ -111,7 +111,7 @@ function doInitialLoad(data)
 	// Now we have a service number. Does it contain our page?
 	var s=services[found];
 	var page=s.findPage(data.p);
-	console.log("Found "+service);
+	console.log("Found Service:"+service+" Page:"+page);
 	
     console.log('doLoad called '+filename+' data.x='+data.x);
 	//	console.log(data);
@@ -120,7 +120,7 @@ function doInitialLoad(data)
 	// The next time x=1 so we will load the page we just created.
     if (data.x<0)
 	{
-		filename=service+'404.ttix';
+		filename=service+'404.tti'; // this must exist or we get into a deadly loop
 		// filename='http://localhost:8080/weather.tti';
 		if (data.p==400)
 		{
@@ -132,12 +132,13 @@ function doInitialLoad(data)
 	io.sockets.emit('blank',data); // Clear down the old data.
 	var fail=false;
 	var instream;
-	instream = fs.createReadStream(filename);
+	instream = fs.createReadStream(filename,{encoding: "ascii"}); // Ascii strips bit 7 without messing up the rest of the text.
 	instream.on('error',function()
 	{
 	  var data2=data;
-	  //data2.p=404;
+	  data2.p=404; // This page must exist or we get into a deadly loop
 	  data2.x=-1; // Signal a 404 error
+		io.sockets.emit("setpage",data2);
 	  doLoad(data2);	  
 	});
 
@@ -148,7 +149,13 @@ function doInitialLoad(data)
 	});
 
 	rl.on('line', function(line)
-	{
+	{ 
+		if (line.indexOf('PN')==0)
+		{
+			// console.log('Need to implement carousels'+line);		
+			io.sockets.emit('subpage',line.substring(6));
+		}
+		else
 		if (line.indexOf('DE,')==0) // Detect a description row
 		{
 		  var desc=line.substring(3);
@@ -169,7 +176,7 @@ function doInitialLoad(data)
 				flink=flink+ch;
 				ch=line.charAt(ix++);				
 			}
-			console.log('Link '+link+' = ' + flink);
+			// console.log('Link '+link+' = ' + flink);
 			data.fastext[link]=flink;
 		  }
 		  io.sockets.emit('fastext',data);	
