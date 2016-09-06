@@ -14,6 +14,7 @@ function page()
   this.greenLink=100;
   this.yellowLink=100;
   this.cyanLink=100;
+  this.indexLink=100;
   
   this.description='none';
 	
@@ -32,16 +33,17 @@ function page()
   }
   
   /** @brief Change the page number for this page and all child rows
+	 *  Clear the page. We should get a number of rows soon
    */
   this.setPage=function(p)
   {
 		this.subPage=0;
 		this.iteration=0;
-		this.pageNumber=p;
-		for (var r=0;r<this.rows.length;r++)
-		{
-			this.rows[r].page=p;
-		}
+		this.pageNumber=p; /// @todo Convert this to do all sub pages
+		
+		this.subPageList=new Array();
+		this.addPage(this.pageNumber);		
+
   }
 	
 	/** @brief Add a page to the sub page list
@@ -83,7 +85,7 @@ function page()
   {
 		if (r>=0 && r<=24)
 		{
-			this.rows[r].setrow(txt); // Old working code
+			//this.rows[r].setrow(txt); // Old working code
 			// console.log ("Adding row "+r+" to sub page "+this.subPage);
 			var sp=this.subPage;
 			if (sp>0) sp=sp-1;
@@ -103,6 +105,7 @@ function page()
   this.draw=function()
   {
 		this.iteration++;
+		var dblHeight;
 		if (this.iteration % 30==0) // Approx 7 seconds
 		{
 			this.subPage=(this.subPage+1) % this.subPageList.length;			
@@ -114,16 +117,18 @@ function page()
       var cpos=-1;
 			if (!this.cursor.hide && row==this.cursor.y) // If in edit mode and it is the correct row...
 			cpos=this.cursor.x;
-			this.rows[row].draw(cpos); // Original version
+			//this.rows[row].draw(cpos); // Original version
+			// Single pages tend to have subpage 0000. carousels start from 0001. So subtract 1 unless it is already 0.
 			var v=this.subPageList[this.subPage>0?this.subPage-1:0];
-			v[row].draw(cpos);
+			if (v[row].draw(cpos))
+				row++; // If double height, skip the next row 
     }    
   }
   
   this.drawchar=function(ch,x,y)
   {
     //console.log('Attempting to draw row '+y);
-    this.rows[y].setchar(ch,x);
+    this.rows[y].setchar(ch,x); /// @todo Convert this to update subPage
   }
   
   /**
@@ -165,7 +170,9 @@ function row(page,y,str)
     this.txt=txt;
   }
 
-  /// @param cpos is the cursor column position to highlight
+  /** @param cpos is the cursor column position to highlight
+	 * @return True if there was a double height code in this row
+	 */
   this.draw=function(cpos)
   {
 	var txt=this.txt; // Copy the row text because a header row will modify it
@@ -234,6 +241,7 @@ function row(page,y,str)
 		var holdChar=' ';
     var flashMode=false;
     var dblHeight=false;
+		var hasDblHeight=false; // If there is a double height anywhere on this row, the next row must be skipped.
     textFont(ttxFont);
     textSize(gTtxFontSize);
     for (var i=0;i<40;i++)
@@ -266,6 +274,7 @@ function row(page,y,str)
         break; // 12:normalheight
       case 13 :
         dblHeight=true;
+				hasDblHeight=true;
         textFont(ttxFontDH);
         textSize(gTtxFontSize*2);
         break; // 13:doubleheight
@@ -306,14 +315,14 @@ function row(page,y,str)
       fill(bgColor);
       // except if this is the cursor position
       if (cpos==i && flashState) fill(255);
-      this.drawchar(String.fromCharCode(0xe6df),i,this.row);
+      this.drawchar(String.fromCharCode(0xe6df),i,this.row,dblHeight);
       if (printable && (flashState || !flashMode)) 
       {
         fill(fgColor);
         if (textmode || ch>='A' && ch<='Z')
         {
           ch=this.mapchar(ch);
-          this.drawchar(ch,i,this.row);
+          this.drawchar(ch,i,this.row,dblHeight);
         }
         else // mosaics
         {
@@ -325,11 +334,11 @@ function row(page,y,str)
           if (contiguous)
           {
             stroke(fgColor);
-            this.drawchar(String.fromCharCode(ic2+0x0e680-0x20),i,this.row);
+            this.drawchar(String.fromCharCode(ic2+0x0e680-0x20),i,this.row,dblHeight);
           }
           else
           {
-            this.drawchar(String.fromCharCode(ic2+0x0e680),i,this.row);
+            this.drawchar(String.fromCharCode(ic2+0x0e680),i,this.row,dblHeight);
           }
         }        
       }
@@ -356,10 +365,12 @@ function row(page,y,str)
 			
 			}
     }
-  }
-  this.drawchar=function(ch,x,y)
+		return hasDblHeight;
+  } // draw
+	
+  this.drawchar=function(ch,x,y,dblH)
   {
-    text(ch,x*gTtxW,(y+1)*gTtxH);
+    text(ch,x*gTtxW,(y+1+(dblH?1:0))*gTtxH);
   }
   this.mapchar=function(ch)
   {

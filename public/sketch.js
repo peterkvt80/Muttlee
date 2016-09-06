@@ -22,6 +22,7 @@ var editMode=false;
 
 // dom
 var redButton;
+var indexButton;
 
 function preload()
 {
@@ -37,7 +38,6 @@ function setup()
 //  socket=io.connect('http://23.251.131.26:8080');
   // socket=io.connect('http://localhost:80');
   createCanvas(600,550);
-  background(0);
   // font metrics
   textFont(ttxFont);
   textSize(gTtxFontSize);
@@ -74,6 +74,8 @@ function setup()
   yellowButton.mousePressed(fastextY);
   cyanButton=select('#cyan');
   cyanButton.mousePressed(fastextC);
+  indexButton=select('#index');
+	indexButton.mousePressed(fastextIndex);
 }
 
 function setSubPage(subpage)
@@ -111,6 +113,11 @@ function fastextC()
 {
 	fastext(4);
 }
+
+function fastextIndex()
+{
+	fastext(6);
+}
  
 /**
  * Load the fastext link
@@ -125,20 +132,24 @@ function fastext(index)
 	case 2:page=mypage.greenLink;break;
 	case 3:page=mypage.yellowLink;break;
 	case 4:page=mypage.cyanLink;break;
+	case 6:page=mypage.indexLink;break;
 	default:
 		page=mypage.redLink;
 	}
-	mypage.setPage(page); // We now have a different page number
-	  var data=
-	  {
-		S: 0, // @todo Implement service
-		p: page, // Page mpp
-		s: 0,	// @ todo subpage	
-		x: 0,
-		y: 0,
-		rowText: ''
-	  }	
-	socket.emit('load',data);	
+	if (page>=0x100 && page<=0x8ff) // Page in range
+	{
+		mypage.setPage(page); // We now have a different page number
+			var data=
+			{
+			S: 0, // @todo Implement service
+			p: page, // Page mpp
+			s: 0,	// @ todo subpage	
+			x: 0,
+			y: 0,
+			rowText: ''
+			}	
+		socket.emit('load',data);	
+	}
 }
 
 function setFastext(data)
@@ -148,12 +159,13 @@ function setFastext(data)
 	mypage.greenLink=data.fastext[1];
 	mypage.yellowLink=data.fastext[2];
 	mypage.cyanLink=data.fastext[3];
+	mypage.indexLink=data.fastext[5];
 }
 
 function draw()
 {
   // @todo We only need to update this during updates. No more than twice a second. Could save a lot of CPU
-  background(0);
+  background(100);
   noStroke();
   fill(255,255,255);
   // ellipse(mouseX,mouseY,10,10);

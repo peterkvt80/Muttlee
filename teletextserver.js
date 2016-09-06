@@ -52,24 +52,24 @@ service=queryString['service'];
   // var p=socket.handshake.headers.referer.slice(-3);
   // If there is no page=nnn in the URL then default to 100
   if (typeof(p)=="undefined")
-	p=100;
+		p=100;
   if (typeof(service)=="undefined")
     service="/var/www/onair/P";
   else
-	service="ITV/R"; // @todo Temporary measure 
+		service="ITV/R"; // @todo Temporary measure 
   if (p>=100 && p<=999) // Only allow decimals (no Bamboozle cheating)
   {
-	initialPage=p;
-	console.log('Setting page '+initialPage);
-	var data=
-	{
-		p: initialPage
-	}
-	io.sockets.emit('setpage',data);
+		initialPage=p;
+		console.log('Setting page '+initialPage);
+		var data=
+		{
+			p: initialPage
+		}
+		io.sockets.emit('setpage',data);
   }
   else
   {
-	initialPage=100;
+		initialPage=100;
   }
 	console.log(p);
   console.log('New connection'+socket.id);
