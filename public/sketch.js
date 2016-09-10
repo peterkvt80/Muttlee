@@ -44,7 +44,7 @@ function setup()
   gTtxW=textWidth('M');
   gTtxH=gTtxFontSize;
   mypage=new page();
-  mypage.init(100);
+  mypage.init(0x100);
   // message events
   socket.on('keystroke',newChar);
   socket.on('row',setRow); // A teletext row
@@ -58,7 +58,7 @@ function setup()
   var data=
   {
 	S: 0, // Default to service 0
-	p: 100, // Page mpp
+	p: 0x100, // Page mpp
 	s:0,	// subpage 0
 	x:2000,
 	y: 0,
@@ -92,7 +92,7 @@ function setDescription(desc)
 
 function setPageNumber(data)
 {
-	console.log('[setPageNumber]setting page to '+data.p);
+	console.log('[setPageNumber]setting page to '+data.p.toString(16));
 	mypage.setPage(data.p);
 }
 
@@ -136,6 +136,7 @@ function fastext(index)
 	default:
 		page=mypage.redLink;
 	}
+	console.log('Fastext pressed: '+index+" link to 0x"+page.toString(16)+" ("+page+")");
 	if (page>=0x100 && page<=0x8ff) // Page in range
 	{
 		mypage.setPage(page); // We now have a different page number
@@ -155,17 +156,17 @@ function fastext(index)
 function setFastext(data)
 {
   if (!matchpage(data)) return; // Data is not for our page?
-	mypage.redLink=data.fastext[0];
-	mypage.greenLink=data.fastext[1];
-	mypage.yellowLink=data.fastext[2];
-	mypage.cyanLink=data.fastext[3];
-	mypage.indexLink=data.fastext[5];
+	mypage.redLink=parseInt   ("0x"+data.fastext[0]);
+	mypage.greenLink=parseInt ("0x"+data.fastext[1]);
+	mypage.yellowLink=parseInt("0x"+data.fastext[2]);
+	mypage.cyanLink=parseInt  ("0x"+data.fastext[3]);
+	mypage.indexLink=parseInt ("0x"+data.fastext[5]);
 }
 
 function draw()
 {
   // @todo We only need to update this during updates. No more than twice a second. Could save a lot of CPU
-  background(100);
+  background(0);
   noStroke();
   fill(255,255,255);
   // ellipse(mouseX,mouseY,10,10);
@@ -292,15 +293,16 @@ function keyTyped()
 				digit2=' '; // Clear the new page number
 				digit3=' ';
 			}
-		    digit1=digit2;
+		  digit1=digit2;
 			digit2=digit3;
 			digit3=key;
 			if (digit1!=' ')
 			{
-				var page=Number(digit1+digit2+digit3);
+				//var page=Number(digit1+digit2+digit3);
+				var page=parseInt("0x"+digit1+digit2+digit3);
 				// hdr.setPage(page);
 				// console.log('@todo: pass the page '+page);
-				console.log("Page number is "+digit1+digit2+digit3);
+				console.log("Page number is 0x"+page.toString(16));
 				mypage.setPage(page); // We now have a different page number
 				  var data=
 				  {

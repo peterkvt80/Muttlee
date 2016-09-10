@@ -29,9 +29,10 @@ var socket=require('socket.io');
 
 var io=socket(server);
 
-var initialPage=100;
+var initialPage=0x100;
 // var service="BBCNEWS/BBC";
-var service="/var/www/onair/P";
+//var service="/var/www/onair/p";
+var service="i:/dev/onair/p";
 io.sockets.on('connection',newConnection);
 
 function newConnection(socket)
@@ -46,21 +47,22 @@ uri.replace(
 );
 console.log('Service: ' + queryString['service']);     // ID: 2140
 console.log('Page: ' + queryString['page']); // Name: undefined
-var p=queryString['page'];
+var p=parseInt("0x"+queryString['page'],16);
 service=queryString['service'];
 
   // var p=socket.handshake.headers.referer.slice(-3);
-  // If there is no page=nnn in the URL then default to 100
+  // If there is no page=nnn in the URL then default to 0x100
   if (typeof(p)=="undefined")
-		p=100;
+		p=0x100;
   if (typeof(service)=="undefined")
-    service="/var/www/onair/P";
+//    service="/var/www/onair/p";
+    service="i:/dev/onair/p";
   else
 		service="ITV/R"; // @todo Temporary measure 
-  if (p>=100 && p<=999) // Only allow decimals (no Bamboozle cheating)
+  if (p>=0x100 && p<=0x8ff)
   {
 		initialPage=p;
-		console.log('Setting page '+initialPage);
+		console.log('Setting page '+initialPage.toString(16));
 		var data=
 		{
 			p: initialPage
@@ -69,7 +71,7 @@ service=queryString['service'];
   }
   else
   {
-		initialPage=100;
+		initialPage=0x100;
   }
 	console.log(p);
   console.log('New connection'+socket.id);
@@ -98,7 +100,7 @@ function doInitialLoad(data)
 		data.p=initialPage;
 		data.x=0;
 	}
-	filename=service+data.p+'.tti';
+	filename=service+data.p.toString(16)+'.tti';
 	// !!! Here we want to check if the page is already in cache
 	var found=findService(service);
 	if (found===false)
@@ -115,14 +117,14 @@ function doInitialLoad(data)
 	
     console.log('doLoad called '+filename+' data.x='+data.x);
 	//	console.log(data);
-	if (data.y==0 && data.p==400) // Special hack. Intercept P400. First time we will load weather
+	if (data.y==0 && data.p==0x410) // Special hack. Intercept P410. First time we will load weather
 		data.x=-1;
 	// The next time x=1 so we will load the page we just created.
     if (data.x<0)
 	{
 		filename=service+'404.tti'; // this must exist or we get into a deadly loop
 		// filename='http://localhost:8080/weather.tti';
-		if (data.p==400)
+		if (data.p==0x410)
 		{
 			weather.doLoadWeather(0,0);
 			return;
@@ -136,7 +138,7 @@ function doInitialLoad(data)
 	instream.on('error',function()
 	{
 	  var data2=data;
-	  data2.p=404; // This page must exist or we get into a deadly loop
+	  data2.p=0x404; // This page must exist or we get into a deadly loop
 	  data2.x=-1; // Signal a 404 error
 		io.sockets.emit("setpage",data2);
 	  doLoad(data2);	  

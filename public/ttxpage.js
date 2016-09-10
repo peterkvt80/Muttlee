@@ -179,12 +179,12 @@ function row(page,y,str)
 	if (this.row==0 && cpos<0) // This is the header row
 	{
 		// Replace the first eight characters with the page number
-		txt=replace(txt,'P'+nf(this.page,3)+'    ',0);
+		txt=replace(txt,'P'+this.page.toString(16)+'    ',0);
 		
 		// Substitute mpp for the page number
 		var ix;
 		if ((ix=txt.indexOf('mpp'))>0)
-			txt=replace(txt,nf(this .page,3),ix)
+			txt=replace(txt,this.page.toString(16),ix)
 		// Substitute dd for the day 1..31
 		if ((ix=txt.indexOf('dd'))>0)
 			txt=replace(txt,nf(day(),2),ix)
@@ -267,17 +267,13 @@ function row(page,y,str)
       case  9 : flashMode=false;break; // 9:steady
       case 10 : break; // 10:endbox
       case 11 : break; // 11:startbox
-      case 12 :
-        dblHeight=false;
+      case 12 : // 12:normalheight SetAt
+			  dblHeight=false;
         textFont(ttxFont);
         textSize(gTtxFontSize);
-        break; // 12:normalheight
-      case 13 :
-        dblHeight=true;
-				hasDblHeight=true;
-        textFont(ttxFontDH);
-        textSize(gTtxFontSize*2);
-        break; // 13:doubleheight
+        break; 
+      case 13 : // 13:doubleheight SetAfter
+				break;
       case 16 : ;// 16: Farrimond gfxblack
       case 17 : ; // 16:gfxred 
       case 18 : ; // 17:gfxgreen
@@ -286,6 +282,9 @@ function row(page,y,str)
       case 21 : ; // 20:gfxmagenta
       case 22 : ; // 21:gfxcyan
       case 23 : ; // 22:gfxwhite
+				break;
+			case 24 :  // 24: conceal. (SetAt)
+				/// @todo
 				break;
       case 25 : contiguous=true;break; // 25: Contiguous graphics
       case 26 : contiguous=false;break; // 26: Separated graphics
@@ -319,7 +318,7 @@ function row(page,y,str)
       if (printable && (flashState || !flashMode)) 
       {
         fill(fgColor);
-        if (textmode || ch>='A' && ch<='Z')
+        if (textmode || (ch>='A' && ch<='Z'))
         {
           ch=this.mapchar(ch);
           this.drawchar(ch,i,this.row,dblHeight);
@@ -353,6 +352,12 @@ function row(page,y,str)
 			case  5 : fgColor=color(255,0,255);textmode=true;break; // 5:magenta
 			case  6 : fgColor=color(0,255,255);textmode=true;break; // 6:cyan
 			case  7 : fgColor=color(255,255,255);textmode=true;break; // 7:white	
+			case 13 : // 13: double height
+  			dblHeight=true;
+				hasDblHeight=true;
+        textFont(ttxFontDH);
+        textSize(gTtxFontSize*2); 
+        break; 
       case 16 : fgColor=color(0);textmode=false;break;// 16: Farrimond gfxblack
       case 17 : fgColor=color(255,0,0);textmode=false;break; // 16:gfxred 
       case 18 : fgColor=color(0,255,0);textmode=false;break; // 17:gfxgreen
@@ -361,11 +366,15 @@ function row(page,y,str)
       case 21 : fgColor=color(255,0,255);textmode=false;break; // 20:gfxmagenta
       case 22 : fgColor=color(0,255,255);textmode=false;break; // 21:gfxcyan
       case 23 : fgColor=color(255,255,255);textmode=false;break; // 22:gfxwhite			
+			case 24 : break;// 24:conceal
       case 31 : holdGfx=false;break; // 31 Release hold mode (set after)
 			
 			}
     }
-		return hasDblHeight;
+		if (this.row<1 || this.row>23) // Can't double height header or last row.
+			return;
+		else
+			return hasDblHeight;
   } // draw
 	
   this.drawchar=function(ch,x,y,dblH)
@@ -393,6 +402,7 @@ switch(ch)
     case '|':  return char(0x2016); // 7/C Double pipe
     case '}':  return char(0xbe);   // 7/D Three quarters
     case '~':  return char(0x00f7); // 7/E Divide 
+		case String.fromCharCode(0x7f):  return char(0xe65f); // 7/F Bullet (rectangle block)
     }
 	
     return ch;
