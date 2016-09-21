@@ -73,6 +73,7 @@ FL,400,104,102,120,100,100";
 		var outstream;
 //		var filename="BBCNEWS/BBC400.ttix";
 		var filename="/var/www/onair/p410.tti";
+		// var filename="i:/dev/onair/p410.tti";
 		
 		outstream = fs.createWriteStream(filename);
 		fs.writeFile(filename,page,function (err){
@@ -106,4 +107,3 @@ this.gotWeather=function(error, res, body) {
 }
 
 };
-

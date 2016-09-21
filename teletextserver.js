@@ -31,7 +31,12 @@ var io=socket(server);
 
 var initialPage=0x100;
 // var service="BBCNEWS/BBC";
+<<<<<<< HEAD
 var service="/var/www/onair/p";
+=======
+//var service="/var/www/onair/p";
+var service="i:/dev/onair/p";
+>>>>>>> 3539520448cb653e9c42c4d28b16dd4d1837100b
 io.sockets.on('connection',newConnection);
 
 function newConnection(socket)

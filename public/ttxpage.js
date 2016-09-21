@@ -27,6 +27,7 @@ function page()
 	
 	this.revealMode=false;
 
+
   // @todo check range
   this.init=function(number)
   {
@@ -131,7 +132,6 @@ function page()
 			//this.rows[row].draw(cpos); // Original version
 			// Single pages tend to have subpage 0000. carousels start from 0001. So subtract 1 unless it is already 0.
 			var v=this.subPageList[this.subPage>0?this.subPage-1:0];
-			
 			if (v.length>0)
 			{			
 				if (row==0 && v.length>0) // Set the page number for the header only
@@ -299,7 +299,6 @@ function row(page,y,str)
       case 10 : break; // 10:endbox
       case 11 : break; // 11:startbox
       case 12 : // 12:normalheight SetAt
-			break;//////////////////
         dblHeight=false;
         textFont(ttxFont);
         textSize(gTtxFontSize);
