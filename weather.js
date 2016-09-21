@@ -31,7 +31,7 @@ SP,E:\dev\muttlee\weather.tti\r\n\
 CT,8,T\r\n\
 PS,8000\r\n\
 RE,0\r\n\
-PN,40000\r\n\
+PN,41000\r\n\
 SC,0000\r\n\
 OL,0,XXXXXXXXTEDFAX mpp DAY dd MTH C hh:nn.ss\r\n\
 OL,1,SxCWEATHERC"+w[1]+"S$\r\n\
@@ -47,14 +47,14 @@ OL,10,Qj|||||||||||||||||||||||||||\r\n\
 OL,11,Q|||C  mm   today    hour               \r\n\
 OL,12,Q|||GRainDG"+w[9]+"DG "+w[8]+"DG    DG   \r\n\
 OL,13,Qj|||||||||||||||||||||||||||\r\n\
-OL,14,Q|||C hPa      now   trend              \r\n\
+OL,14,Q|||C hPa     now    trend              \r\n\
 OL,15,Q|||GPresAG"+w[10]+"AG"+w[18]+"AG   AG   \r\n\
 OL,16,Qj|||||||||||||||||||||||||||\r\n\
 OL,17,Q|||G                                   \r\n\
 OL,18,QGWind chill: "+w[24]+"C                   \r\n\
 OL,19,QGHeat index: "+w[41]+"                   \r\n\
 OL,20,QGUV Index  :   "+w[43]+"                   \r\n\
-OL,21,QF]DWeather station: Location?       \r\n\
+OL,21,QF]DWeather station: Loc: Herts      \r\n\
 OL,22,QF]Dhttp://g7lwt.com/realtime.txt    \r\n\
 OL,23,Q+]                                   \r\n\
 OL,24,ARefreshBFirst storyCHeadlinesFMain Menu\r\n\
@@ -71,7 +71,9 @@ FL,400,104,102,120,100,100";
 	else
 	{
 		var outstream;
-		var filename="BBCNEWS/BBC400.ttix";
+//		var filename="BBCNEWS/BBC400.ttix";
+		var filename="/var/www/onair/p410.tti";
+		
 		outstream = fs.createWriteStream(filename);
 		fs.writeFile(filename,page,function (err){
 		if (!err)
@@ -79,7 +81,7 @@ FL,400,104,102,120,100,100";
 			console.log("Page written OK");
 			var data={
 				S:0,
-				p:400,
+				p:0x410,
 				s:0,
 				y:1,
 				x:1 // Signal that we can now render the page

@@ -29,9 +29,9 @@ var socket=require('socket.io');
 
 var io=socket(server);
 
-var initialPage=100;
-var service="BBCNEWS/BBC";
-
+var initialPage=0x100;
+// var service="BBCNEWS/BBC";
+var service="/var/www/onair/p";
 io.sockets.on('connection',newConnection);
 
 function newConnection(socket)
@@ -46,30 +46,30 @@ uri.replace(
 );
 console.log('Service: ' + queryString['service']);     // ID: 2140
 console.log('Page: ' + queryString['page']); // Name: undefined
-var p=queryString['page'];
+var p=parseInt("0x"+queryString['page'],16);
 service=queryString['service'];
 
   // var p=socket.handshake.headers.referer.slice(-3);
-  // If there is no page=nnn in the URL then default to 100
+  // If there is no page=nnn in the URL then default to 0x100
   if (typeof(p)=="undefined")
-	p=100;
+		p=0x100;
   if (typeof(service)=="undefined")
-    service="BBCNEWS/BBC";
+    service="/var/www/onair/p";
   else
-	service="ITV/R"; // @todo Temporary measure 
-  if (p>=100 && p<=999) // Only allow decimals (no Bamboozle cheating)
+		service="ITV/R"; // @todo Temporary measure 
+  if (p>=0x100 && p<=0x8ff)
   {
-	initialPage=p;
-	console.log('Setting page '+initialPage);
-	var data=
-	{
-		p: initialPage
-	}
-	io.sockets.emit('setpage',data);
+		initialPage=p;
+		console.log('Setting page '+initialPage.toString(16));
+		var data=
+		{
+			p: initialPage
+		}
+		io.sockets.emit('setpage',data);
   }
   else
   {
-	initialPage=100;
+		initialPage=0x100;
   }
 	console.log(p);
   console.log('New connection'+socket.id);
@@ -98,7 +98,7 @@ function doInitialLoad(data)
 		data.p=initialPage;
 		data.x=0;
 	}
-	filename=service+data.p+'.ttix';
+	filename=service+data.p.toString(16)+'.tti';
 	// !!! Here we want to check if the page is already in cache
 	var found=findService(service);
 	if (found===false)
@@ -111,18 +111,18 @@ function doInitialLoad(data)
 	// Now we have a service number. Does it contain our page?
 	var s=services[found];
 	var page=s.findPage(data.p);
-	console.log("Found "+service);
+	console.log("Found Service:"+service+" Page:"+page);
 	
     console.log('doLoad called '+filename+' data.x='+data.x);
 	//	console.log(data);
-	if (data.y==0 && data.p==400) // Special hack. Intercept P400. First time we will load weather
+	if (data.y==0 && data.p==0x410) // Special hack. Intercept P410. First time we will load weather
 		data.x=-1;
 	// The next time x=1 so we will load the page we just created.
     if (data.x<0)
 	{
-		filename=service+'404.ttix';
+		filename=service+'404.tti'; // this must exist or we get into a deadly loop
 		// filename='http://localhost:8080/weather.tti';
-		if (data.p==400)
+		if (data.p==0x410)
 		{
 			weather.doLoadWeather(0,0);
 			return;
@@ -132,12 +132,13 @@ function doInitialLoad(data)
 	io.sockets.emit('blank',data); // Clear down the old data.
 	var fail=false;
 	var instream;
-	instream = fs.createReadStream(filename);
+	instream = fs.createReadStream(filename,{encoding: "ascii"}); // Ascii strips bit 7 without messing up the rest of the text.
 	instream.on('error',function()
 	{
 	  var data2=data;
-	  //data2.p=404;
+	  data2.p=0x404; // This page must exist or we get into a deadly loop
 	  data2.x=-1; // Signal a 404 error
+		io.sockets.emit("setpage",data2);
 	  doLoad(data2);	  
 	});
 
@@ -148,7 +149,13 @@ function doInitialLoad(data)
 	});
 
 	rl.on('line', function(line)
-	{
+	{ 
+		if (line.indexOf('PN')==0)
+		{
+			// console.log('Need to implement carousels'+line);		
+			io.sockets.emit('subpage',line.substring(6));
+		}
+		else
 		if (line.indexOf('DE,')==0) // Detect a description row
 		{
 		  var desc=line.substring(3);
@@ -169,7 +176,7 @@ function doInitialLoad(data)
 				flink=flink+ch;
 				ch=line.charAt(ix++);				
 			}
-			console.log('Link '+link+' = ' + flink);
+			// console.log('Link '+link+' = ' + flink);
 			data.fastext[link]=flink;
 		  }
 		  io.sockets.emit('fastext',data);	
