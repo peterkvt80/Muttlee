@@ -26,7 +26,7 @@ function page()
 	this.iteration=0;
 	
 	this.revealMode=false;
-
+	this.holdMode=false;
 
   // @todo check range
   this.init=function(number)
@@ -40,6 +40,11 @@ function page()
 	this.toggleReveal=function ()
 	{
 		this.revealMode=!this.revealMode;
+	}
+	
+	this.toggleHold=function ()
+	{
+		this.holdMode=!this.holdMode;
 	}
   
   /** @brief Change the page number for this page and all child rows
@@ -116,12 +121,15 @@ function page()
   
   this.draw=function()
   {
-		this.iteration++;
 		var dblHeight;
-		if (this.iteration % 30==0) // Approx 7 seconds
+		if (!this.holdMode)
 		{
-			this.subPage=(this.subPage+1) % this.subPageList.length;			
-			// console.log("iteration="+this.iteration/30+" Subpage="+this.subPage);
+			this.iteration++;
+			if (this.iteration % 30==0) // Approx 7 seconds
+			{
+				this.subPage=(this.subPage+1) % this.subPageList.length;			
+				// console.log("iteration="+this.iteration/30+" Subpage="+this.subPage);
+			}
 		}
     for (var row=0;row<this.rows.length;row++)
     {
@@ -139,7 +147,7 @@ function page()
 					v[0].setpagetext(this.pageNumberEntry);
 				}
 
-				if (v[row].draw(cpos, this.revealMode))
+				if (v[row].draw(cpos, this.revealMode, this.holdMode))
 					row++; // If double height, skip the next row 
 			}    
 		}
@@ -201,14 +209,18 @@ function row(page,y,str)
 	 *  @param if revealMode is true overrides conceal 
 	 * @return True if there was a double height code in this row
 	 */
-  this.draw=function(cpos, revealMode)
+  this.draw=function(cpos, revealMode, holdMode)
   {
 	var txt=this.txt; // Copy the row text because a header row will modify it
 	if (this.row==0 && cpos<0) // This is the header row
 	{
 		// Replace the first eight characters with the page number
 //		txt=replace(txt,'P'+this.page.toString(16)+'    ',0);
-		txt=replace(txt,'P'+this.pagetext+'    ',0);
+
+		if (holdMode)
+			txt=replace(txt,'HOLD    ',0);
+		else
+			txt=replace(txt,'P'+this.pagetext+'    ',0);
 		
 		// Substitute mpp for the page number
 		var ix;

@@ -31,12 +31,9 @@ var io=socket(server);
 
 var initialPage=0x100;
 // var service="BBCNEWS/BBC";
-<<<<<<< HEAD
+
 var service="/var/www/onair/p";
-=======
-//var service="/var/www/onair/p";
-var service="i:/dev/onair/p";
->>>>>>> 3539520448cb653e9c42c4d28b16dd4d1837100b
+
 io.sockets.on('connection',newConnection);
 
 function newConnection(socket)
@@ -78,6 +75,10 @@ service=queryString['service'];
   }
 	console.log(p);
   console.log('New connection'+socket.id);
+	
+	// Send the socket id back. If a message comes in with this socket we know where to send the setpage to.
+	socket.emit("id",socket.id);
+	
   // Set up handlers for this socket
   socket.on('keystroke', keyMessage);
   function keyMessage(data)
@@ -118,7 +119,7 @@ function doInitialLoad(data)
 	var page=s.findPage(data.p);
 	console.log("Found Service:"+service+" Page:"+page);
 	
-    console.log('doLoad called '+filename+' data.x='+data.x);
+    console.log('doLoad called '+filename+' data.x='+data.x+' id='+data.id);
 	//	console.log(data);
 	if (data.y==0 && data.p==0x410) // Special hack. Intercept P410. First time we will load weather
 		data.x=-1;
@@ -134,7 +135,7 @@ function doInitialLoad(data)
 		}
 	}
 		//console.log("blank");
-	io.sockets.emit('blank',data); // Clear down the old data.
+	io.sockets.emit('blank',data); // Clear down the old data. // TODO This should emit only to socket.emit, not all units
 	var fail=false;
 	var instream;
 	instream = fs.createReadStream(filename,{encoding: "ascii"}); // Ascii strips bit 7 without messing up the rest of the text.
@@ -157,15 +158,17 @@ function doInitialLoad(data)
 	{ 
 		if (line.indexOf('PN')==0)
 		{
-			// console.log('Need to implement carousels'+line);		
-			io.sockets.emit('subpage',line.substring(6));
+			// console.log('Need to implement carousels'+line);	
+			data.line=line.substring(6);
+			io.sockets.emit('subpage',data);
 		}
 		else
 		if (line.indexOf('DE,')==0) // Detect a description row
 		{
 		  var desc=line.substring(3);
-		  io.sockets.emit('description',desc);
-		console.log('Sending desc='+desc);		  
+			data.desc=desc;
+		  io.sockets.emit('description',data);
+		console.log('Sending desc='+data.desc);		  
 		}
 		else		
 		if (line.indexOf('FL,')==0) // Detect a Fastext link

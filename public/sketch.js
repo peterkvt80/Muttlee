@@ -18,6 +18,7 @@ var hdr;
 
 // comms
 var socket;
+var gClientID=null;
 
 // state
 var editMode=false;
@@ -76,18 +77,9 @@ function setup()
   socket.on('setpage',setPageNumber); // Allow the server to change the page number (Page 404 etc)
   socket.on('description',setDescription);
   socket.on('subpage',setSubPage); // Subpage number for carousels (Expect two digits 00..99) [99 is higher than actual spec]
+	socket.on("id",setID); // id is a socket id that identifies this client. Use this when requesting a page load
   //hdr=new header(0,1,0,0);
-  // Set page defaults
-  var data=
-  {
-	S: 0, // Default to service 0
-	p: 0x100, // Page mpp
-	s:0,	// subpage 0
-	x:2000,
-	y: 0,
-	rowText: ''
-  }
-  socket.emit('load',data); // @todo Extend this to send a page header so as to request a particular page
+
   // dom
   redButton=select('#red');
   redButton.mousePressed(fastextR);
@@ -121,8 +113,9 @@ function setup()
 	btnk8.mousePressed(k8);
   btnk9=select('#k9');
 	btnk9.mousePressed(k9);
-  btnkx=select('#kx');
-	btnkx.mousePressed(kx);
+	
+  btnkx=select('#khold');
+	btnkx.mousePressed(khold);
   btnky=select('#krvl');
 	btnky.mousePressed(krvl);
   btnkback=select('#kback');
@@ -131,20 +124,46 @@ function setup()
 	btnkfwd.mousePressed(kfwd);
 }
 
-function setSubPage(subpage)
+function setSubPage(data)
 {
-	mypage.setSubPage(parseInt(subpage));
+	if (data.id!=gClientID && gClientID!=null) return;	// Not for us?
+
+	mypage.setSubPage(parseInt(data.line));
 }
 
-function setDescription(desc)
+/** We MUST be sent an ID or we won't be able to display anything
+ */
+function setID(id)
 {
+	console.log("Our connection ID is "+id);
+	gClientID=id;
+	
+  // Now we can load the initial page 100
+  var data=
+  {
+	S: 0, // Default to service 0
+	p: 0x100, // Page mpp
+	s:0,	// subpage 0
+	x:2000,
+	y: 0,
+	rowText: '',
+	id: gClientID
+  }
+  socket.emit('load',data);
+}
+
+function setDescription(data)
+{
+	if (data.id!=gClientID && gClientID!=null) return;	// Not for us?
+
 	// console.log('[setDescription]setting page description to '+desc);
-	mypage.description=desc;
-	document.getElementById('description').innerHTML = 'Page info: '+desc;
+	mypage.description=data.desc;
+	document.getElementById('description').innerHTML = 'Page info: '+data.desc;
 }
 
 function setPageNumber(data)
 {
+	if (data.id!=gClientID && gClientID!=null) return;	// Not for us?
 	console.log('[setPageNumber]setting page to '+data.p.toString(16));
 	mypage.setPage(data.p);
 }
@@ -200,7 +219,8 @@ function fastext(index)
 			s: 0,	// @ todo subpage	
 			x: 0,
 			y: 0,
-			rowText: ''
+			rowText: '',
+			id: gClientID
 			}	
 		socket.emit('load',data);	
 	}
@@ -209,6 +229,8 @@ function fastext(index)
 function setFastext(data)
 {
   if (!matchpage(data)) return; // Data is not for our page?
+	if (data.id!=gClientID && gClientID!=null) return;	// Not for us?
+	
 	mypage.redLink=parseInt   ("0x"+data.fastext[0]);
 	mypage.greenLink=parseInt ("0x"+data.fastext[1]);
 	mypage.yellowLink=parseInt("0x"+data.fastext[2]);
@@ -260,6 +282,7 @@ function setRow(r) // 'row'
 {
   // console.log("Going to set row="+(r.rowNumber));
   if (!matchpage(r)) return;
+	if (r.id!=gClientID && gClientID!=null) return;	// Not for us?
   mypage.setRow(r.y,r.rowText);
 }
 
@@ -267,6 +290,7 @@ function setRow(r) // 'row'
 function setBlank(data) // 'blank'
 {
   if (!matchpage(data)) return;
+	if (data.id!=gClientID && gClientID!=null) return;	// Not for us?
   mypage.setBlank();
 }
 
@@ -383,7 +407,8 @@ function processKey(keyPressed)
 					s: 0,	// @ todo subpage	
 					x: 0,
 					y: 0,
-					rowText: ''
+					rowText: '',
+					id: gClientID					
 					}				
 					socket.emit('load',data);
 				}
@@ -410,6 +435,7 @@ function kx() {	processKey('x'); } // @todo
 function krvl() {	mypage.toggleReveal() }
 function kback() {prevPage(); }
 function kfwd()  {nextPage(); }
+function khold()  {mypage.toggleHold(); }
 
 function mouseClicked()
 {
@@ -476,7 +502,8 @@ function nextPage()
 	p: p, // Page mpp
 	s: 0,
 	y: 0,
-	rowText: ''
+	rowText: '',
+	id: gClientID	
 	}				
 	socket.emit('load',data);		
 	console.log("page="+hex(data.p));
@@ -494,7 +521,8 @@ function prevPage()
 	p: p, // Page mpp
 	s: 0,
 	y: 0,
-	rowText: ''
+	rowText: '',
+	id: gClientID	
 	}				
 	socket.emit('load',data);		
 	console.log("page="+hex(data.p));
