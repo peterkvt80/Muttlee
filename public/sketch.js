@@ -12,8 +12,6 @@ var digit1='1';
 var digit2='0';
 var digit3='0';
 
-var timing=500;
-
 var hdr;
 
 // comms
@@ -27,6 +25,40 @@ var editMode=false;
 var redButton;
 var indexButton;
 
+// timer
+// Timer for expiring incomplete keypad entries
+var expiredState=true; // True for four seconds after the last keypad number was typed OR until a valid page number is typed
+var forceUpdate=false; // Set true if the screen needs to be updated
+var timeoutVar;
+
+function startTimer()
+{
+	expiredState=false;
+	// If there is a timeout active then clear it
+	if (timeoutVar==null) // A new keypad entry starts
+	{
+		digit1='0';
+		digit2='0';
+		digit3='0';
+	}
+	else
+	{
+		clearTimeout(timeoutVar); // Continue an existing keypad entry
+	}
+	timeoutVar=setTimeout(function() {
+		expiredState=true;
+		console.log("Expire actions get done here");
+		// todo: Restore the page number. Enable the refresh loop
+		var p=mypage.pageNumber;
+		digit1=(String)((p >> 8) & 0xf);
+		digit2=(String)((p >> 4) & 0xf);
+		digit3=(String)(p & 0xf);
+		mypage.pageNumberEntry=digit1+digit2+digit3;
+		// todo Put this into row 0
+		mypage.rows[0].setpagetext(digit1+digit2+digit3);
+		timeoutVar=null;
+	} , 4000);
+}
 
 var btnk0;
 var btnk1;
@@ -240,9 +272,14 @@ function setFastext(data)
 
 function draw()
 {
-	// No updating while we are pressing the mouse
-	if (swipeStart!=null)
-		return;
+	// No updating while we are pressing the mouse OR while typing in a page number
+	if (!forceUpdate)
+	{
+		if (swipeStart!=null || !expiredState )
+			return;
+	}
+	else
+		forceUpdate=false;
   // @todo We only need to update this during updates. No more than twice a second. Could save a lot of CPU
   background(0);
   noStroke();
@@ -250,10 +287,6 @@ function draw()
   // ellipse(mouseX,mouseY,10,10);
   mypage.draw();
 	
-	if (timing>0)
-	{
-		timing--;
-	}
 }
 
 // Does our page match the incoming message?
@@ -370,7 +403,8 @@ function processKey(keyPressed)
 			s: mypage.subpage,
 			k: keyPressed,
 			x: mypage.cursor.x,
-			y: mypage.cursor.y
+			y: mypage.cursor.y,
+			id: gClientID
 		}
 		socket.emit('keystroke', data);
 		newChar(data);
@@ -379,14 +413,9 @@ function processKey(keyPressed)
 	{
 		if (keyPressed>='0' && keyPressed <='9')
 		{
-			if (timing==0) // Start a new digit
-			{
-				digit1='0';
-				digit2='0';
-				digit3='0';
-				timing=500;
-			}
-		  digit1=digit2;
+			startTimer(); // This also clears out the other digits (first time only)
+			forceUpdate=true;
+			digit1=digit2;
 			digit2=digit3;
 			digit3=keyPressed;
 			if (digit1!=' ')
@@ -441,7 +470,7 @@ function mouseClicked()
 {
 	// Only need to do this in edit mode
 	if (!editMode)
-		return true;
+		return;
   var xLoc=int(mouseX/gTtxW);
   var yLoc=int(1+mouseY/gTtxH); // @todo Will need to fix this once we add a header
   mypage.cursor.moveTo(xLoc,yLoc);
@@ -453,7 +482,7 @@ function mouseClicked()
 function touchStarted()
 {
 	if (touchY>550) // Only swipe on page
-		return true;
+		return;
   console.log('Touch started at '+touchX+' '+touchY);
 	swipeStart=createVector(touchX,touchY);
 	return false;
@@ -461,16 +490,17 @@ function touchStarted()
 
 function touchEnded()
 {
-	if (touchY>550) // Only swipe on page
-		return true;
   console.log('Touch ended at '+touchX+' '+touchY);
 	var swipeEnd=createVector(touchX,touchY);
 	swipeEnd.sub(swipeStart);
-	swipeStart=null;
+	swipeStart=null; // Need this to be null in case we return!
+
+	if (touchY>550) // Only swipe on page
+		return;
 	// Swipe needs to be a minimum distance (& possibly velocity?
 	var mag=swipeEnd.mag();
 	if (mag<40)
-		return false;
+		return;
 	var heading=swipeEnd.heading();
 	// left
 		console.log("swiped! Heading="+degrees(heading));
@@ -494,6 +524,8 @@ function nextPage()
 {
 	var p=mypage.pageNumber;
 	p++;
+	if ((p & 0xf)==0xa) // Hex numbers should be skipped. Users should not select them.
+		p+=6;
 	if (p>0x8fe) p=0x8fe;
 	mypage.setPage(p); // We now have a different page number
 	var data=
@@ -513,6 +545,9 @@ function prevPage()
 {
 	var p=mypage.pageNumber;
 	p--;
+	if ((p & 0xf)==0xf) // Hex numbers should be skipped. Users should not select them.
+		p-=6;
+
 	if (p<0x100) p=0x100;		
 	mypage.setPage(p); // We now have a different page number
 	var data=
