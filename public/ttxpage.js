@@ -1,8 +1,10 @@
 // Timer for flashing cursor and text
 var flashState=false;
+var tickCounter=0; // For timing carousels (in steps of half a second)
 setInterval(toggle, 500);
 function toggle()
 {
+	tickCounter++;
   flashState=!flashState;
 }
 
@@ -22,9 +24,7 @@ function page()
 	this.subPageList=new Array();
 	
 	this.pageNumberEntry='100'; // Page number as entered (used to allow partial page numbers) 
-	
-	this.iteration=0;
-	
+		
 	this.revealMode=false;
 	this.holdMode=false;
 
@@ -53,7 +53,7 @@ function page()
   this.setPage=function(p)
   {
 		this.subPage=0;
-		this.iteration=0;
+		tickCounter=1;
 		this.pageNumber=p; /// @todo Convert this to do all sub pages
 		
 		this.pageNumberEntry=p.toString(16);
@@ -85,10 +85,13 @@ function page()
 	{
 		s=parseInt(s);
 		// console.log("[setSubPage] enters "+s);
-		if (s<0 || s>99)
-			s=0;
+		if (s<0 || s>79) // 
+			s=0; // Single page
+		else
+			s=s-1; // Carousel (because carousels start at 1, but our array always starts at 0
+		
 		///@todo Check that s is in a subpage that exists and add it if needed.
-		if (this.subPageList.length<s)
+		if (this.subPageList.length<=s)
 		{
 			this.addPage(this.pageNumber);
 			// console.log("[setSubPage] Need to add a new subpage: "+s);
@@ -102,13 +105,8 @@ function page()
   {
 		if (r>=0 && r<=24)
 		{
-			//this.rows[r].setrow(txt); // Old working code
-			// console.log ("Adding row "+r+" to sub page "+this.subPage);
-			var sp=this.subPage;
-			if (sp>0) sp=sp-1;
-			var v=this.subPageList[sp];
-			//console.log("v="+v);
-			v[r].setrow(txt); // New not tested code
+			var v=this.subPageList[this.subPage];
+			v[r].setrow(txt);
 		}
 		else
 			return;
@@ -124,11 +122,11 @@ function page()
 		var dblHeight;
 		if (!this.holdMode)
 		{
-			this.iteration++;
-			if (this.iteration % 30==0) // Approx 7 seconds
+			if (tickCounter % 14==0) // 7 seconds (@todo This should come from the tti file)
 			{
 				this.subPage=(this.subPage+1) % this.subPageList.length;			
-				// console.log("iteration="+this.iteration/30+" Subpage="+this.subPage);
+		    console.log("drawing subpage "+this.subPage);
+				tickCounter=1; // Prevent a cascade of page changes!
 			}
 		}
     for (var row=0;row<this.rows.length;row++)
@@ -139,7 +137,15 @@ function page()
 			cpos=this.cursor.x;
 			//this.rows[row].draw(cpos); // Original version
 			// Single pages tend to have subpage 0000. carousels start from 0001. So subtract 1 unless it is already 0.
-			var v=this.subPageList[this.subPage>0?this.subPage-1:0];
+//			var v=this.subPageList[this.subPage>0?this.subPage-1:0]; 
+			if (this.subPage>=this.subPageList.length) // This shouldn't happen much but it does during start up
+				this.subPage=this.subPageList.length-1;
+				
+			var v=this.subPageList[this.subPage];
+			if (v==undefined)
+			{
+			console.log("Undefined :-(");
+			}
 			if (v.length>0)
 			{			
 				if (row==0 && v.length>0) // Set the page number for the header only
@@ -164,7 +170,7 @@ function page()
    */
   this.setBlank=function()
   {
-		console.log(" Clear all rows to blank");
+		// console.log(" Clear all rows to blank");
 		this.subPageList=new Array();
 		this.addPage(this.pageNumber);
 		

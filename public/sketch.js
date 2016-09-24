@@ -47,7 +47,7 @@ function startTimer()
 	}
 	timeoutVar=setTimeout(function() {
 		expiredState=true;
-		console.log("Expire actions get done here");
+		// console.log("Expire actions get done here");
 		// todo: Restore the page number. Enable the refresh loop
 		var p=mypage.pageNumber;
 		digit1=(String)((p >> 8) & 0xf);
@@ -490,7 +490,7 @@ function touchStarted()
 
 function touchEnded()
 {
-  console.log('Touch ended at '+touchX+' '+touchY);
+  // console.log('Touch ended at '+touchX+' '+touchY);
 	var swipeEnd=createVector(touchX,touchY);
 	swipeEnd.sub(swipeStart);
 	swipeStart=null; // Need this to be null in case we return!
@@ -503,7 +503,7 @@ function touchEnded()
 		return;
 	var heading=swipeEnd.heading();
 	// left
-		console.log("swiped! Heading="+degrees(heading));
+	//console.log("swiped! Heading="+degrees(heading));
 		
 	var dir=4*heading/PI;
 	console.log("Swiped! dir="+dir);
@@ -514,7 +514,7 @@ function touchEnded()
 	}
 	if (dir>3 || dir<-3)
 	{
-		console.log("swiped left");
+		// console.log("swiped left");
 		nextPage();
 	}
 	return false;	
