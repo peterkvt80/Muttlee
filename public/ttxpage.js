@@ -105,7 +105,13 @@ function page()
   {
 		if (r>=0 && r<=24)
 		{
+			if (this.subPage<0)
+				this.subPage=0;
 			var v=this.subPageList[this.subPage];
+			if (v==undefined)
+			{
+				console.log('oh noes. v is undefined');
+			}
 			v[r].setrow(txt);
 		}
 		else
@@ -289,9 +295,24 @@ function row(page,y,str)
 		var holdChar=' ';
     var flashMode=false;
     var dblHeight=false;
-		var hasDblHeight=false; // If there is a double height anywhere on this row, the next row must be skipped.
     textFont(ttxFont);
     textSize(gTtxFontSize);
+		
+		
+		// If there is a double height anywhere on this row, the next row must be skipped.
+		// Edge case: Any single height character in this row will copy the background (and only the background) to the row below.
+		var hasDblHeight=false; 
+    for (var i=0;i<40;i++)
+    {
+      var ch=txt.charAt(i);
+      var ic=txt.charCodeAt(i) & 0x7f;
+			if (ic==13)
+			{
+				hasDblHeight=true;			
+				break;
+			}
+		}
+		
     for (var i=0;i<40;i++)
     {
       var ch=txt.charAt(i);
@@ -364,6 +385,8 @@ function row(page,y,str)
       fill(bgColor);
       // except if this is the cursor position
       if (cpos==i && flashState) fill(255);
+			if (this.row<23)
+				this.drawchar(String.fromCharCode(0xe6df),i,this.row+1,false); //edge case: a single height character on a double height row has double height backhround
       this.drawchar(String.fromCharCode(0xe6df),i,this.row,dblHeight);
       if (printable && (flashState || !flashMode) && !concealed) 
       {
@@ -404,7 +427,6 @@ function row(page,y,str)
 			case  7 : fgColor=color(255,255,255);textmode=true;break; // 7:white	
 			case 13 : // 13: double height
   			dblHeight=true;
-				hasDblHeight=true;
         textFont(ttxFontDH);
         textSize(gTtxFontSize*2); 
         break; 
