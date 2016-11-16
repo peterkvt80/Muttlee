@@ -154,6 +154,8 @@ function setup()
 	btnkback.mousePressed(kback);
   btnkfwd=select('#kfwd');
 	btnkfwd.mousePressed(kfwd);
+	
+	inputPage=select('#pageNumber');
 }
 
 function setSubPage(data)

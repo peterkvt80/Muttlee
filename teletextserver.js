@@ -30,9 +30,22 @@ var socket=require('socket.io');
 var io=socket(server);
 
 var initialPage=0x100;
-// var service="BBCNEWS/BBC";
 
-var service="/var/www/onair/p";
+var service;
+
+// My local test folder when running on Windows
+console.log(process.platform);
+
+if (process.platform==="win32")
+{
+	console.log("local");
+	service="onair/p";	// local debug
+}
+else
+{
+	console.log("remote");
+	service="/var/www/onair/p"; // remote normal
+}
 
 io.sockets.on('connection',newConnection);
 
@@ -56,7 +69,16 @@ service=queryString['service'];
   if (typeof(p)=="undefined")
 		p=0x100;
   if (typeof(service)=="undefined")
-    service="/var/www/onair/p";
+	{
+		if (process.platform==="win32")
+		{
+			service="i:/dev/phonegap/Teefax/www/onair/p";
+		}
+		else
+		{
+			service="/var/www/onair/p";
+		}
+	}
   else
 		service="ITV/R"; // @todo Temporary measure 
   if (p>=0x100 && p<=0x8ff)
