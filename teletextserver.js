@@ -98,6 +98,7 @@ function doInitialLoad(data)
 
   function doLoad(data)
   {
+	console.log ("Loading from session "+socket.id);
 	var filename
 	if (data.x==2000)
 	{
