@@ -302,13 +302,15 @@ function row(page,y,str)
 		// If there is a double height anywhere on this row, the next row must be skipped.
 		// Edge case: Any single height character in this row will copy the background (and only the background) to the row below.
 		var hasDblHeight=false; 
+		
+		if (txt!="")
     for (var i=0;i<40;i++)
     {
-      var ch=txt.charAt(i);
       var ic=txt.charCodeAt(i) & 0x7f;
-			if (ic==13)
+ 		// if (i==0) console.log (ic+" ");
+			if (ic==0x0d)
 			{
-				hasDblHeight=true;			
+				hasDblHeight=true;		
 				break;
 			}
 		}
@@ -427,6 +429,7 @@ function row(page,y,str)
 			case  7 : fgColor=color(255,255,255);textmode=true;break; // 7:white	
 			case 13 : // 13: double height
   			dblHeight=true;
+				hasDblHeight=true;
         textFont(ttxFontDH);
         textSize(gTtxFontSize*2); 
         break; 

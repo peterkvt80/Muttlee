@@ -138,7 +138,7 @@ function doInitialLoad(data)
 	io.sockets.emit('blank',data); // Clear down the old data. // TODO This should emit only to socket.emit, not all units
 	var fail=false;
 	var instream;
-	instream = fs.createReadStream(filename,{encoding: "ascii"}); // Ascii strips bit 7 without messing up the rest of the text.
+	instream = fs.createReadStream(filename,{encoding: "ascii"}); // Ascii strips bit 7 without messing up the rest of the text. latin1 does not work :-(
 	instream.on('error',function()
 	{
 	  var data2=data;
