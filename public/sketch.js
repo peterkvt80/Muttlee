@@ -124,7 +124,8 @@ function setup()
   //indexButton=select('#index');
 	//indexButton.mousePressed(fastextIndex);
 	
-	// keypad
+	// keypad - Doesn't work well. In fact, it is really bad
+	/*
   btnk0=select('#k0');
 	btnk0.mousePressed(k0);
   btnk1=select('#k1');
@@ -145,6 +146,9 @@ function setup()
 	btnk8.mousePressed(k8);
   btnk9=select('#k9');
 	btnk9.mousePressed(k9);
+	*/
+	
+	
 	
   btnkx=select('#khold');
 	btnkx.mousePressed(khold);
@@ -368,21 +372,42 @@ function myCursor(number)
   }
 }
 
-
-
-function keyPressed()
+function keyPressed() // This is called before keyTyped
 {
-  switch (keyCode)
-  {
-  case LEFT_ARROW: mypage.cursor.left();break;
-  case RIGHT_ARROW: mypage.cursor.right();break;
-  case UP_ARROW: mypage.cursor.up();break;
-  case DOWN_ARROW: mypage.cursor.down();break;
-  case ESCAPE: editMode=!editMode;mypage.cursor.hide=!editMode;break;
-  default:
-    //console.log('unhandled keycode='+keyCode)
-	;
-  }
+	var active=document.activeElement;
+	console.log("Active element="+active.id);
+	if (document.activeElement.id=='pageNumber')
+	{
+		// If the Page Number input has focus we don't want Teefax cursor actions
+		if (keyCode==13)
+		{
+			var page=active.value;
+			// Now load the page
+			if (page.length==3)
+			{
+				console.log("Opening page="+page);
+				processKey(page.charAt(0));
+				processKey(page.charAt(1));
+				processKey(page.charAt(2));
+				active.blur(); // This is a bit of a hack.
+			}
+		}
+	}
+	else
+	{
+		switch (keyCode)
+		{
+		case LEFT_ARROW: mypage.cursor.left();break;
+		case RIGHT_ARROW: mypage.cursor.right();break;
+		case UP_ARROW: mypage.cursor.up();break;
+		case DOWN_ARROW: mypage.cursor.down();break;
+		case ESCAPE: editMode=!editMode;mypage.cursor.hide=!editMode;break;
+		default:
+			// console.log('unhandled keycode='+keyCode)
+		;
+		}
+	}
+	// return false; // Do not do this! This stops keyTyped 
 }
 
 /** edit mode is entered if any non numeric code is typed
@@ -390,8 +415,15 @@ function keyPressed()
  */
 function keyTyped()
 {	
+	if (document.activeElement.id=='pageNumber') // Input a page number
+	{
+    console.log('keyTyped keycode='+keyCode);
+	}
+	else // Anywhere else
+	{	
 		processKey(key);
 		return false;
+	}
 }
 
 function processKey(keyPressed)
