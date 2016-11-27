@@ -372,28 +372,26 @@ function myCursor(number)
   }
 }
 
+function inputNumber()
+{
+	console.log("inputNumber changed");
+	var page=document.getElementById('pageNumber');
+		console.log("Opening page="+page.value);
+	// Now load the page
+	if (page.value.length==3)
+	{
+		processKey(page.value.charAt(0));
+		processKey(page.value.charAt(1));
+		processKey(page.value.charAt(2));
+		page.blur();
+	}
+}
+
 function keyPressed() // This is called before keyTyped
 {
 	var active=document.activeElement;
 	console.log("Active element="+active.id);
-	if (document.activeElement.id=='pageNumber')
-	{
-		// If the Page Number input has focus we don't want Teefax cursor actions
-		if (keyCode==13)
-		{
-			var page=active.value;
-			// Now load the page
-			if (page.length==3)
-			{
-				console.log("Opening page="+page);
-				processKey(page.charAt(0));
-				processKey(page.charAt(1));
-				processKey(page.charAt(2));
-				active.blur(); // This is a bit of a hack.
-			}
-		}
-	}
-	else
+	if (document.activeElement.id!='pageNumber') // todo: Kill refresh cycles while the input is active.
 	{
 		switch (keyCode)
 		{
@@ -428,6 +426,7 @@ function keyTyped()
 
 function processKey(keyPressed)
 {
+	console.log('processKey='+keyPressed);
 	if (editMode==true) // Numbers are typed into the page
 	{
 		var data=
@@ -447,6 +446,7 @@ function processKey(keyPressed)
 	{
 		if (keyPressed>='0' && keyPressed <='9')
 		{
+			document.getElementById('pageNumber').blur(); // Don't want the number input to steal keystrokes
 			startTimer(); // This also clears out the other digits (first time only)
 			forceUpdate=true;
 			digit1=digit2;
@@ -494,7 +494,7 @@ function k6() {	processKey('6'); }
 function k7() {	processKey('7'); }
 function k8() {	processKey('8'); }
 function k9() {	processKey('9'); }
-function kx() {	processKey('x'); } // @todo
+// function kinfo() {	processKey('x'); } // @todo
 function krvl() {	mypage.toggleReveal() }
 function kback() {prevPage(); }
 function kfwd()  {nextPage(); }
