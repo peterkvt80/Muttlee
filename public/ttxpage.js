@@ -126,7 +126,7 @@ function page()
   this.draw=function()
   {
 		var dblHeight;
-		if (!this.holdMode)
+		if (!(this.holdMode || this.cpos>0)) // Only cycle if we are not in hold mode or edit
 		{
 			if (tickCounter % 14==0) // 7 seconds (@todo This should come from the tti file)
 			{
@@ -224,53 +224,85 @@ function row(page,y,str)
   this.draw=function(cpos, revealMode, holdMode)
   {
 	var txt=this.txt; // Copy the row text because a header row will modify it
-	if (this.row==0 && cpos<0) // This is the header row
-	{
-		// Replace the first eight characters with the page number
-//		txt=replace(txt,'P'+this.page.toString(16)+'    ',0);
+    // Special treatment for row 0
+	if (this.row==0)
+    {
+        if (cpos<0) // This is the header row and we are NOT editing
+        {
+            // Replace the first eight characters with the page number
+    //		txt=replace(txt,'P'+this.page.toString(16)+'    ',0);
 
-		if (holdMode)
-			txt=replace(txt,'HOLD    ',0);
-		else
-			txt=replace(txt,'P'+this.pagetext+'    ',0);
-		
-		// Substitute mpp for the page number
-		var ix;
-		if ((ix=txt.indexOf('mpp'))>0)
-			txt=replace(txt,this.page.toString(16),ix)
-		// Substitute dd for the day 1..31
-		if ((ix=txt.indexOf('dd'))>0)
-			txt=replace(txt,nf(day(),2),ix)
-		// Substitute DAY for the three letter abbreviated day 
-		ix=txt.indexOf('DAY');
-		if (ix>0)
-		{
-			var week = new Date().getDay(); 
-			var str="MonTueWedThuFriSatSun".substr((week-1)*3,3);
-			txt=replace(txt,str,ix);
-		}
-		// Substitute MTH for the three letter abbreviated month 
-		ix=txt.indexOf('MTH');
-		if (ix>0)
-		{
-			var str="JanFebMarAprMayJunJulAugSepOctNovDec".substr((month()-1)*3,3);
-			txt=replace(txt,str,ix)
-		}
-		// Substitute hh for the two digit hour 
-		if ((ix=txt.indexOf('hh'))>0)
-			txt=replace(txt,nf(hour(),2),ix)
-		// Substitute nn for the two digit minutes
-		if ((ix=txt.indexOf('nn'))>0)
-			txt=replace(txt,nf(minute(),2),ix)
-		// Substitute ss for the two digit seconds
-		if ((ix=txt.indexOf('ss'))>0)
-			txt=replace(txt,nf(second(),2),ix)
-	}
+            if (holdMode)
+                txt=replace(txt,'HOLD    ',0);
+            else
+                txt=replace(txt,'P'+this.pagetext+'    ',0);
+            
+            // Substitute mpp for the page number
+            var ix;
+            ix=txt.indexOf('%%#');
+            if (ix==0)
+                ix=txt.indexOf('mpp');
+            if (ix>0)
+                txt=replace(txt,this.page.toString(16),ix)
+                
+            // Substitute dd for the day 1..31 (or %d)
+            ix=txt.indexOf('%d');
+            if (ix==0)
+                ix=txt.indexOf('dd');
+            if (ix>0)
+                txt=replace(txt,nf(day(),2),ix);
+
+                // Substitute DAY for the three letter abbreviated day 
+            ix=txt.indexOf('%%a');
+            if (ix==0)
+                ix=txt.indexOf('DAY');
+            if (ix>0)
+            {
+                var week = new Date().getDay(); 
+                var str="MonTueWedThuFriSatSun".substr((week-1)*3,3);
+                txt=replace(txt,str,ix);
+            }
+            // Substitute MTH for the three letter abbreviated month 
+            ix=txt.indexOf('%%b');
+            if (ix==0)
+                ix=txt.indexOf('MTH');
+            if (ix>0)
+            {
+                var str="JanFebMarAprMayJunJulAugSepOctNovDec".substr((month()-1)*3,3);
+                txt=replace(txt,str,ix)
+            }
+            
+            // Substitute hh for the two digit hour 
+            ix=txt.indexOf('%H');
+            if (ix==0)
+                ix=txt.indexOf('hh');
+            if (ix>0)
+                txt=replace(txt,nf(hour(),2),ix)
+                
+            // Substitute nn for the two digit minutes
+            ix=txt.indexOf('%M');
+            if (ix==0)
+                ix=txt.indexOf('nn')
+            if (ix>0)
+                txt=replace(txt,nf(minute(),2),ix)
+                
+            // Substitute ss for the two digit seconds
+            ix=txt.indexOf('%S');
+            if (ix==0)
+                ix=txt.indexOf('ss');
+            if (ix>0)
+                txt=replace(txt,nf(second(),2),ix)
+        }
+        else // If editing, then show the page/row number
+        {
+			txt=replace(txt,'E'+this.pagetext+'    ',0);            // Show the page/subpage being edited
+        }
+    }
 	// Non header substitutions
-	if (this.row>0 && this.row<25 && cpos<0) // This is the header row
+	if (this.row>0 && this.row<25 && cpos<0) // This is NOT the header row NOR in edit mode.
 	{
-		// World time. (two values allowed per line
-  	for (var i=0;i<2;i++)
+		// World time. (two values allowed per line)
+        for (var i=0;i<2;i++)
 			if ((ix=txt.indexOf('%t'))>0)
 			{
 				// Read the half hour offsets
@@ -459,14 +491,15 @@ function row(page,y,str)
   this.mapchar=function(ch)
   {
 // Temporary mappings for Germany
+/*
 switch(ch)
 {
 	case '|':  return char(0x00f6); // 7/C o umlaut
     case '}':  return char(0x00fc); // 7/D u umlaut	
-	}
+	}*/
     switch (ch)
     {
-    case '#': return 'Â£';
+    case '#': return '£';
     case '[': return char(0x2190); // 5/B Left arrow.
     case '\\': return char(0xbd);   // 5/C Half
     case ']':   return char(0x2192); // 5/D Right arrow.
