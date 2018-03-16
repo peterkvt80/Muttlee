@@ -17,6 +17,7 @@ function page()
   this.yellowLink=100;
   this.cyanLink=100;
   this.indexLink=100;
+  this.editMode=false;
   
   this.description='none';
 	
@@ -27,6 +28,13 @@ function page()
 		
 	this.revealMode=false;
 	this.holdMode=false;
+    
+    // edit mode 
+    this.editSwitch=function(mode)
+    {
+        this.editMode=mode;
+        mypage.cursor.hide=!mode;
+    }
 
   // @todo check range
   this.init=function(number)
@@ -122,24 +130,41 @@ function page()
 			*/
   }
   
+  // Helpers for navigating subpages
+  this.nextSubpage=function()
+  {
+    this.subPage=(this.subPage+1) % this.subPageList.length;			
+  }
+  this.prevSubpage=function()
+  {
+    if (this.subPage>0)
+    {
+        this.subPage--;
+    }
+    else
+    {
+        this.subPage=this.subPageList.length-1;
+    }
+  }
   
   this.draw=function()
   {
-		var dblHeight;
-		if (!(this.holdMode || this.cpos>0)) // Only cycle if we are not in hold mode or edit
-		{
-			if (tickCounter % 14==0) // 7 seconds (@todo This should come from the tti file)
-			{
-				this.subPage=(this.subPage+1) % this.subPageList.length;			
-		    console.log("drawing subpage "+this.subPage);
-				tickCounter=1; // Prevent a cascade of page changes!
-			}
-		}
+    var dblHeight;
+    if (!(this.holdMode || this.editMode>0)) // Only cycle if we are not in hold mode or edit
+    {
+        // carousel timing
+        if (tickCounter % 14==0) // 7 seconds (@todo This should come from the tti file)
+        {
+            this.nextSubpage();
+        console.log("drawing subpage "+this.subPage);
+            tickCounter=1; // Prevent a cascade of page changes!
+        }
+    }
     for (var row=0;row<this.rows.length;row++)
     {
 	// console.log("drawing row "+row+" of "+this.rows.length);
       var cpos=-1;
-			if (!this.cursor.hide && row==this.cursor.y) // If in edit mode and it is the correct row...
+			if (this.editMode && row==this.cursor.y) // If in edit mode and it is the correct row...
 			cpos=this.cursor.x;
 			//this.rows[row].draw(cpos); // Original version
 			// Single pages tend to have subpage 0000. carousels start from 0001. So subtract 1 unless it is already 0.
@@ -159,7 +184,7 @@ function page()
 					v[0].setpagetext(this.pageNumberEntry);
 				}
 
-				if (v[row].draw(cpos, this.revealMode, this.holdMode))
+				if (v[row].draw(cpos, this.revealMode, this.holdMode, this.editMode, this.subPage))
 					row++; // If double height, skip the next row 
 			}    
 		}
@@ -194,6 +219,8 @@ function isMosaic(ch)
     return (ch>=0x20 && ch<0x40) || ch>=0x60;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////
+
 function row(page,y,str)
 {
   this.page=page;
@@ -221,13 +248,13 @@ function row(page,y,str)
 	 *  @param if revealMode is true overrides conceal 
 	 * @return True if there was a double height code in this row
 	 */
-  this.draw=function(cpos, revealMode, holdMode)
+  this.draw=function(cpos, revealMode, holdMode, editMode, subPage)
   {
 	var txt=this.txt; // Copy the row text because a header row will modify it
     // Special treatment for row 0
 	if (this.row==0)
     {
-        if (cpos<0) // This is the header row and we are NOT editing
+        if (cpos<0 && !editMode) // This is the header row and we are NOT editing
         {
             // Replace the first eight characters with the page number
     //		txt=replace(txt,'P'+this.page.toString(16)+'    ',0);
@@ -295,7 +322,8 @@ function row(page,y,str)
         }
         else // If editing, then show the page/row number
         {
-			txt=replace(txt,'E'+this.pagetext+'    ',0);            // Show the page/subpage being edited
+			// txt=replace(txt,'E'+this.pagetext+'    ',0);            // Show the page/subpage being edited
+			txt=replace(txt,'\003'+this.pagetext+'.'+nf(subPage,2)+'\007',0);            // Show the page/subpage being edited
         }
     }
 	// Non header substitutions
@@ -515,7 +543,9 @@ switch(ch)
 	
     return ch;
   }
-}
+} // row
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function setCharAt(str,index,chr) {
     if(index > str.length-1) return str;

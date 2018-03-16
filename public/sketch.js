@@ -395,13 +395,38 @@ function keyPressed() // This is called before keyTyped
 	{
 		switch (keyCode)
 		{
-		case LEFT_ARROW: mypage.cursor.left();break;
-		case RIGHT_ARROW: mypage.cursor.right();break;
-		case UP_ARROW: mypage.cursor.up();break;
-		case DOWN_ARROW: mypage.cursor.down();break;
-		case ESCAPE: editMode=!editMode;mypage.cursor.hide=!editMode;break;
+        //case PAGE_UP:;
+		case LEFT_ARROW:
+            if (editMode) mypage.cursor.left();
+            break;
+        //case PAGE_DOWN:;
+		case RIGHT_ARROW: 
+            if (editMode) mypage.cursor.right();
+            break;
+		case UP_ARROW:
+            if (editMode) mypage.cursor.up();
+            break;
+		case DOWN_ARROW:
+            if (editMode) mypage.cursor.down();
+            break;
+		case ESCAPE:
+            editMode=!editMode;
+            mypage.editSwitch(editMode);
+            break;
+        case 33: // PAGE_UP (next subpage when in edit mode)
+            if (editMode)
+            {
+                mypage.nextSubpage();
+            }
+            break;
+        case 34: // PAGE_DOWN (prev subpage when in edit mode)
+            if (editMode)
+            {
+                mypage.prevSubpage();
+            }
+            break;
 		default:
-			// console.log('unhandled keycode='+keyCode)
+			console.log('unhandled keycode='+keyCode)
 		;
 		}
 	}
