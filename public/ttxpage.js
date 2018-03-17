@@ -21,7 +21,7 @@ function page()
   
   this.description='none';
 	
-	this.subPage=0; // This is used to address the sub page as we 
+	this.subPage=0; // This is used to address the sub page
 	this.subPageList=new Array();
 	
 	this.pageNumberEntry='100'; // Page number as entered (used to allow partial page numbers) 
@@ -190,10 +190,20 @@ function page()
 		}
   }
   
-  this.drawchar=function(ch,x,y)
+  //  Draw ch at (x,y) on subpage s
+  this.drawchar=function(ch,x,y,s)
   {
     //console.log('Attempting to draw row '+y);
-    this.rows[y].setchar(ch,x); /// @todo Convert this to update subPage
+    // Select the subpage to update
+    var v=this.subPageList[s];
+    if (v==undefined)
+    {
+        console.log("Can not draw on a subpage that doesn't exist :-(");
+    }
+    else
+    {
+        v[y].setchar(ch,x);
+    }
   }
   
   /**

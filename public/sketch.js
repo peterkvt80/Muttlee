@@ -169,7 +169,7 @@ function setSubPage(data)
 	mypage.setSubPage(parseInt(data.line));
 }
 
-/** We MUST be sent an ID or we won't be able to display anything
+/** We MUST be sent the connection ID or we won't be able to display anything
  */
 function setID(id)
 {
@@ -312,8 +312,10 @@ function newChar(data) // 'keystroke'
   // console.log("returned keycode="+(data.k));
   // @todo page number test
   if (!matchpage(data)) return; // Char is not for our page?
-  mypage.drawchar(data.k,data.x,data.y);
+  // At (x,y) on subpage s, place the character k
+  mypage.drawchar(data.k,data.x,data.y,data.s);
   mypage.cursor.right();  
+  console.log(data);
 }
 
 // A whole line is updated at a time
@@ -458,7 +460,7 @@ function processKey(keyPressed)
 		{
 			S: 0, // service number		
 			p: mypage.pageNumber,
-			s: mypage.subpage,
+			s: mypage.subPage,
 			k: keyPressed,
 			x: mypage.cursor.x,
 			y: mypage.cursor.y,
@@ -492,7 +494,7 @@ function processKey(keyPressed)
 					{
 					S: 0, // @todo Implement service
 					p: page, // Page mpp
-					s: 0,	// @ todo subpage	
+					s: mypage.subPage,	// @ todo check that subpage is correct
 					x: 0,
 					y: 0,
 					rowText: '',

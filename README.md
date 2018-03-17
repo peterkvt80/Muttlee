@@ -11,18 +11,27 @@ Just imagine if your teletext viewer could turn into an editor. An editor with n
 A complete teletext service in your browser. It will allow you to view or edit a teletext service on a single browser page,
 not even a save button.
 
-The code here is proof of concept and not anywhere near a release.
+The code here is used in the online Teefax browser based viewer. The editing features
+are included but these are NOT promoted as they are only experimental so far.
 
 The rest is a statement of intent. Not much of this is implemented yet...
 
 This is what it does 
 You can navigate pages on a service using the usual number keys or Fastext links.
-You can edit any page that you view (subject to permissions).
-You begin editing by pressing any key other than a number.
-You exit editing by pressing escape.
+You can edit any page that you view (In future it will be subject to permissions).
+
+You enter and exit editing by pressing escape. Edit mode is signalled by the page number
+turning yellow. Normally it will just say a page number.
+P123
+In edit mode it becomes
+123.00
+Where the text is yellow and the subpage number is added.
+The subpage that you are editing can be selected by using the PAGE_UP and PAGE_DOWN keys.
+
+
 Anything that you type will instantly appear on your viewer as you'd expect.
 Any change you make will instantly appear on all other viewers that happen to be on the same page.
-Raspberry Pi client viewers will also update VBIT-Pi instantly.
+Raspberry Pi client viewers will [in the future] also update VBIT-Pi instantly.
 
 This is how it works
 The client is javascript. It uses the p5.js library to simplify the code enormously.
@@ -48,3 +57,13 @@ sudo npm pm2@latest -g
 pm2 start teletextserver.js
 pm2 startup ubuntu
 pm2 save
+
+Developing.
+
+There are a lot of print messages that are useful in debugging the system
+Stop the system and run it in a shell:
+pm2 stop teletextserver.js
+node teletextserver.js
+
+Don't forget to restart the automatic service afterwards.
+pm2 start teletextserver.js

@@ -80,7 +80,16 @@ service=queryString['service'];
 		}
 	}
   else
-		service="ITV/R"; // @todo Temporary measure 
+  {
+    if (service=="d2k") // Should make this generic by adding /P to any service name
+    {
+      service="/var/www/d2k/p";
+    }
+    else
+    {
+      service="ITV/R"; // @todo Temporary measure           
+    }
+  }
   if (p>=0x100 && p<=0x8ff)
   {
 		initialPage=p;
@@ -106,7 +115,7 @@ service=queryString['service'];
   function keyMessage(data)
   {
     socket.broadcast.emit('keystroke', data);
-    // console.log(data);
+    // console.log(data);  // @todo Comment this line out
   }
   socket.on('load', doLoad);
   socket.on('initialLoad',doInitialLoad);
