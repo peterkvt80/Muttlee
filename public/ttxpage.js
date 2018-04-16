@@ -1,3 +1,7 @@
+// Defines a teletext page
+// page class defines a page and subpages.
+// row class defines a teletext row.
+
 // Timer for flashing cursor and text
 var flashState=false;
 var tickCounter=0; // For timing carousels (in steps of half a second)
@@ -33,14 +37,14 @@ function page()
     this.editSwitch=function(mode)
     {
         this.editMode=mode;
-        mypage.cursor.hide=!mode;
+        mypage.cursor.hide=!mode; // This doesn't seem right. It refers to sketch.js
     }
 
   // @todo check range
   this.init=function(number)
   {
     this.pageNumber=number;
-		this.service=0; // @todo Services
+		this.service=undefined; // @todo Services
 
 		this.addPage(number);
   }
@@ -68,7 +72,6 @@ function page()
 		
 		this.subPageList=new Array();
 		this.addPage(this.pageNumber);		
-
   }
 	
 	/** @brief Add a page to the sub page list
