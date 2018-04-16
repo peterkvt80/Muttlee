@@ -57,6 +57,15 @@
 		return false;
 		
 	}
+    
+    /** Switcher.
+     *  If the message is for this service, send it to the pages 
+     */
+    this.keyMessage=function(key)
+    {
+        console.log("service::keyMessage: Got a keymessage. This="+this.name+" data="+key.s );
+        console.log("asasasasas "+JSON.stringify(key, null, 4));
+    }
 	
 	/** Match the given name with the service name
 	 * @return true if the service name matches
