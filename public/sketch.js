@@ -179,7 +179,7 @@ function setID(id)
   // Now we can load the initial page 100
   var data=
   {
-	S: undefined, // Default to undefined. Otherwise the codename of the service. eg. d2k
+	S: mypage.service, // The codename of the service. eg. d2k or undefined
 	p: 0x100, // Page mpp
 	s:0,	// subpage 0
 	x:2000,
@@ -202,8 +202,9 @@ function setDescription(data)
 function setPageNumber(data)
 {
 	if (data.id!=gClientID && gClientID!=null) return;	// Not for us?
-	console.log('[setPageNumber]setting page to '+data.p.toString(16));
+    console.log('[setPageNumber]setting page to '+data.p.toString(16)+"Service="+data.S);
 	mypage.setPage(data.p);
+	mypage.setService(data.S);    
 }
 
 // Handle the button UI
@@ -252,7 +253,7 @@ function fastext(index)
 		mypage.setPage(page); // We now have a different page number
 			var data=
 			{
-			S: undefined, // @todo Implement service
+			S: mypage.service,
 			p: page, // Page mpp
 			s: 0,	// @ todo subpage	
 			x: 0,
@@ -300,7 +301,7 @@ function matchpage(data)
 {
 	console.log ("Matching mypage.service, data.S "+mypage.service+' '+data.S);
 	if (mypage.service!=data.S) return false;
-	console.log ("Matching data.p, mypage.pageNumber"+data.p+' '+mypage.pageNumber);
+	//console.log ("Matching data.p, mypage.pageNumber"+data.p.toString(16)+' '+mypage.pageNumber.toString(16));
 	if (mypage.pageNumber!=data.p) return false;
 	// if (mypage.subPage!=data.s) return false; // This needs more thought now that we are implementing carousels
 	return true;
@@ -459,7 +460,7 @@ function processKey(keyPressed)
 	{
 		var data=
 		{
-			S: undefined, // service number. We might not even need this. The server knows which service.		
+			S: mypage.service, // service number
 			p: mypage.pageNumber,
 			s: mypage.subPage,
 			k: keyPressed,
@@ -493,7 +494,7 @@ function processKey(keyPressed)
 					mypage.setPage(page); // We now have a different page number
 					var data=
 					{
-					S: undefined, // @todo Implement service
+					S: mypage.service, // service
 					p: page, // Page mpp
 					s: mypage.subPage,	// @ todo check that subpage is correct
 					x: 0,
@@ -592,7 +593,7 @@ function nextPage()
 	mypage.setPage(p); // We now have a different page number
 	var data=
 	{
-	S: undefined, // @todo Implement service
+	S: mypage.service,
 	p: p, // Page mpp
 	s: 0,
 	y: 0,
@@ -614,7 +615,7 @@ function prevPage()
 	mypage.setPage(p); // We now have a different page number
 	var data=
 	{
-	S: undefined, // @todo Implement service
+	S: mypage.service,
 	p: p, // Page mpp
 	s: 0,
 	y: 0,

@@ -23,6 +23,8 @@ function page()
   this.indexLink=100;
   this.editMode=false;
   
+  this.service=undefined;
+  
   this.description='none';
 	
 	this.subPage=0; // This is used to address the sub page
@@ -43,10 +45,10 @@ function page()
   // @todo check range
   this.init=function(number)
   {
-    this.pageNumber=number;
-		this.service=undefined; // @todo Services
+        this.pageNumber=number;
+        //this.service=undefined; // @todo Services
 
-		this.addPage(number);
+        this.addPage(number);
   }
 	
 	this.toggleReveal=function ()
@@ -72,6 +74,11 @@ function page()
 		
 		this.subPageList=new Array();
 		this.addPage(this.pageNumber);		
+  }
+  
+  this.setService=function(S)
+  {
+    this.service=S;
   }
 	
 	/** @brief Add a page to the sub page list

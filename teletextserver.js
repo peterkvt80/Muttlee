@@ -52,24 +52,29 @@ function newConnection(socket)
     );
     console.log('[newConnection] Service: ' + queryString['service']);     // ID: 2140
     console.log('[newConnection] Page: ' + queryString['page']); // Name: undefined
+    
     var p=parseInt("0x"+queryString['page'],16);
+    
+    // If there was no page supplied we default to 100.
+    if (queryString['page']===undefined)
+    {
+        p=0x100;
+    }
     var serviceString=queryString['service'];
     
     connectionList[socket.id]=serviceString; // Register that this user is linked to this service.
 
   // var p=socket.handshake.headers.referer.slice(-3);
   // If there is no page=nnn in the URL then default to 0x100
-  if (typeof(p)=="undefined")
-  {
-    p=0x100;
-  }
+    console.log('[newConnection] typeof(p) '+typeof(p));
   if (p>=0x100 && p<=0x8ff)
   {
 		initialPage=p;
-		console.log('Setting page '+initialPage.toString(16));
+		console.log('[newConnection] setpage '+initialPage.toString(16));
 		var data=
 		{
-			p: initialPage
+			p: initialPage,
+            S: serviceString
 		}
 		io.sockets.emit('setpage',data);
   }
@@ -118,6 +123,9 @@ function doInitialLoad(data)
 
 function doLoad(data)
 {
+    // @todo find out why the service is not being returned correctly
+    data.S=connectionList[data.id]; // Not sure why our service is missing, but add it back in here
+    
     console.log ("[doLoad] Loading from session "+data.id);
     console.log("[doLoad] data = "+JSON.stringify(data, null, 4));
     
@@ -181,21 +189,24 @@ function doLoad(data)
     instream.on('error',function()
     {       
         var data2;
+        console.log("[doLoad] ERROR! data.p="+data.p.toString(16));
         // If this comes in as 404 it means that the 404 doesn't exist either. Set back to the default initial page
         if (data.p==0x404)
         {
             console.log('[doLoad] 404 double error');
             data.p=initialPage;
             data.S=undefined;
-            data2=data;
+            data2=data; // Hmm, do we need to do a deep copy here?
             data2.x=0;
             connectionList[data.id]=undefined; // Force this user back to the default service
         }
         else
         {
-            data2=data;
+            data2=data; // Could this do better with a deep copy?
             data2.p=0x404; // This page must exist or we get into a deadly loop
             data2.x=SIGNAL_PAGE_NOT_FOUND; // Signal a 404 error
+            data2.S=connectionList[data.id]; // How do we lose the service type? This hack shouldn't be needed
+            console.log('[doLoad] 404 single error. Service='+data2.S);
         }
         io.sockets.emit("setpage",data2);
         doLoad(data2);
@@ -291,7 +302,7 @@ function doLoad(data)
         // console.log ('Row='+result);
         data.y= row;
         data.rowText=result;
-        console.log(data);
+        console.log(data.p.toString(16)+' '+data.y+' '+data.rowText);
         io.sockets.emit('row',data);
     }); // rl.on
 } // doLoad
