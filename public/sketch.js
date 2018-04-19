@@ -99,7 +99,7 @@ function setup()
   textSize(gTtxFontSize);
   gTtxW=textWidth('M');
   gTtxH=gTtxFontSize;
-  mypage=new page();
+  mypage=new TTXPAGE();
   mypage.init(0x100);
   // message events
   socket.on('keystroke',newChar);
@@ -335,45 +335,6 @@ function setBlank(data) // 'blank'
   if (!matchpage(data)) return;
 	if (data.id!=gClientID && gClientID!=null) return;	// Not for us?
   mypage.setBlank();
-}
-
-// cursor class (might be a good idea to put this in a separate class)
-function myCursor(number)
-{
-  this.x=0;
-  this.y=0;
-  this.hide=true;
-  
-  this.right = function(t)
-  {
-    this.x++;
-    if (this.x>39) this.x=39;
-    return this.x;
-  };
-  
-  this.left=function()
-  {
-    this.x--;
-    if (this.x<0) this.x=0;
-    return this.x;
-  };
-  this.up=function()
-  {
-    this.y--;
-    if (this.y<0) this.y=0;
-    return this.y;
-  };
-  this.down=function()
-  {
-    this.y++;
-    if (this.y>24) this.y=24;
-    return this.y;
-  };
-  this.moveTo=function(x,y)
-  {
-    this.x=constrain(x,0,39);
-    this.y=constrain(y,0,24);
-  }
 }
 
 function inputNumber()

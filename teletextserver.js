@@ -7,6 +7,9 @@ require('./weather.js');
 require('./page.js');
 require('./service.js');
 
+require('./public/ttxpage.js');
+require('./public/cursor.js');
+
 var services=[]; // List of services
 
 //var outstream = new stream;
@@ -162,7 +165,10 @@ function doLoad(data)
     if (page===false)
     {
         console.log("[doLoad] This is where we add a page to the service: "+data.p);
-        svc.addPage(new Page(data.p));
+        //svc.addPage(new Page(data.p));
+        var p=new TTXPAGE();
+        p.init(data.p);
+        svc.addPage(p);  
     }
 
     console.log('[doLoad] called '+filename+' data.x='+data.x+' id='+data.id);

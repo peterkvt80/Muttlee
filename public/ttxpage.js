@@ -12,9 +12,9 @@ function toggle()
   flashState=!flashState;
 }
 
-function page()
+TTXPAGE=function()
 {
-  this.cursor=new myCursor();
+  this.cursor=new TTXCURSOR();
   
   this.redLink=100;
   this.greenLink=100;

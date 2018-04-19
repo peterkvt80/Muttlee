@@ -1,10 +1,12 @@
 /** page.js
- * Encapsulate a teletext page object
+ * Encapsulate a teletext page object.
+ * As ttxpage.js supports everything we need we might as well use that and remove this version.
  */
  
  Page=function(mpp)
  {
-    console.log("Page::Page Created "+mpp);
+    console.log("[Page::Page] Created "+mpp);
+    console.log("...but we really want to get rid of this");
 	// basic properties
 	this.pageNumber=mpp;
 	this.rows=[];
