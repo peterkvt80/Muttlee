@@ -39,7 +39,7 @@ function page()
     this.editSwitch=function(mode)
     {
         this.editMode=mode;
-        mypage.cursor.hide=!mode; // This doesn't seem right. It refers to sketch.js
+        this.cursor.hide=!mode;
     }
 
   // @todo check range

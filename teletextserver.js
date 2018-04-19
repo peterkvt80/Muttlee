@@ -124,9 +124,9 @@ function doInitialLoad(data)
 function doLoad(data)
 {
     // @todo find out why the service is not being returned correctly
-    data.S=connectionList[data.id]; // Not sure why our service is missing, but add it back in here
+    // data.S=connectionList[data.id]; // Not sure why our service is missing, but add it back in here
     
-    console.log ("[doLoad] Loading from session "+data.id);
+    console.log ("[doLoad] Loading from session "+data.id+" Service:"+data.S);
     console.log("[doLoad] data = "+JSON.stringify(data, null, 4));
     
         
