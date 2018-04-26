@@ -4,7 +4,7 @@
  *  @brief A service is a service name and a set of pages. 
  */
  
- require('./page.js');
+ require('./public/ttxpage.js');
  
  /** Constructor
   * @param serviceName - a Service name such as BBCONE_2007_06_19

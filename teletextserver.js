@@ -3,12 +3,14 @@ var fs = require('fs');
 var readline = require('readline');
 var stream = require('stream');
 
-require('./weather.js');
-require('./page.js');
+require('./weather.js'); // Should check if this is obsolete
+require('./page.js'); // Not so sure we will use this
 require('./service.js');
 
-require('./public/ttxpage.js');
-require('./public/cursor.js');
+require('./public/ttxpage.js'); // might not use this either
+require('./public/cursor.js'); // Especially not this
+
+require('./keystroke.js'); // Editing data from clients
 
 var services=[]; // List of services
 
@@ -26,6 +28,8 @@ app.use(express.static('public'));
 var server= app.listen(8080);
 
 var weather=new Weather(doLoad);
+
+var keystroke=new KeyStroke();
 
 app.get('/weather.tti',weather.doLoadWeather);
 console.log("Server is running");
@@ -90,6 +94,7 @@ function newConnection(socket)
   
   var clientIp = socket.request.connection.remoteAddress;
   console.log(clientIp);
+  // 107.20.85.165 AmazonAWS bad bot
 	
 	// Send the socket id back. If a message comes in with this socket we know where to send the setpage to.
 	socket.emit("id",socket.id);
@@ -106,6 +111,7 @@ function newConnection(socket)
     {
         services[i].keyMessage(data);
     }
+    keystroke.addEvent(data);
   }
   socket.on('load', doLoad);
   socket.on('initialLoad',doInitialLoad);
@@ -126,9 +132,7 @@ function doInitialLoad(data)
 
 function doLoad(data)
 {
-    // @todo find out why the service is not being returned correctly
-    // data.S=connectionList[data.id]; // Not sure why our service is missing, but add it back in here
-    
+   
     console.log ("[doLoad] Loading from session "+data.id+" Service:"+data.S);
     console.log("[doLoad] data = "+JSON.stringify(data, null, 4));
     
@@ -311,6 +315,16 @@ function doLoad(data)
         console.log(data.p.toString(16)+' '+data.y+' '+data.rowText);
         io.sockets.emit('row',data);
     }); // rl.on
+    
+    rl.on('close',
+      function()
+      {
+        console.log('[doLoad] end of file');
+        // When the file has been read, we want to send any keystrokes that might have been added to this page
+        keystroke.replayEvents(io.sockets);
+        // How are we going to send this?
+      }
+    );
 } // doLoad
   
 /** Finds the service with the required name.
