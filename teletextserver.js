@@ -32,16 +32,14 @@ var weather=new Weather(doLoad);
 var keystroke=new KeyStroke();
 
 app.get('/weather.tti',weather.doLoadWeather);
-console.log("Server is running");
+
+console.log("Server is running on "+process.platform);
 
 var socket=require('socket.io');
 
 var io=socket(server);
 
 var initialPage=0x100;
-
-// My local test folder when running on Windows
-console.log(process.platform);
 
 var connectionList=new Object(); // Associative array links user id to service: connectionList['/#NODc31jxxFTSm_SaAAAC']='d2k';
 
@@ -92,6 +90,12 @@ function newConnection(socket)
   console.log(p);
   console.log('[NewConnection] '+socket.id);
   
+  if (socket.id.toString()=="54.159.215.81")
+  {
+  console.log("blocked ip");
+  return;
+  }
+  
   var clientIp = socket.request.connection.remoteAddress;
   console.log(clientIp);
   // 107.20.85.165 AmazonAWS bad bot
@@ -112,7 +116,13 @@ function newConnection(socket)
         services[i].keyMessage(data);
     }
     keystroke.addEvent(data);
+    // Temporary hack. ] will help me debug the writeback mechanism
+    if (data.k==']')
+    {
+        keystroke.saveEdits();
+    }
   }
+  
   socket.on('load', doLoad);
   socket.on('initialLoad',doInitialLoad);
   
