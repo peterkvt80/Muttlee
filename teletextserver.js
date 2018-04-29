@@ -21,7 +21,6 @@ var services=[]; // List of services
 var SIGNAL_PAGE_NOT_FOUND = -1;
 
 
-
 var express=require('express');
 var app = express();
 app.use(express.static('public'));
@@ -90,14 +89,20 @@ function newConnection(socket)
   console.log(p);
   console.log('[NewConnection] '+socket.id);
   
-  if (socket.id.toString()=="54.159.215.81")
-  {
-  console.log("blocked ip");
-  return;
-  }
+  var str=socket.id.toString();
+  
+  console.log('['+str+']');
   
   var clientIp = socket.request.connection.remoteAddress;
   console.log(clientIp);
+
+  if ((clientIp=="54.159.215.81") || (clientIp==='54.161.11.39'))
+
+  {
+  console.log("*["+clientIp+"]********************************************* blocked ip");
+  return;
+  }
+  
   // 107.20.85.165 AmazonAWS bad bot
 	
 	// Send the socket id back. If a message comes in with this socket we know where to send the setpage to.
@@ -322,7 +327,7 @@ function doLoad(data)
         // console.log ('Row='+result);
         data.y= row;
         data.rowText=result;
-        console.log(data.p.toString(16)+' '+data.y+' '+data.rowText);
+        //console.log(data.p.toString(16)+' '+data.y+' '+data.rowText);
         io.sockets.emit('row',data);
     }); // rl.on
     

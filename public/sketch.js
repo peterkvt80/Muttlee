@@ -492,14 +492,16 @@ function khold()  {mypage.toggleHold(); }
 
 function mouseClicked()
 {
-	// Only need to do this in edit mode
-	if (!editMode)
-		return;
-  var xLoc=int(mouseX/gTtxW);
-  var yLoc=int(1+mouseY/gTtxH); // @todo Will need to fix this once we add a header
-  mypage.cursor.moveTo(xLoc,yLoc);
-  // console.log('The mouse was clicked at '+xLoc+' '+yLoc);
-	return false;
+    // Only need to do this in edit mode
+    if (!editMode)
+    {
+        return;
+    }
+    var xLoc=int(mouseX/gTtxW);
+    var yLoc=int(mouseY/gTtxH);
+    mypage.cursor.moveTo(xLoc,yLoc);
+    // console.log('The mouse was clicked at '+xLoc+' '+yLoc);
+    return false;
 }
 
 /* Swipes */
