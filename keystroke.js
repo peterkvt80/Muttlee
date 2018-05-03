@@ -48,6 +48,7 @@ KeyStroke=function()
   /* Write the edits back to file */
   this.saveEdits=function()
   {
+    this.event;
     if (this.debug) console.log("[keystroke::saveEdit]")
     // Are there any edits to save?
     if (this.eventList.length>0)
@@ -73,43 +74,89 @@ KeyStroke=function()
                 if (a.y>b.y) return 1
                 return 0 // same
             }
-        )
+        ) // sort
         if (this.debug) this.dump()
         // Now that we are sorted we can apply the edits
+        // However, due to the async nature, we only do one file at a time
         if (this.eventList.length>0)
         {
-            for (event=this.eventList.pop();this.eventList.length>0;event=this.eventList.pop())
+            console.log(this.event)
+            this.event=this.eventList[0]
+            this.eventList.shift()
+            // Get the filename
+            service=this.event.S
+            if (service==undefined) service='onair'
+            var filename='/var/www/'+service+'/p'+this.event.p.toString(16)+'.tti'
+            // Open a stream and get ready to read the file
+            var instream
+            instream = fs.createReadStream(filename,{encoding: "ascii"}) // Ascii strips bit 7 without messing up the rest of the text. latin1 does not work :-(
+            instream.on('error',function()
             {
-                // Find the file ( /var/www/d2k/p404.tti)
-                service=event.S
-                var filename='/var/www/'+service+'/p'+event.p.toString(16)+'.tti'
-                if (this.debug) console.log('filename='+filename)
-                var instream
-                instream = fs.createReadStream(filename,{encoding: "ascii"}) // Ascii strips bit 7 without messing up the rest of the text. latin1 does not work :-(
-                instream.on('error',function()
+                console.log("error routine not written")   
+                throw new Error("Something went badly wrong!")
+            })
+            var reader = readline.createInterface(
+            {
+                input: instream,
+                terminal: false
+            })
+            var pageNumber
+            var subCode
+            var that=this
+            reader.on('line', function(line)
+            { 
+                if (line.indexOf('SC')==0)
                 {
-                    console.log("error routine not written")                
-                })
-                var reader = readline.createInterface(
+                    subCode=line.substring(3)
+                    if (subCode>0) subCode--
+                    console.log("Found subcode:"+subCode)  
+                } 
+                if (that.event.s==subCode) // If the subcode matches, look for our line
                 {
-                    input: instream,
-                    terminal: false
-                })
-                reader.on('line', function(line)
-                { 
-                    console.log("[saveEdits] line="+line)
-                    // processing needed here
-                })
-            }
-        }
-        
-        // file by file
-        // page by page
-        // subpage by subpage
-        // row by row
-        
-    }
-  }
+                    if (line.indexOf('OL,')==0) // teletext row?
+                    {
+                      var ix=3
+                      var row=0
+                      var ch
+                      ch=line.charAt(ix)
+                      if (ch!=',')
+                      {
+                        row=ch
+                      }
+                      ix++
+                      ch=line.charAt(ix)
+                      if (ch!=',')
+                      {
+                        row=row+ch // haha. Strange maths
+                        ix++
+                      }
+                      row=parseInt(row)
+                      ix++ // Should be pointing to the first character now
+                      // console.log('row='+row);
+                      // console.log("ix="+ix)
+                      var str=line
+                      while (that.event.y==row && that.event.s==subCode) // Any more characters on this line?
+                      {
+                        console.log("[saveEdits] Matched row "+row+", line="+line)
+                        str=setCharAt(str,that.event.x+ix+1, that.event.k)
+                        console.log("[edited]"+str)
+                        if (that.eventList.length>0)
+                        {
+                            that.event=that.eventList[0]
+                            that.eventList.shift();
+                            console.log(that.event)
+                        }
+                        else
+                            break
+                      }
+                    } // OL                    
+                } // If subcode matches
+            }) // reader
+            
+        }  // If eventlist>0
+    } // saveEdits
+} // saveEdits
+
    
 /** Dump the summary of the contents of the key events list   */
     this.dump=function()
@@ -156,3 +203,9 @@ KeyStroke=function()
     }
 
 } // keystroke class 
+
+/** Utility */
+function setCharAt(str,index,chr) {
+    if(index > str.length-1) return str;
+    return str.substr(0,index) + chr + str.substr(index+1);
+}

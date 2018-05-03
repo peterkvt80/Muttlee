@@ -1,27 +1,24 @@
 // io stream stuff
-var fs = require('fs');
-var readline = require('readline');
-var stream = require('stream');
+const fs = require('fs')
+const readline = require('readline')
+const stream = require('stream')
 
-require('./weather.js'); // Should check if this is obsolete
-require('./page.js'); // Not so sure we will use this
-require('./service.js');
+require('./weather.js') // Should check if this is obsolete
+// require('./page.js') // Not so sure we will use this
+require('./service.js')
 
-require('./public/ttxpage.js'); // might not use this either
-require('./public/cursor.js'); // Especially not this
+require('./keystroke.js') // Editing data from clients
 
-require('./keystroke.js'); // Editing data from clients
+var services=[] // List of services
 
-var services=[]; // List of services
+//var outstream = new stream
+//outstream.readable = true
+//outstream.writable = true
 
-//var outstream = new stream;
-//outstream.readable = true;
-//outstream.writable = true;
-
-var SIGNAL_PAGE_NOT_FOUND = -1;
+const SIGNAL_PAGE_NOT_FOUND = -1
 
 
-var express=require('express');
+const express=require('express')
 var app = express();
 app.use(express.static('public'));
 var server= app.listen(8080);
@@ -96,7 +93,7 @@ function newConnection(socket)
   var clientIp = socket.request.connection.remoteAddress;
   console.log(clientIp);
 
-  if ((clientIp=="54.159.215.81") || (clientIp==='54.161.11.39'))
+  if ((clientIp=="54.159.215.81") || (clientIp==='54.161.11.39') || (clientIp==='54.235.50.87')) 
 
   {
   console.log("*["+clientIp+"]********************************************* blocked ip");
@@ -180,15 +177,6 @@ function doLoad(data)
     var svc=services[found];
     var page=svc.findPage(data.p);
     console.log("[doLoad] Found Service:"+serviceString+" Page:"+page);
-
-    if (page===false)
-    {
-        console.log("[doLoad] This is where we add a page to the service: "+data.p);
-        //svc.addPage(new Page(data.p));
-        var p=new TTXPAGE();
-        p.init(data.p);
-        svc.addPage(p);  
-    }
 
     console.log('[doLoad] called '+filename+' data.x='+data.x+' id='+data.id);
     //	console.log(data);
