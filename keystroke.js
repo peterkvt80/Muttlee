@@ -80,7 +80,7 @@ KeyStroke=function()
         // However, due to the async nature, we only do one file at a time
         if (this.eventList.length>0)
         {
-            console.log(this.event)
+            //console.log(this.event)
             this.event=this.eventList[0]
             this.eventList.shift()
             // Get the filename
@@ -135,20 +135,29 @@ KeyStroke=function()
                       // console.log('row='+row);
                       // console.log("ix="+ix)
                       var str=line
+                      var changed=false
                       while (that.event.y==row && that.event.s==subCode) // Any more characters on this line?
                       {
-                        console.log("[saveEdits] Matched row "+row+", line="+line)
-                        str=setCharAt(str,that.event.x+ix+1, that.event.k)
-                        console.log("[edited]"+str)
+                        changed=true
+                        str=setCharAt(str,that.event.x+ix, that.event.k)
                         if (that.eventList.length>0)
                         {
                             that.event=that.eventList[0]
                             that.eventList.shift();
-                            console.log(that.event)
+                            // console.log(that.event)
                         }
                         else
+                        {
                             break
+                        }
                       }
+                      // The result of editing this row
+                      if (changed)
+                      {
+                          console.log("[before]"+line)
+                          console.log("[edited]"+str)
+                      }
+                      
                     } // OL                    
                 } // If subcode matches
             }) // reader
@@ -171,7 +180,7 @@ KeyStroke=function()
             var y=event.y
             var s=event.s
             var S=event.S
-            if (S==undefined) S="AAAA"
+            if (S==undefined) S="onair"
             // Count the number of edits to a particular row (y)
             if ((p2==p) && (y2==y) && (s2==s) && (S2==S) // same row
                 && (i!=0))
@@ -206,6 +215,6 @@ KeyStroke=function()
 
 /** Utility */
 function setCharAt(str,index,chr) {
-    if(index > str.length-1) return str;
-    return str.substr(0,index) + chr + str.substr(index+1);
+    if(index > str.length-1) return str
+    return str.substr(0,index) + chr + str.substr(index+1)
 }

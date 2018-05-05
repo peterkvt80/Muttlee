@@ -173,29 +173,32 @@ TTXPAGE=function()
     for (var row=0;row<this.rows.length;row++)
     {
 	// console.log("drawing row "+row+" of "+this.rows.length);
-      var cpos=-1;
+      var cpos=-1
 			if (this.editMode && row==this.cursor.y) // If in edit mode and it is the correct row...
-			cpos=this.cursor.x;
+			cpos=this.cursor.x
 			//this.rows[row].draw(cpos); // Original version
 			// Single pages tend to have subpage 0000. carousels start from 0001. So subtract 1 unless it is already 0.
 //			var v=this.subPageList[this.subPage>0?this.subPage-1:0]; 
 			if (this.subPage>=this.subPageList.length) // This shouldn't happen much but it does during start up
-				this.subPage=this.subPageList.length-1;
+				this.subPage=this.subPageList.length-1
 				
-			var v=this.subPageList[this.subPage];
+			var v=this.subPageList[this.subPage]
 			if (v==undefined)
 			{
-			console.log("Undefined :-(");
+                console.log("Undefined :-(")
 			}
+            else
 			if (v.length>0)
 			{			
 				if (row==0 && v.length>0) // Set the page number for the header only
 				{
-					v[0].setpagetext(this.pageNumberEntry);
+					v[0].setpagetext(this.pageNumberEntry)
 				}
 
 				if (v[row].draw(cpos, this.revealMode, this.holdMode, this.editMode, this.subPage))
-					row++; // If double height, skip the next row 
+                {
+					row++ // If double height, skip the next row 
+                }
 			}    
 		}
   }
@@ -287,21 +290,21 @@ function row(page,y,str)
             // Substitute mpp for the page number
             var ix;
             ix=txt.indexOf('%%#');
-            if (ix==0)
+            if (ix<0)
                 ix=txt.indexOf('mpp');
             if (ix>0)
                 txt=replace(txt,this.page.toString(16),ix)
                 
             // Substitute dd for the day 1..31 (or %d)
             ix=txt.indexOf('%d');
-            if (ix==0)
+            if (ix<0)
                 ix=txt.indexOf('dd');
             if (ix>0)
                 txt=replace(txt,nf(day(),2),ix);
 
                 // Substitute DAY for the three letter abbreviated day 
             ix=txt.indexOf('%%a');
-            if (ix==0)
+            if (ix<0)
                 ix=txt.indexOf('DAY');
             if (ix>0)
             {
@@ -311,7 +314,7 @@ function row(page,y,str)
             }
             // Substitute MTH for the three letter abbreviated month 
             ix=txt.indexOf('%%b');
-            if (ix==0)
+            if (ix<0)
                 ix=txt.indexOf('MTH');
             if (ix>0)
             {
@@ -321,21 +324,21 @@ function row(page,y,str)
             
             // Substitute hh for the two digit hour 
             ix=txt.indexOf('%H');
-            if (ix==0)
+            if (ix<0)
                 ix=txt.indexOf('hh');
             if (ix>0)
                 txt=replace(txt,nf(hour(),2),ix)
                 
             // Substitute nn for the two digit minutes
             ix=txt.indexOf('%M');
-            if (ix==0)
+            if (ix<0)
                 ix=txt.indexOf('nn')
             if (ix>0)
                 txt=replace(txt,nf(minute(),2),ix)
                 
             // Substitute ss for the two digit seconds
             ix=txt.indexOf('%S');
-            if (ix==0)
+            if (ix<0)
                 ix=txt.indexOf('ss');
             if (ix>0)
                 txt=replace(txt,nf(second(),2),ix)
