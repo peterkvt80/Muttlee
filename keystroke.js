@@ -11,9 +11,9 @@
  *  matchPage(event) - Returns a matching event if there is one in the list. (page, subpage, service)
  */
  
-var readline = require('readline');
-//var stream = require('stream');
-var fs = require('fs');
+var readline = require('readline')
+//var stream = require('stream')
+var fs = require('fs')
 
 
 KeyStroke=function()
@@ -25,9 +25,42 @@ KeyStroke=function()
   /** Add a keystroke event to the list */
   this.addEvent=function(data)
   {
-    this.eventList.push(data)
+    // Unfortunately, we need to check that we don't already have a character at that location
+    // @todo Search through the list and if the character location matches
+    // then replace the key entry for that location
+    // otherwise push the event
+    var overwrite=false
+    for (var i=0;i<this.eventList.length;i++)
+    {
+        if (this.sameChar(data,this.eventList[i]))
+        {
+            this.eventList[i].k=data.k  // replace the key as this overwrites the original character
+            overwrite=true
+            console.log("Overwriting character")
+            break
+        }
+    }
+    if (!overwrite)
+    {
+        this.eventList.push(data)
+    }
     if (this.debug) console.log("[keystroke::addEvent] queue length="+this.eventList.length)
-  }
+  } // addEvent
+  
+  /**<return true if the character location is the same in both key events
+   */
+  this.sameChar=function(a,b)
+  {
+    if (a==undefined) return false
+    if (b==undefined) return false
+    if (a.x!=b.x) return false // Column
+    // Check each value for not matching
+    if (a.p!=b.p) return false // Page
+    if (a.s!=b.s) return false // Subpage
+    if (a.y!=b.y) return false // Row
+    if (a.S!=b.S) return false // Service
+    return true
+  } // sameChar
 
   /** replayEvents to the specified client*/
   this.replayEvents=function(client)
@@ -48,126 +81,145 @@ KeyStroke=function()
   /* Write the edits back to file */
   this.saveEdits=function()
   {
-    this.event;
+    this.event
     if (this.debug) console.log("[keystroke::saveEdit]")
     // Are there any edits to save?
+    if (this.eventList.length==0)
+    { 
+        return
+    }
+    // Sort the event list by S(service name) p(page 100..8ff) s(subpage 0..99) y(row 0..24)
+    this.eventList.sort(
+        function(a,b)
+        {
+            // the main service is never defined, so set it to the proper "onair"
+            if (a.S==undefined) a.S='onair'
+            if (b.S==undefined) a.S='onair'
+            // Service sort
+            if (a.S<b.S) return -1
+            if (a.S>b.S) return 1
+            // page sort
+            if (a.p<b.p) return -1
+            if (a.p>b.p) return 1
+            // subpage sort
+            if (a.s<b.s) return -1
+            if (a.s>b.s) return 1
+            // row sort
+            if (a.y<b.y) return -1
+            if (a.y>b.y) return 1
+            return 0 // same
+        }
+    ) // sort
+    if (this.debug) this.dump()
+    // Now that we are sorted we can apply the edits
+    // However, due to the async nature, we only do one file at a time
     if (this.eventList.length>0)
     {
-        // Sort the event list by S(service name) p(page 100..8ff) s(subpage 0..99) y(row 0..24)
-        this.eventList.sort(
-            function(a,b)
-            {
-                // the main service is never defined, so set it to the proper "onair"
-                if (a.S==undefined) a.S='onair'
-                if (b.S==undefined) a.S='onair'
-                // Service sort
-                if (a.S<b.S) return -1
-                if (a.S>b.S) return 1
-                // page sort
-                if (a.p<b.p) return -1
-                if (a.p>b.p) return 1
-                // subpage sort
-                if (a.s<b.s) return -1
-                if (a.s>b.s) return 1
-                // row sort
-                if (a.y<b.y) return -1
-                if (a.y>b.y) return 1
-                return 0 // same
-            }
-        ) // sort
-        if (this.debug) this.dump()
-        // Now that we are sorted we can apply the edits
-        // However, due to the async nature, we only do one file at a time
-        if (this.eventList.length>0)
+        //console.log(this.event)
+        this.event=this.eventList[0]
+        this.eventList.shift()
+        // Get the filename
+        service=this.event.S
+        if (service==undefined) service='onair'
+        var filename='/var/www/'+service+'/p'+this.event.p.toString(16)+'.tti'
+        // Open a stream and get ready to read the file
+        var instream
+        instream = fs.createReadStream(filename,{encoding: "ascii"}) // Ascii strips bit 7 without messing up the rest of the text. latin1 does not work :-(
+        instream.on('error',function()
         {
-            //console.log(this.event)
-            this.event=this.eventList[0]
-            this.eventList.shift()
-            // Get the filename
-            service=this.event.S
-            if (service==undefined) service='onair'
-            var filename='/var/www/'+service+'/p'+this.event.p.toString(16)+'.tti'
-            // Open a stream and get ready to read the file
-            var instream
-            instream = fs.createReadStream(filename,{encoding: "ascii"}) // Ascii strips bit 7 without messing up the rest of the text. latin1 does not work :-(
-            instream.on('error',function()
+            console.log("error routine not written")   
+            throw new Error("Something went badly wrong!")
+        })
+        var reader = readline.createInterface(
+        {
+            input: instream,
+            terminal: false
+        })
+        
+        // If not set, then set the service to default
+        if (this.event.S==undefined)
+        {
+            this.event.S='onair'
+        }
+        
+        var that=this
+        reader.on('line', function(line)
+        { 
+            var SaveEvent=that.event    // Save so we can check if we stay on the same row
+            var subCode=0
+            if (line.indexOf('SC')==0)
             {
-                console.log("error routine not written")   
-                throw new Error("Something went badly wrong!")
-            })
-            var reader = readline.createInterface(
+                subCode=line.substring(3)
+                if (subCode>0) subCode--
+                console.log("Found subcode:"+subCode)  
+                that.dump()
+            } 
+            if (that.event.s==subCode) // If the subcode matches, look for our line
             {
-                input: instream,
-                terminal: false
-            })
-            var pageNumber
-            var subCode
-            var that=this
-            reader.on('line', function(line)
-            { 
-                if (line.indexOf('SC')==0)
+                if (line.indexOf('OL,')==0) // teletext row?
                 {
-                    subCode=line.substring(3)
-                    if (subCode>0) subCode--
-                    console.log("Found subcode:"+subCode)  
-                } 
-                if (that.event.s==subCode) // If the subcode matches, look for our line
-                {
-                    if (line.indexOf('OL,')==0) // teletext row?
+                  var ix=3
+                  var row=0
+                  var ch
+                  ch=line.charAt(ix)
+                  if (ch!=',')
+                  {
+                    row=ch
+                  }
+                  ix++
+                  ch=line.charAt(ix)
+                  if (ch!=',')
+                  {
+                    row=row+ch // haha. Strange maths
+                    ix++
+                  }
+                  row=parseInt(row)
+                  ix++ // Should be pointing to the first character now
+                  // console.log('row='+row)
+
+                  var str=DeEscapePrestel(line)
+
+                  var changed=false
+                  var more=that.event.y==row // If the row matches, we have an entry to process
+                  while (more) // Any more characters on this line?
+                  {
+                    changed=true
+                    str=setCharAt(str,that.event.x+ix, that.event.k)
+                    if (that.eventList.length>0)
                     {
-                      var ix=3
-                      var row=0
-                      var ch
-                      ch=line.charAt(ix)
-                      if (ch!=',')
-                      {
-                        row=ch
-                      }
-                      ix++
-                      ch=line.charAt(ix)
-                      if (ch!=',')
-                      {
-                        row=row+ch // haha. Strange maths
-                        ix++
-                      }
-                      row=parseInt(row)
-                      ix++ // Should be pointing to the first character now
-                      // console.log('row='+row);
-                      // console.log("ix="+ix)
-                      var str=line
-                      var changed=false
-                      while (that.event.y==row && that.event.s==subCode) // Any more characters on this line?
-                      {
-                        changed=true
-                        str=setCharAt(str,that.event.x+ix, that.event.k)
-                        if (that.eventList.length>0)
+                        that.event=that.eventList[0]
+                        if (that.event.y!=row ||
+                            that.event.s!=SaveEvent.s ||
+                            that.event.S!=SaveEvent.S ||
+                            that.event.p!=SaveEvent.p) // If the next event is not on the same row
                         {
-                            that.event=that.eventList[0]
-                            that.eventList.shift();
-                            // console.log(that.event)
+                            more=false // Done with this line
                         }
                         else
                         {
-                            break
+                            that.eventList.shift()  // Eat the event. It is on the same row                            
                         }
-                      }
-                      // The result of editing this row
-                      if (changed)
-                      {
-                          console.log("[before]"+line)
-                          console.log("[edited]"+str)
-                      }
-                      
-                    } // OL                    
-                } // If subcode matches
-            }) // reader
-            
-        }  // If eventlist>0
+                        // console.log(that.event)
+                    }
+                    else
+                    {
+                        break // Nothing left to process
+                    }
+                  }
+                  // The result of editing this row
+                  if (changed)
+                  {
+                      console.log("ix="+ix)
+                      console.log("[before]"+line)
+                      console.log("[edited]"+str)
+                  }
+                  
+                } // OL                    
+            } // If subcode matches
+        }) // reader
     } // saveEdits
-} // saveEdits
-
-   
-/** Dump the summary of the contents of the key events list   */
+  } // saveEdits
+    /** Dump the summary of the contents of the key events list   */
     this.dump=function()
     {
         var p2,y2,s2,S2,r2
@@ -209,12 +261,12 @@ KeyStroke=function()
             
             p2=p;y2=y;s2=s;S2=S
         }        
-    }
-
+    } // dump
 } // keystroke class 
 
 /** Utility */
-function setCharAt(str,index,chr) {
+function setCharAt(str,index,chr)
+{
     if(index > str.length-1) return str
     return str.substr(0,index) + chr + str.substr(index+1)
 }

@@ -6,6 +6,7 @@ const stream = require('stream')
 require('./weather.js') // Should check if this is obsolete
 // require('./page.js') // Not so sure we will use this
 require('./service.js')
+require('./utils.js') // Prestal and other string handling
 
 require('./keystroke.js') // Editing data from clients
 
@@ -20,22 +21,22 @@ const SIGNAL_PAGE_NOT_FOUND = -1
 
 const express=require('express')
 var app = express();
-app.use(express.static('public'));
-var server= app.listen(8080);
+app.use(express.static('public'))
+var server= app.listen(8080)
 
-var weather=new Weather(doLoad);
+var weather=new Weather(doLoad)
 
-var keystroke=new KeyStroke();
+var keystroke=new KeyStroke()
 
-app.get('/weather.tti',weather.doLoadWeather);
+app.get('/weather.tti',weather.doLoadWeather)
 
-console.log("Server is running on "+process.platform);
+console.log("Server is running on "+process.platform)
 
-var socket=require('socket.io');
+var socket=require('socket.io')
 
-var io=socket(server);
+var io=socket(server)
 
-var initialPage=0x100;
+var initialPage=0x100
 
 var connectionList=new Object(); // Associative array links user id to service: connectionList['/#NODc31jxxFTSm_SaAAAC']='d2k';
 
@@ -51,8 +52,8 @@ function newConnection(socket)
         new RegExp("([^?=&]+)(=([^&]*))?", "g"),
         function($0, $1, $2, $3) { queryString[$1] = $3; }
     );
-    console.log('[newConnection] Service: ' + queryString['service']);     // ID: 2140
-    console.log('[newConnection] Page: ' + queryString['page']); // Name: undefined
+    // console.log('[newConnection] Service: ' + queryString['service']);     // ID: 2140
+    // console.log('[newConnection] Page: ' + queryString['page']); // Name: undefined
     
     var p=parseInt("0x"+queryString['page'],16);
     
@@ -67,11 +68,11 @@ function newConnection(socket)
 
   // var p=socket.handshake.headers.referer.slice(-3);
   // If there is no page=nnn in the URL then default to 0x100
-    console.log('[newConnection] typeof(p) '+typeof(p));
+    //console.log('[newConnection] typeof(p) '+typeof(p));
   if (p>=0x100 && p<=0x8ff)
   {
 		initialPage=p;
-		console.log('[newConnection] setpage '+initialPage.toString(16));
+		// console.log('[newConnection] setpage '+initialPage.toString(16));
 		var data=
 		{
 			p: initialPage,
@@ -88,15 +89,21 @@ function newConnection(socket)
   
   var str=socket.id.toString();
   
-  console.log('['+str+']');
+  //console.log('['+str+']');
   
   var clientIp = socket.request.connection.remoteAddress;
   console.log(clientIp);
+  // Banned IP addresses. All of them Amazon AWS bots making annoying connections during debugging
+  if ((clientIp=="54.159.215.81") ||
+  (clientIp==='54.161.11.39') ||
+  (clientIp==='54.235.50.87')||
+  (clientIp==='54.162.45.98')||
+  (clientIp==='54.162.186.216')  
+  )  
 
-  if ((clientIp=="54.159.215.81") || (clientIp==='54.161.11.39') || (clientIp==='54.235.50.87')) 
 
   {
-  console.log("*["+clientIp+"]********************************************* blocked ip");
+  // console.log("*["+clientIp+"]********************************************* blocked ip");
   return;
   }
   
@@ -271,60 +278,54 @@ function doLoad(data)
         else
         if (line.indexOf('OL,')==0) // Detect a teletext row
         {
-          var p=0;
-          var ix=3;
-          var row=0;
-          var ch;
-          ch=line.charAt(ix);
+          var p=0
+          var ix=3
+          var row=0
+          var ch
+          ch=line.charAt(ix)
           if (ch!=',')
           {
-            row=ch;
+            row=ch
           }
-          ix++;
-          ch=line.charAt(ix);
+          ix++
+          ch=line.charAt(ix)
           if (ch!=',')
           {
-            row=row+ch; // haha. Strange maths
-            ix++;
+            row=row+ch // haha. Strange maths
+            ix++
           }
-          row=parseInt(row);
-          ix++; // Should be pointing to the first character now
+          row=parseInt(row)
+          ix++ // Should be pointing to the first character now
           // console.log('row='+row);
         }
         else
-        return; // Not a row. Not interested
-        data.y=row;
+        {
+            return // Not a row. Not interested
+        }
+        data.y=row
         // @todo - Handle strings shorter than 40 characters
         
         // Here is a line at a time
-        var result='';
-        for (var i=0;i<40;i++)
-        {
-          var ch=line.charAt(ix++);
-          if (ch=='\u001b') // Prestel escape
-          {
-            ch=line.charAt(ix++).charCodeAt()-0x40;// - 0x40;
-            // console.log ('Escaped char='+ch);
-            ch=String.fromCharCode(ch);
-          }
-          data.k=ch;
-          data.x=i;
-          // io.sockets.emit('keystroke', data);
-          result+=ch;
-        }
-        // console.log ('Row='+result);
-        data.y= row;
-        data.rowText=result;
-        //console.log(data.p.toString(16)+' '+data.y+' '+data.rowText);
-        io.sockets.emit('row',data);
+        var result=line.substring(ix) // snip out the row data
+        console.log ('Row(a)='+result)
+        result=DeEscapePrestel(result) // remove Prestel escapes
+        console.log ('Row(b)='+result)
+        
+        data.k='?' // @todo Not sure what these values should be, if anything
+        data.x.i=-1 
+        // console.log ('Row='+result)
+        data.y= row // The row that we are sending out
+        data.rowText=result
+        //console.log(data.p.toString(16)+' '+data.y+' '+data.rowText)
+        io.sockets.emit('row',data)
     }); // rl.on
     
     rl.on('close',
       function()
       {
-        console.log('[doLoad] end of file');
+        console.log('[doLoad] end of file')
         // When the file has been read, we want to send any keystrokes that might have been added to this page
-        keystroke.replayEvents(io.sockets);
+        keystroke.replayEvents(io.sockets)
         // How are we going to send this?
       }
     );
@@ -335,13 +336,13 @@ function doLoad(data)
 */
 function findService(name)
 {
-if (services.length===0) return false; // No services
-for (var i=0;i<services.length;i++)
-{
-    if (services[i].matchName(name))
-    return i;
-}
-return false; // Not found
+    if (services.length===0) return false // No services
+    for (var i=0;i<services.length;i++)
+    {
+        if (services[i].matchName(name))
+        return i
+    }
+    return false // Not found
 }
 
 
