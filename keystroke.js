@@ -110,7 +110,7 @@ KeyStroke=function()
             return 0 // same
         }
     ) // sort
-    if (this.debug) this.dump()
+    // if (this.debug) this.dump()
     // Now that we are sorted we can apply the edits
     // However, due to the async nature, we only do one file at a time
     if (this.eventList.length>0)
@@ -152,7 +152,7 @@ KeyStroke=function()
                 subCode=line.substring(3)
                 if (subCode>0) subCode--
                 console.log("Found subcode:"+subCode)  
-                that.dump()
+                //that.dump()
             } 
             if (that.event.s==subCode) // If the subcode matches, look for our line
             {
@@ -185,15 +185,23 @@ KeyStroke=function()
                   {
                     changed=true
                     str=setCharAt(str,that.event.x+ix, that.event.k)
+                    // console.log("Setting key="+that.event.k)
                     if (that.eventList.length>0)
                     {
                         that.event=that.eventList[0]
+                        if (that.event.S==undefined)
+                        {
+                            that.event.S='onair'
+                        }
                         if (that.event.y!=row ||
                             that.event.s!=SaveEvent.s ||
                             that.event.S!=SaveEvent.S ||
                             that.event.p!=SaveEvent.p) // If the next event is not on the same row
                         {
                             more=false // Done with this line
+                            console.log("S="+that.event.S)
+                            console.log(that.event)
+                            console.log(SaveEvent)                            
                         }
                         else
                         {
@@ -203,6 +211,7 @@ KeyStroke=function()
                     }
                     else
                     {
+                        console.log("Nothing left to process")
                         break // Nothing left to process
                     }
                   }
@@ -222,44 +231,17 @@ KeyStroke=function()
     /** Dump the summary of the contents of the key events list   */
     this.dump=function()
     {
-        var p2,y2,s2,S2,r2
-        var count=0
+        console.log("Dump "+this.eventList.length+" items")
         for (var i=0;i<this.eventList.length;i++)
         {
-            var event=this.eventList[i]
-            //console.log(event)
-            var p=event.p
-            var y=event.y
-            var s=event.s
-            var S=event.S
-            if (S==undefined) S="onair"
-            // Count the number of edits to a particular row (y)
-            if ((p2==p) && (y2==y) && (s2==s) && (S2==S) // same row
-                && (i!=0))
-            {
-                count++  
-            }
-            else // Not same row
-            {
-                // Not the first item?
-                if (i>0)
-                {
-                    console.log("Count="+(count+1))
-                }
-                // Not the end of the list?
-                if ((i+1)!=this.eventList.length)
-                {
-                    console.log("[dump] p:"+p.toString(16)+" s:"+s+" y:"+y+" S:"+S)
-                }
-                count=0
-            }
-            // Last item in list? Final count
-            if ((i+1)==this.eventList.length)
-            {
-                console.log("Count="+(count))
-            }
-            
-            p2=p;y2=y;s2=s;S2=S
+            console.log(
+                "p:"+this.eventList[i].p.toString(16)+
+                " s:"+this.eventList[i].s+
+                " k:"+this.eventList[i].k+
+                " x:"+this.eventList[i].x+
+                " y:"+this.eventList[i].y
+            )
+            //console.log(this.eventList[i])
         }        
     } // dump
 } // keystroke class 

@@ -124,11 +124,14 @@ function newConnection(socket)
     {
         services[i].keyMessage(data);
     }
-    keystroke.addEvent(data);
-    // Temporary hack. ] will help me debug the writeback mechanism
+    // Temporary hack. Use ] to trigger the writeback mechanism.
     if (data.k==']')
     {
         keystroke.saveEdits();
+    }
+    else
+    {
+        keystroke.addEvent(data);
     }
   }
   
