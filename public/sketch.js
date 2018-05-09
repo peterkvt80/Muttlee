@@ -314,10 +314,22 @@ function newChar(data) // 'keystroke'
   // console.log("returned keycode="+(data.k));
   // @todo page number test
   if (!matchpage(data)) return; // Char is not for our page?
+  var key=data.k
+  // We should now look if graphic mode is set at this char.
+  // If graphics mode is set, only allow qwaszx and map the bits of the current character
   // At (x,y) on subpage s, place the character k
-  mypage.drawchar(data.k,data.x,data.y,data.s);
-  mypage.cursor.right();  
-  console.log(data);
+  var graphicsMode=mypage.IsGgraphics(data.x,data.y) // what about the subpage???
+  if (graphicsMode)
+  {
+    
+    key=data.k // @todo. Do we need to consider subpages and services? Maybe just subpages.
+  }
+  else
+  { // else write the character and advance the cursor
+      mypage.cursor.right()
+  }
+  mypage.drawchar(key,data.x,data.y,data.s)
+  console.log(data)
 }
 
 // A whole line is updated at a time

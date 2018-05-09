@@ -14,20 +14,19 @@ function toggle()
 
 TTXPAGE=function()
 {
-  this.cursor=new TTXCURSOR();
-  
-  this.redLink=100;
-  this.greenLink=100;
-  this.yellowLink=100;
-  this.cyanLink=100;
-  this.indexLink=100;
-  this.editMode=false;
-  
-  this.service=undefined;
-  
-  this.description='none';
+    this.cursor=new TTXCURSOR();
+    this.redLink=100;
+    this.greenLink=100;
+    this.yellowLink=100;
+    this.cyanLink=100;
+    this.indexLink=100;
+    this.editMode=false;
+
+    this.service=undefined;
+
+    this.description='none';
 	
-	this.subPage=0; // This is used to address the sub page
+    this.subPage=0; // This is used to address the sub page
 	this.subPageList=new Array();
 	
 	this.pageNumberEntry='100'; // Page number as entered (used to allow partial page numbers) 
@@ -232,6 +231,16 @@ TTXPAGE=function()
 			//this.rows[y].setrow('                                        ');
 		//this.rows[0].setrow('Pnn     CEEFAX 1 100 Sun 08 Jan 12:58/57'); // @todo Add proper header control		
   }
+  
+  /**
+   * \return true if the character at the location (xpos, ypos) is a graphics character
+   * \param xpos : column position
+   * \param ypos : row number
+   */
+    this.IsGgraphics=function(xpos,ypos)  
+    {
+        return false; // @todo
+    }
   
   
 } // page
