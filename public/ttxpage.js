@@ -14,19 +14,21 @@ function toggle()
 
 TTXPAGE=function()
 {
-    this.cursor=new TTXCURSOR();
-    this.redLink=100;
-    this.greenLink=100;
-    this.yellowLink=100;
-    this.cyanLink=100;
-    this.indexLink=100;
-    this.editMode=EDITMODE_NORMAL;
+    // Basic page properties
+    this.pageNumber=0x100
+    this.subPage=0 // This is used to address the sub page
+    this.cursor=new TTXCURSOR()
+    this.service=undefined
 
-    this.service=undefined;
-
+    // Misc page properties
+    this.redLink=0x100
+    this.greenLink=0x100
+    this.yellowLink=0x100
+    this.cyanLink=0x100
+    this.indexLink=0x100
+    this.editMode=EDITMODE_NORMAL
     this.description='none';
 	
-    this.subPage=0; // This is used to address the sub page
 	this.subPageList=new Array();
 	
 	this.pageNumberEntry='100'; // Page number as entered (used to allow partial page numbers) 
@@ -236,7 +238,7 @@ TTXPAGE=function()
    * \return true if the character at the location (data.x, data.y) is a graphics character
    * \param data : {p: page x: column y: row s: subpage S: service
    */
-    this.IsGgraphics=function(data)  
+    this.IsGraphics=function(data)  
     {
         if (data==undefined)
         {
@@ -513,9 +515,9 @@ function row(page,y,str)
       case 23 : ; // 22:gfxwhite
 				concealed=false;
 				break;
-			case 24 :  // 24: conceal. (SetAt)
-				if (!revealMode) concealed=true;
-				break;
+        case 24 :  // 24: conceal. (SetAt)
+            if (!revealMode) concealed=true;
+            break;
       case 25 : contiguous=true;break; // 25: Contiguous graphics
       case 26 : contiguous=false;break; // 26: Separated graphics
 
