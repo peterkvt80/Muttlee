@@ -20,7 +20,7 @@ TTXPAGE=function()
     this.yellowLink=100;
     this.cyanLink=100;
     this.indexLink=100;
-    this.editMode=false;
+    this.editMode=EDITMODE_NORMAL;
 
     this.service=undefined;
 
@@ -38,7 +38,7 @@ TTXPAGE=function()
     this.editSwitch=function(mode)
     {
         this.editMode=mode;
-        this.cursor.hide=!mode;
+        this.cursor.hide=(mode==EDITMODE_NORMAL);
     }
 
   // @todo check range
@@ -159,7 +159,7 @@ TTXPAGE=function()
   this.draw=function()
   {
     var dblHeight;
-    if (!(this.holdMode || this.editMode>0)) // Only cycle if we are not in hold mode or edit
+    if (!(this.holdMode || this.editMode!=EDITMODE_NORMAL)) // Only cycle if we are not in hold mode or edit
     {
         // carousel timing
         if (tickCounter % 14==0) // 7 seconds (@todo This should come from the tti file)
@@ -173,7 +173,7 @@ TTXPAGE=function()
     {
 	// console.log("drawing row "+row+" of "+this.rows.length);
       var cpos=-1
-			if (this.editMode && row==this.cursor.y) // If in edit mode and it is the correct row...
+			if (this.editMode!=EDITMODE_NORMAL && row==this.cursor.y) // If in edit mode and it is the correct row...
 			cpos=this.cursor.x
 			//this.rows[row].draw(cpos); // Original version
 			// Single pages tend to have subpage 0000. carousels start from 0001. So subtract 1 unless it is already 0.
@@ -224,8 +224,8 @@ TTXPAGE=function()
   this.setBlank=function()
   {
 		// console.log(" Clear all rows to blank");
-		this.subPageList=new Array();
-		this.addPage(this.pageNumber);
+		this.subPageList=new Array()
+		this.addPage(this.pageNumber)
 		
 //    for (var y=1;y<this.rows.length;y++)
 			//this.rows[y].setrow('                                        ');
@@ -233,18 +233,78 @@ TTXPAGE=function()
   }
   
   /**
-   * \return true if the character at the location (xpos, ypos) is a graphics character
-   * \param xpos : column position
-   * \param ypos : row number
+   * \return true if the character at the location (data.x, data.y) is a graphics character
+   * \param data : {p: page x: column y: row s: subpage S: service
    */
-    this.IsGgraphics=function(xpos,ypos)  
+    this.IsGgraphics=function(data)  
     {
-        return false; // @todo
+        if (data==undefined)
+        {
+            return
+        }
+
+        var subpage=data.s
+        if (subpage!=this.subPage)
+        {
+            // Need to access the subpage data.s rather than the local
+            // However things will get complicated.
+            // Consider another client sending a keystroke.
+            console.log("[TTXPAGE::IsGraphics] subPage does not match. Need think about what to do")
+            return false
+        }
+        
+        var myPage=this.subPageList[data.s]
+        var row=myPage[data.y].txt
+        // console.log("[TTXPAGE::IsGraphics]"+row)
+        
+        var len=data.x
+        if (len>40)
+        {
+            len=40
+        }
+        var gfxMode=false
+        for (var i=0;i<len;i++)
+        {
+            var ch=row.charCodeAt(i) & 0x7f
+            if (ch<0x08)
+            {
+                gfxMode=false
+            }
+            if (ch>=0x10 && ch<0x18)
+            {
+                gfxMode=true
+            }
+        }
+        console.log("[TTXPAGE::IsGraphics] gfxMode="+gfxMode)
+
+        return gfxMode
+    }
+    
+    /** \return the character at location given in data.x amd data.y */
+    this.getChar=function(data)
+    {
+        if (data==undefined)
+        {
+            return 0
+        } 
+        var subpage=data.s
+        if (subpage!=this.subPage)
+        {
+            return false // @todo
+        }
+        var myPage=this.subPageList[data.s]
+        var row=myPage[data.y].txt
+        
+        var ch=row.charCodeAt(data.x) & 0x7f    
+        console.log("[getChar] row="+row+" ch="+ch)        
+        return ch        
     }
   
   
 } // page
 
+
+/** \return true if while in graphics mode it is a graphics character */
 function isMosaic(ch)
 {
     ch=ch.charCodeAt() & 0x7f;
@@ -286,7 +346,7 @@ function row(page,y,str)
     // Special treatment for row 0
 	if (this.row==0)
     {
-        if (cpos<0 && !editMode) // This is the header row and we are NOT editing
+        if (cpos<0 && editMode==EDITMODE_NORMAL) // This is the header row and we are NOT editing
         {
             // Replace the first eight characters with the page number
     //		txt=replace(txt,'P'+this.page.toString(16)+'    ',0);
@@ -355,7 +415,12 @@ function row(page,y,str)
         else // If editing, then show the page/row number
         {
 			// txt=replace(txt,'E'+this.pagetext+'    ',0);            // Show the page/subpage being edited
-			txt=replace(txt,'\003'+this.pagetext+'.'+nf(subPage,2)+'\007',0);            // Show the page/subpage being edited
+            var highlight='\003' // Edit mode is yellow
+            if (editMode==EDITMODE_ESCAPE)
+            {
+                highlight='\002' // Escape mode is green
+            }
+			txt=replace(txt,highlight+this.pagetext+'.'+nf(subPage,2)+'\007',0);            // Show the page/subpage being edited
         }
     }
 	// Non header substitutions
@@ -548,6 +613,7 @@ function row(page,y,str)
   {
     text(ch,x*gTtxW,(y+1+(dblH?1:0))*gTtxH);
   }
+  
   this.mapchar=function(ch)
   {
 // Temporary mappings for Germany

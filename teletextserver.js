@@ -315,7 +315,7 @@ function doLoad(data)
         console.log ('Row(b)='+result)
         
         data.k='?' // @todo Not sure what these values should be, if anything
-        data.x.i=-1 
+        data.x=-1 
         // console.log ('Row='+result)
         data.y= row // The row that we are sending out
         data.rowText=result

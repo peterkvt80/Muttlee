@@ -19,7 +19,10 @@ var socket;
 var gClientID=null;
 
 // state
-var editMode=false;
+const EDITMODE_NORMAL=0 // normal viewing
+const EDITMODE_EDIT=1   // edit mode
+const EDITMODE_ESCAPE=2 // expect next character to be either an edit.tf function or Escape again to exit.
+var editMode=EDITMODE_NORMAL;
 
 // dom
 var redButton;
@@ -318,17 +321,32 @@ function newChar(data) // 'keystroke'
   // We should now look if graphic mode is set at this char.
   // If graphics mode is set, only allow qwaszx and map the bits of the current character
   // At (x,y) on subpage s, place the character k
-  var graphicsMode=mypage.IsGgraphics(data.x,data.y) // what about the subpage???
-  if (graphicsMode)
+  var graphicsMode=mypage.IsGgraphics(data) // what about the subpage???
+  if (graphicsMode) // Take the original pixel and xor our selected bit
   {
     
-    key=data.k // @todo. Do we need to consider subpages and services? Maybe just subpages.
+    key=data.k.toUpperCase() // @todo. Do we need to consider subpages and services? Maybe just subpages.
+    var bit=0
+    switch (key)
+    {
+        case 'Q' : bit=0x01;break
+        case 'W' : bit=0x02;break
+        case 'A' : bit=0x04;break
+        case 'S' : bit=0x08;break
+        case 'Z' : bit=0x10;break
+        case 'X' : bit=0x40;break // Note the discontinuity due to the gap.
+        default: return
+    }
+    key=mypage.getChar(data) // Get the original character
+    key^=bit // And toggle the selected bit
+    console.log ("[newChar] Graphics key="+key+" bit="+bit);
+    // What is the problem? The data is being inserted as an ascii number rather than the code
   }
   else
   { // else write the character and advance the cursor
       mypage.cursor.right()
   }
-  mypage.drawchar(key,data.x,data.y,data.s)
+  mypage.drawchar(String.fromCharCode(key),data.x,data.y,data.s)
   console.log(data)
 }
 
@@ -366,38 +384,53 @@ function inputNumber()
 
 function keyPressed() // This is called before keyTyped
 {
-	var active=document.activeElement;
-	console.log("Active element="+active.id);
+	var active=document.activeElement
+	console.log("Active element="+active.id)
 	if (document.activeElement.id!='pageNumber') // todo: Kill refresh cycles while the input is active.
 	{
+        if (keyCode!=ESCAPE && editMode==EDITMODE_ESCAPE)
+        {
+            console.log("[keyPressed] Reminder that this is where edit.tf commands are processed")
+        }
 		switch (keyCode)
 		{
         //case PAGE_UP:;
 		case LEFT_ARROW:
-            if (editMode) mypage.cursor.left();
-            break;
+            if (editMode==EDITMODE_EDIT) mypage.cursor.left()
+            break
         //case PAGE_DOWN:;
 		case RIGHT_ARROW: 
-            if (editMode) mypage.cursor.right();
-            break;
+            if (editMode==EDITMODE_EDIT) mypage.cursor.right()
+            break
 		case UP_ARROW:
-            if (editMode) mypage.cursor.up();
-            break;
+            if (editMode==EDITMODE_EDIT) mypage.cursor.up()
+            break
 		case DOWN_ARROW:
-            if (editMode) mypage.cursor.down();
-            break;
+            if (editMode==EDITMODE_EDIT) mypage.cursor.down()
+            break
 		case ESCAPE:
-            editMode=!editMode;
+            switch (editMode)
+            {
+            case EDITMODE_NORMAL:
+                editMode=EDITMODE_EDIT
+                break
+            case EDITMODE_EDIT:
+                editMode=EDITMODE_ESCAPE
+                break
+            case EDITMODE_ESCAPE:
+                editMode=EDITMODE_NORMAL
+                break
+            }
             mypage.editSwitch(editMode);
             break;
         case 33: // PAGE_UP (next subpage when in edit mode)
-            if (editMode)
+            if (editMode==EDITMODE_EDIT)
             {
                 mypage.nextSubpage();
             }
             break;
         case 34: // PAGE_DOWN (prev subpage when in edit mode)
-            if (editMode)
+            if (editMode==EDITMODE_EDIT)
             {
                 mypage.prevSubpage();
             }
@@ -429,7 +462,7 @@ function keyTyped()
 function processKey(keyPressed)
 {
 	console.log('processKey='+keyPressed);
-	if (editMode==true) // Numbers are typed into the page
+	if (editMode!=EDITMODE_NORMAL) // Numbers are typed into the page
 	{
 		var data=
 		{
@@ -505,7 +538,7 @@ function khold()  {mypage.toggleHold(); }
 function mouseClicked()
 {
     // Only need to do this in edit mode
-    if (!editMode)
+    if (editMode==EDITMODE_NORMAL)
     {
         return;
     }
@@ -513,7 +546,7 @@ function mouseClicked()
     var yLoc=int(mouseY/gTtxH);
     mypage.cursor.moveTo(xLoc,yLoc);
     // console.log('The mouse was clicked at '+xLoc+' '+yLoc);
-    return false;
+    return false; // ?
 }
 
 /* Swipes */
