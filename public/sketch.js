@@ -317,16 +317,33 @@ function newChar(data) // 'keystroke'
     var bit=0
     switch (key)
     {
+        // sixel modifying
         case 'Q' : bit=0x01;break
         case 'W' : bit=0x02;break
         case 'A' : bit=0x04;break
         case 'S' : bit=0x08;break
         case 'Z' : bit=0x10;break
         case 'X' : bit=0x40;break // Note the discontinuity due to the gap.
-        default: return
+        // R=Reverse, F=fill
+        case 'R' : bit=0x5f;break // reverse all bits
+        case 'F' : bit=0xff;break // set all bits
+        case 'C' : bit=0x00;break // clear all bits
+        
+        default: return        
     }
-    key=myPage.getChar(data) // Get the original character
-    key^=bit // And toggle the selected bit
+    if (bit==0)
+    {
+        key=0x20; // All pixels off
+    }
+    else if (bit==0xff)
+    {
+        key=0x7f; // All pixels on
+    }
+    else
+    {
+        key=myPage.getChar(data) // Get the original character
+        key^=bit // And toggle the selected bit
+    }
     key=String.fromCharCode(key) // Convert to ascii
     console.log ("[newChar] Graphics key="+key+" bit="+bit);
     // What is the problem? The data is being inserted as an ascii number rather than the code
@@ -410,23 +427,28 @@ function keyPressed() // This is called before keyTyped
                 editMode=EDITMODE_NORMAL
                 break
             }
-            myPage.editSwitch(editMode);
-            break;
+            myPage.editSwitch(editMode)
+            break
+        case TAB: // Insert a space (@todo send edit to other clients)
+            myPage.insertSpace()
+            break
+        case BACKSPACE: // Remove current character, move the remainder one char left.
+            myPage.backSpace()
+            break
         case 33: // PAGE_UP (next subpage when in edit mode)
             if (editMode==EDITMODE_EDIT)
             {
-                myPage.nextSubpage();
+                myPage.nextSubpage()
             }
-            break;
+            break
         case 34: // PAGE_DOWN (prev subpage when in edit mode)
             if (editMode==EDITMODE_EDIT)
             {
-                myPage.prevSubpage();
+                myPage.prevSubpage()
             }
-            break;
+            break
 		default:
 			console.log('unhandled keycode='+keyCode)
-		;
 		}
 	}
 	// return false; // Do not do this! This stops keyTyped 
@@ -591,11 +613,16 @@ function touchEnded()
 
 function nextPage()
 {
-	var p=myPage.pageNumber;
-	p++;
+	var p=myPage.pageNumber
+	p++
 	if ((p & 0xf)==0xa) // Hex numbers should be skipped. Users should not select them.
+    {
 		p+=6;
-	if (p>0x8fe) p=0x8fe;
+    }
+    if (p>0x8fe)
+    {
+        p=0x8fe;
+    }
 	myPage.setPage(p); // We now have a different page number
 	var data=
 	{
@@ -606,8 +633,8 @@ function nextPage()
 	rowText: '',
 	id: gClientID	
 	}				
-	socket.emit('load',data);		
-	console.log("page="+hex(data.p));
+	socket.emit('load',data)
+	console.log("page="+hex(data.p))
 }
 
 function prevPage()
@@ -673,21 +700,38 @@ function editTF(key)
     case 'M' : chr='\x15';break // graphics magenta
     case 'C' : chr='\x16';break // graphics cyan
     case 'W' : chr='\x17';break // graphics white
-    /* @todo Unimplemented codes
-        case 24 :  // 24: conceal. (SetAt)
-            if (!revealMode) concealed=true;
-            break;
-      case 25 : contiguous=true;break; // 25: Contiguous graphics
-      case 26 : contiguous=false;break; // 26: Separated graphics
 
-      case 28 : bgColor=color(0);break; // 28 black background
-      case 29 : bgColor=fgColor;break; // 29: new background
-      case 30 : holdGfx=true; // 30: Hold graphics mode (set at)
-      	printable=true; // Because this will be replaced
-      	break;
-      case 31 : break; // 31 Release hold mode (set after)
-	  case 32 : ; // Space is not printable but it is still a mosaic. Intentional fall through
-      */
+    case 'O' : chr='\x18';break // conceal
+
+    case 's' : chr='\x19';break // Contiguous graphics
+    case 'S' : chr='\x1a';break // Separated graphics
+
+    case 'n' : chr='\x1c';break // 28 black background
+    case 'N' : chr='\x1d';break // 29: new background
+    case 'H' : chr='\x1e';break // 30: Hold graphics mode
+    case 'h' : chr='\x1f';break // 31 Release hold mode
+    
+    case 'x' : myPage.showGrid=!myPage.showGrid;return // toggle grid display
+    /*
+    edit.tf functions not implemented
+    RFC: not sure what this is
+    Number pad: need to find out what the keys do
+    'i' : // insert row
+    'I' : // delete row
+    'z' : // redraw screen
+    '&' : // cycle character set
+    '<' : // narrow screen
+    '<' : // widen screen
+    '=' : // trace image
+    'U' : // Duplicate row
+    'Q' : // toggle control codes
+    '-' : // Toggle conceal/reveal
+    'Z' : // clear screen
+    
+    editing with blocks
+    Select blocks with <esc> arrow keys
+    X: cut, C: paste, <shift< arrows: move sixels
+    */
     default: // nothing matched?
         return
     }

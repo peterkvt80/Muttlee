@@ -3,13 +3,13 @@
 // row class defines a teletext row.
 
 // Timer for flashing cursor and text
-var flashState=false;
-var tickCounter=0; // For timing carousels (in steps of half a second)
-setInterval(toggle, 500);
+var flashState=false
+var tickCounter=0 // For timing carousels (in steps of half a second)
+setInterval(toggle, 500)
 function toggle()
 {
-	tickCounter++;
-  flashState=!flashState;
+	tickCounter++
+  flashState=!flashState
 }
 
 TTXPAGE=function()
@@ -27,39 +27,40 @@ TTXPAGE=function()
     this.cyanLink=0x100
     this.indexLink=0x100
     this.editMode=EDITMODE_NORMAL
-    this.description='none';
+    this.description='none'
+    this.showGrid=false
 	
-	this.subPageList=new Array();
+	this.subPageList=new Array()
 	
-	this.pageNumberEntry='100'; // Page number as entered (used to allow partial page numbers) 
+	this.pageNumberEntry='100' // Page number as entered (used to allow partial page numbers) 
 		
-	this.revealMode=false;
-	this.holdMode=false;
+	this.revealMode=false
+	this.holdMode=false
     
     // edit mode 
     this.editSwitch=function(mode)
     {
-        this.editMode=mode;
-        this.cursor.hide=(mode==EDITMODE_NORMAL);
+        this.editMode=mode
+        this.cursor.hide=(mode==EDITMODE_NORMAL)
     }
 
   // @todo check range
   this.init=function(number)
   {
-        this.pageNumber=number;
+        this.pageNumber=number
         //this.service=undefined; // @todo Services
 
-        this.addPage(number);
+        this.addPage(number)
   }
 	
 	this.toggleReveal=function ()
 	{
-		this.revealMode=!this.revealMode;
+		this.revealMode=!this.revealMode
 	}
 	
 	this.toggleHold=function ()
 	{
-		this.holdMode=!this.holdMode;
+		this.holdMode=!this.holdMode
 	}
   
   /** @brief Change the page number for this page and all child rows
@@ -67,34 +68,34 @@ TTXPAGE=function()
    */
   this.setPage=function(p)
   {
-		this.subPage=0;
-		tickCounter=1;
-		this.pageNumber=p; /// @todo Convert this to do all sub pages
+		this.subPage=0
+		tickCounter=1
+		this.pageNumber=p /// @todo Convert this to do all sub pages
 		
-		this.pageNumberEntry=p.toString(16);
+		this.pageNumberEntry=p.toString(16)
 		
-		this.subPageList=new Array();
-		this.addPage(this.pageNumber);		
+		this.subPageList=new Array()
+		this.addPage(this.pageNumber)
   }
   
   this.setService=function(S)
   {
-    this.service=S;
+    this.service=S
   }
 	
 	/** @brief Add a page to the sub page list
 	 */
 	this.addPage=function(number)
 	{
-    this.rows = new Array();
+    this.rows = new Array()
 	// As rows go from 0 to 31 and pages start at 100, we can use the same parameter for both
-    this.rows.push(new row(number,0,"Pnn     CEEFAX 1 100 Sun 08 Jan 12:58/57"));
+    this.rows.push(new row(number,0,"Pnn     CEEFAX 1 100 Sun 08 Jan 12:58/57"))
     for (var i=1;i<26;i++)
     {
-      //this.rows.push(new row(number,i,"~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„"));
-      this.rows.push(new row(number,i,"                                        "));
+      //this.rows.push(new row(number,i,"~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„"))
+      this.rows.push(new row(number,i,"                                        "))
     }  
-		this.subPageList.push(this.rows);
+		this.subPageList.push(this.rows)
 	}
 	
 	/**
@@ -102,20 +103,20 @@ TTXPAGE=function()
 	 */
 	this.setSubPage=function(s)
 	{
-		s=parseInt(s);
-		// console.log("[setSubPage] enters "+s);
+		s=parseInt(s)
+		// console.log("[setSubPage] enters "+s)
 		if (s<0 || s>79) // 
-			s=0; // Single page
+			s=0 // Single page
 		else
-			s=s-1; // Carousel (because carousels start at 1, but our array always starts at 0
+			s=s-1 // Carousel (because carousels start at 1, but our array always starts at 0
 		
 		///@todo Check that s is in a subpage that exists and add it if needed.
 		if (this.subPageList.length<=s)
 		{
-			this.addPage(this.pageNumber);
-			// console.log("[setSubPage] Need to add a new subpage: "+s);
+			this.addPage(this.pageNumber)
+			// console.log("[setSubPage] Need to add a new subpage: "+s)
 		}
-		this.subPage=s;
+		this.subPage=s
 	}
 
   /** @brief Set row r to txt
@@ -125,16 +126,16 @@ TTXPAGE=function()
 		if (r>=0 && r<=24)
 		{
 			if (this.subPage<0)
-				this.subPage=0;
-			var v=this.subPageList[this.subPage];
+				this.subPage=0
+			var v=this.subPageList[this.subPage]
 			if (v==undefined)
 			{
-				console.log('oh noes. v is undefined');
+				console.log('oh noes. v is undefined')
 			}
-			v[r].setrow(txt);
+			v[r].setrow(txt)
 		}
 		else
-			return;
+			return
 		/*
 			// Might want to find out why this happens. Doesn't seem to matter
 			console.log('not setting row '+r+' to '+txt);
@@ -186,9 +187,9 @@ TTXPAGE=function()
 			var v=this.subPageList[this.subPage]
 			if (v==undefined)
 			{
-                console.log("Undefined :-(")
+        console.log("Undefined :-(")
 			}
-            else
+      else
 			if (v.length>0)
 			{			
 				if (row==0 && v.length>0) // Set the page number for the header only
@@ -197,11 +198,27 @@ TTXPAGE=function()
 				}
 
 				if (v[row].draw(cpos, this.revealMode, this.holdMode, this.editMode, this.subPage))
-                {
-					row++ // If double height, skip the next row 
-                }
+        {
+          row++ // If double height, skip the next row 
+        }
 			}    
 		}
+    if (this.showGrid) this.grid()
+  }
+  
+  /** Draw a character grid overlay for edit quidance
+   */
+  this.grid=function()
+  {
+    stroke(128)
+    for (var x=0;x<=40;x++)
+    {
+      line(gTtxW*x,0,gTtxW*x,gTtxH*25)
+    }
+    for (var y=0;y<=25;y++)
+    {
+      line(0,gTtxH*y,gTtxW*40,gTtxH*y)
+    }
   }
   
   //  Draw ch at (x,y) on subpage s
@@ -212,12 +229,54 @@ TTXPAGE=function()
     var v=this.subPageList[s];
     if (v==undefined)
     {
-        console.log("Can not draw on a subpage that doesn't exist :-(");
+        console.log("Can not draw on a subpage that doesn't exist :-(")
     }
     else
     {
-        v[y].setchar(ch,x);
+        v[y].setchar(ch,x)
     }
+  }
+  
+  // Insert a space at the current cursor location (TAB command)
+  // WARNING: This is not handled by other clients. Will need some thinking how to do it properly
+  // Maybe broadcast the entire row when we are done?
+  this.insertSpace=function()
+  {
+    var pg=this.subPageList[this.subPage];
+    if (pg==undefined)
+    {
+       return
+    }
+    else
+    {
+      var x=this.cursor.x
+      var y=this.cursor.y
+      str=pg[y].txt
+      str=str.substr(0,x) + ' ' + str.substr(x)
+// might want to trim back to 40 chars?   
+      pg[y].setrow(str)
+    }    
+  }
+  
+  // Backspace. Delete current character, move remainder of line one character left
+  // Pad with a space at the end. Also update the cursor position.
+  // @todo Work out how this edit will get back to the server
+  this.backSpace=function()
+  {
+    var pg=this.subPageList[this.subPage];
+    if (pg==undefined)
+    {
+       return
+    }
+    else
+    {
+      var x=this.cursor.x
+      var y=this.cursor.y
+      this.cursor.left()
+      str=pg[y].txt
+      str=str.substr(0,x-1) + str.substr(x,40-x) + ' ' 
+      pg[y].setrow(str)
+    }    
   }
   
   /**
@@ -300,8 +359,7 @@ TTXPAGE=function()
         var ch=row.charCodeAt(data.x) & 0x7f    
         console.log("[getChar] row="+row+" ch="+ch)        
         return ch        
-    }
-  
+    }  
   
 } // page
 
@@ -309,33 +367,33 @@ TTXPAGE=function()
 /** \return true if while in graphics mode it is a graphics character */
 function isMosaic(ch)
 {
-    ch=ch.charCodeAt() & 0x7f;
-    return (ch>=0x20 && ch<0x40) || ch>=0x60;
+  ch=ch.charCodeAt() & 0x7f
+  return (ch>=0x20 && ch<0x40) || ch>=0x60
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
 function row(page,y,str)
 {
-  this.page=page;
-  this.row=y;
-  this.txt=str;
-	this.pagetext='xxx';
-  // console.log('Setting row to '+this.page+' '+this.row+' '+this.txt);
+  this.page=page
+  this.row=y
+  this.txt=str
+	this.pagetext='xxx'
+  // console.log('Setting row to '+this.page+' '+this.row+' '+this.txt)
   this.setchar=function(ch,n)
   {
-    this.txt=setCharAt(this.txt,n,ch);
+    this.txt=setCharAt(this.txt,n,ch)
   }
 
   this.setrow=function(txt)
   {
-    this.txt=txt;
+    this.txt=txt
   }
 	
 	/** Expect a three digit page number, or partial page number */
 	this.setpagetext=function(txt)
 	{
-		this.pagetext=txt;
+		this.pagetext=txt
 	}
 
   /** @param cpos is the cursor column position to highlight
@@ -344,87 +402,89 @@ function row(page,y,str)
 	 */
   this.draw=function(cpos, revealMode, holdMode, editMode, subPage)
   {
-	var txt=this.txt; // Copy the row text because a header row will modify it
+    var txt=this.txt; // Copy the row text because a header row will modify it
     // Special treatment for row 0
 	if (this.row==0)
-    {
-        if (cpos<0 && editMode==EDITMODE_NORMAL) // This is the header row and we are NOT editing
-        {
-            // Replace the first eight characters with the page number
-    //		txt=replace(txt,'P'+this.page.toString(16)+'    ',0);
+  {
+      if (cpos<0 && editMode==EDITMODE_NORMAL) // This is the header row and we are NOT editing
+      {
+          // Replace the first eight characters with the page number
+  //		txt=replace(txt,'P'+this.page.toString(16)+'    ',0);
 
-            if (holdMode)
-                txt=replace(txt,'HOLD    ',0);
-            else
-                txt=replace(txt,'P'+this.pagetext+'    ',0);
-            
-            // Substitute mpp for the page number
-            var ix;
-            ix=txt.indexOf('%%#');
-            if (ix<0)
-                ix=txt.indexOf('mpp');
-            if (ix>0)
-                txt=replace(txt,this.page.toString(16),ix)
-                
-            // Substitute dd for the day 1..31 (or %d)
-            ix=txt.indexOf('%d');
-            if (ix<0)
-                ix=txt.indexOf('dd');
-            if (ix>0)
-                txt=replace(txt,nf(day(),2),ix);
+          if (holdMode)
+              txt=replace(txt,'HOLD    ',0);
+          else
+              txt=replace(txt,'P'+this.pagetext+'    ',0);
+          
+          // Substitute mpp for the page number
+          var ix;
+          ix=txt.indexOf('%%#');
+          if (ix<0)
+              ix=txt.indexOf('mpp');
+          if (ix>0)
+              txt=replace(txt,this.page.toString(16),ix)
+              
+          // Substitute dd for the day 1..31 (or %d)
+          ix=txt.indexOf('%d')
+          if (ix<0)
+          {
+              ix=txt.indexOf('dd')
+          }
+          if (ix>0)
+              txt=replace(txt,nf(day(),2),ix);
 
-                // Substitute DAY for the three letter abbreviated day 
-            ix=txt.indexOf('%%a');
-            if (ix<0)
-                ix=txt.indexOf('DAY');
-            if (ix>0)
-            {
-                var week = new Date().getDay(); 
-                var str="MonTueWedThuFriSatSun".substr((week-1)*3,3);
-                txt=replace(txt,str,ix);
-            }
-            // Substitute MTH for the three letter abbreviated month 
-            ix=txt.indexOf('%%b');
-            if (ix<0)
-                ix=txt.indexOf('MTH');
-            if (ix>0)
-            {
-                var str="JanFebMarAprMayJunJulAugSepOctNovDec".substr((month()-1)*3,3);
-                txt=replace(txt,str,ix)
-            }
-            
-            // Substitute hh for the two digit hour 
-            ix=txt.indexOf('%H');
-            if (ix<0)
-                ix=txt.indexOf('hh');
-            if (ix>0)
-                txt=replace(txt,nf(hour(),2),ix)
-                
-            // Substitute nn for the two digit minutes
-            ix=txt.indexOf('%M');
-            if (ix<0)
-                ix=txt.indexOf('nn')
-            if (ix>0)
-                txt=replace(txt,nf(minute(),2),ix)
-                
-            // Substitute ss for the two digit seconds
-            ix=txt.indexOf('%S');
-            if (ix<0)
-                ix=txt.indexOf('ss');
-            if (ix>0)
-                txt=replace(txt,nf(second(),2),ix)
-        }
-        else // If editing, then show the page/row number
-        {
-			// txt=replace(txt,'E'+this.pagetext+'    ',0);            // Show the page/subpage being edited
-            var highlight='\003' // Edit mode is yellow
-            if (editMode==EDITMODE_ESCAPE)
-            {
-                highlight='\002' // Escape mode is green
-            }
-			txt=replace(txt,highlight+this.pagetext+'.'+nf(subPage,2)+'\007',0);            // Show the page/subpage being edited
-        }
-    }
+              // Substitute DAY for the three letter abbreviated day 
+          ix=txt.indexOf('%%a');
+          if (ix<0)
+              ix=txt.indexOf('DAY');
+          if (ix>0)
+          {
+              var week = new Date().getDay(); 
+              var str="MonTueWedThuFriSatSun".substr((week-1)*3,3);
+              txt=replace(txt,str,ix);
+          }
+          // Substitute MTH for the three letter abbreviated month 
+          ix=txt.indexOf('%%b');
+          if (ix<0)
+              ix=txt.indexOf('MTH');
+          if (ix>0)
+          {
+              var str="JanFebMarAprMayJunJulAugSepOctNovDec".substr((month()-1)*3,3);
+              txt=replace(txt,str,ix)
+          }
+          
+          // Substitute hh for the two digit hour 
+          ix=txt.indexOf('%H');
+          if (ix<0)
+              ix=txt.indexOf('hh');
+          if (ix>0)
+              txt=replace(txt,nf(hour(),2),ix)
+              
+          // Substitute nn for the two digit minutes
+          ix=txt.indexOf('%M');
+          if (ix<0)
+              ix=txt.indexOf('nn')
+          if (ix>0)
+              txt=replace(txt,nf(minute(),2),ix)
+              
+          // Substitute ss for the two digit seconds
+          ix=txt.indexOf('%S');
+          if (ix<0)
+              ix=txt.indexOf('ss');
+          if (ix>0)
+              txt=replace(txt,nf(second(),2),ix)
+      }
+      else // If editing, then show the page/row number
+      {
+    // txt=replace(txt,'E'+this.pagetext+'    ',0);            // Show the page/subpage being edited
+          var highlight='\003' // Edit mode is yellow
+          if (editMode==EDITMODE_ESCAPE)
+          {
+              highlight='\002' // Escape mode is green
+          }
+    txt=replace(txt,highlight+this.pagetext+'.'+nf(subPage,2)+'\007',0);            // Show the page/subpage being edited
+      }
+  }
 	// Non header substitutions
 	if (this.row>0 && this.row<25 && cpos<0) // This is NOT the header row NOR in edit mode.
 	{
