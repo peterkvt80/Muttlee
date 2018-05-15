@@ -186,11 +186,12 @@ TTXPAGE=function()
 				
 			var v=this.subPageList[this.subPage]
 			if (v==undefined)
-			{
+			{      
         console.log("Undefined :-(")
+        // can we fix it?
+        v=this.subPageList[0]
 			}
-      else
-			if (v.length>0)
+			if (v!=undefined && v.length>0)
 			{			
 				if (row==0 && v.length>0) // Set the page number for the header only
 				{

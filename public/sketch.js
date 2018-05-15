@@ -66,7 +66,8 @@ var btnk0, btnk1, btnk2, btnk3, btnk4, btnk5, btnk6, btnk7, btnk8, btnk9
 var btnkx, btnky, btnkback, btnkfwd
 
 // swipe
-var swipeStart
+var swipeStart // @todo This conflicts with block select in edit.tf. 
+// Use click/move to select a block.
 
 function preload()
 {

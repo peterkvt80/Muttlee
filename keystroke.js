@@ -18,6 +18,9 @@ var fs = require('fs')
 
 KeyStroke=function()
 {
+  this.event=undefined // Used to talk to inner function
+  this.outfile=undefined
+  
   this.eventList=[]
   this.debug=true
   if (this.debug) console.log("[keystroke::constructor]")
@@ -81,7 +84,6 @@ KeyStroke=function()
   /* Write the edits back to file */
   this.saveEdits=function()
   {
-    this.event
     if (this.debug) console.log("[keystroke::saveEdit]")
     // Are there any edits to save?
     if (this.eventList.length==0)
@@ -136,6 +138,8 @@ KeyStroke=function()
             terminal: false
         })
         
+        this.outfile=fs.createWriteStream('/run/shm/test.tti') // Stick the edited file here until we prove that it is working
+        
         // If not set, then set the service to default
         if (this.event.S==undefined)
         {
@@ -145,6 +149,8 @@ KeyStroke=function()
         var that=this
         reader.on('line', function(line)
         { 
+        
+        
             var SaveEvent=that.event    // Save so we can check if we stay on the same row
             var subCode=0
             if (line.indexOf('SC')==0)
@@ -221,11 +227,25 @@ KeyStroke=function()
                       console.log("ix="+ix)
                       console.log("[before]"+line)
                       console.log("[edited]"+str)
+                      line=str; // Now we can write the line
                   }
                   
                 } // OL                    
             } // If subcode matches
-        }) // reader
+           // Write the line out to the file
+            that.outfile.write(line+'\n')
+
+        }) // reader.on
+        
+        /* When the input stream ends */
+        reader.on('close', function(line)
+        {
+          //This is when we will also close the output file and probably rename them.
+          that.outfile.end()
+          console.log("[reader.on] closed file. byebye")
+        }) // reader.close
+        
+        
     } // saveEdits
   } // saveEdits
     /** Dump the summary of the contents of the key events list   */
