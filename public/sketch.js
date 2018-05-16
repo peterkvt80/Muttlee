@@ -93,7 +93,7 @@ function setup()
   myPage=new TTXPAGE()
   myPage.init(0x100)
   // message events
-  socket.on('keystroke',newChar)
+  socket.on('keystroke',newCharFromServer)
   socket.on('row',setRow) // A teletext row
   socket.on('blank',setBlank) // Clear the page
   socket.on('fastext',setFastext)
@@ -298,8 +298,15 @@ function matchpage(data)
 	return true
 }
 
+/** newCharFromServer only differs from newChar in that it does not move the cursor
+ */
+function newCharFromServer(data)
+{
+  newChar(data,false)
+}
+
 // Message handlers....
-function newChar(data) // 'keystroke'
+function newChar(data, advance=true) // 'keystroke'
 {
   //if (data.k<' ')
   // console.log("returned keycode="+(data.k))
@@ -350,16 +357,19 @@ function newChar(data) // 'keystroke'
     // What is the problem? The data is being inserted as an ascii number rather than the code
   }
   else
-  { // else write the character and advance the cursor
-      myPage.cursor.right()
+  { 
+      if (advance)  // advance the cursor if it is not from the server
+      {
+        myPage.cursor.right()
+      }
   }
-  myPage.drawchar(key,data.x,data.y,data.s)
+  myPage.drawchar(key,data.x,data.y,data.s) // write the character
   console.log(data)
   if (editMode==EDITMODE_INSERT)
   {
         editMode=EDITMODE_EDIT
   }
-}
+} // newChar
 
 // A whole line is updated at a time
 function setRow(r) // 'row'
@@ -746,8 +756,8 @@ function editTF(key)
     case 'c' : chr='\x06';break // alpha cyan
     case 'w' : chr='\x07';break // alpha white
 
-    case 'f' : chr='\x08';break // flash on
-    case 'F' : chr='\x09';break // steady
+    case 'F' : chr='\x08';break // flash on
+    case 'f' : chr='\x09';break // steady
     
     // chr='\x0a';break // endbox
     // chr='\x0b';break // startbox
@@ -810,5 +820,6 @@ function editTF(key)
         y: myPage.cursor.y,
         k: chr
     }
+    socket.emit('keystroke', data)    
     newChar(data)
 }
