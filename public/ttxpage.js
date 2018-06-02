@@ -190,6 +190,10 @@ TTXPAGE=function()
         console.log("Undefined :-(")
         // can we fix it?
         v=this.subPageList[0]
+        if (v!=undefined) // Move to a subpage that exists
+        {
+          this.subPage=0;
+        }
 			}
 			if (v!=undefined && v.length>0)
 			{			

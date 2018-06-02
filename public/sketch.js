@@ -808,6 +808,7 @@ function editTF(key)
     X: cut, C: paste, <shift< arrows: move sixels
     */
     default: // nothing matched?
+      editMode=EDITMODE_EDIT    
         return
     }
     // Construct object to define exactly where this key code will go
