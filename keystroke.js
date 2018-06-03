@@ -84,6 +84,8 @@ KeyStroke=function()
   /* Write the edits back to file */
   this.saveEdits=function()
   {
+    var tempFile='/run/shm/test.tti'; // where the edited file gets written first
+    
     if (this.debug) console.log("[keystroke::saveEdit]")
     // Are there any edits to save?
     if (this.eventList.length==0)
@@ -138,7 +140,7 @@ KeyStroke=function()
             terminal: false
         })
         
-        this.outfile=fs.createWriteStream('/run/shm/test.tti') // Stick the edited file here until we prove that it is working
+        this.outfile=fs.createWriteStream(tempFile) // Stick the edited file here until we prove that it is working
         
         // If not set, then set the service to default
         if (this.event.S==undefined)
@@ -240,9 +242,16 @@ KeyStroke=function()
         /* When the input stream ends */
         reader.on('close', function(line)
         {
+          console.log("Copy "+tempFile+" to "+filename)
+          reader.close()
+          copyFile(tempFile,filename,function(err)
+            {
+              console.log("[reader.on] Something meaningful here about a file copy error="+err)
+            }
+          )
           //This is when we will also close the output file and probably rename them.
           that.outfile.end()
-          console.log("[reader.on] closed file. byebye")
+          console.log("[reader.on] closed file. byebye.")
         }) // reader.close
         
         
@@ -271,4 +280,28 @@ function setCharAt(str,index,chr)
 {
     if(index > str.length-1) return str
     return str.substr(0,index) + chr + str.substr(index+1)
+}
+
+function copyFile(source, target, cb) {
+  var cbCalled = false;
+
+  var rd = fs.createReadStream(source);
+  rd.on("error", function(err) {
+    done(err);
+  });
+  var wr = fs.createWriteStream(target);
+  wr.on("error", function(err) {
+    done(err);
+  });
+  wr.on("close", function(ex) {
+    done();
+  });
+  rd.pipe(wr);
+
+  function done(err) {
+    if (!cbCalled) {
+      cb(err);
+      cbCalled = true;
+    }
+  }
 }

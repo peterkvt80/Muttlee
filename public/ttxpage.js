@@ -192,7 +192,7 @@ TTXPAGE=function()
         v=this.subPageList[0]
         if (v!=undefined) // Move to a subpage that exists
         {
-          this.subPage=0;
+          this.subPage=0
         }
 			}
 			if (v!=undefined && v.length>0)
@@ -610,7 +610,7 @@ function row(page,y,str)
       noStroke()
       fill(bgColor)
       // except if this is the cursor position
-      if (cpos==i && flashState) fill(255)
+      if (cpos==i && flashState) fill(255) // However, this is hidden when all pixels are set. @todo
 			if (this.row<23)
 				this.drawchar(String.fromCharCode(0xe6df),i,this.row+1,false) //edge case: a single height character on a double height row has double height backhround
       this.drawchar(String.fromCharCode(0xe6df),i,this.row,dblHeight)

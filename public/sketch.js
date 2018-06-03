@@ -326,7 +326,7 @@ function newChar(data, advance=true) // 'keystroke'
     switch (key)
     {
         // sixel modifying
-        case 'Q' : bit=0x01;break
+        case 'Q' : bit=0x01;break        
         case 'W' : bit=0x02;break
         case 'A' : bit=0x04;break
         case 'S' : bit=0x08;break
@@ -350,7 +350,7 @@ function newChar(data, advance=true) // 'keystroke'
     else
     {
         key=myPage.getChar(data) // Get the original character
-        key^=bit // And toggle the selected bit
+        key=key^bit | 0x20 // And set bit 5 so we only make mosaics
     }
     key=String.fromCharCode(key) // Convert to ascii
     console.log ("[newChar] Graphics key="+key+" bit="+bit)
@@ -426,6 +426,10 @@ function keyPressed() // This is called before keyTyped
             if (editMode==EDITMODE_EDIT) myPage.cursor.down()
             break
 		case ESCAPE:
+            if (myPage.service!='wtf') // @todo A more sophisticated access scheme
+            {
+              break;
+            }
             switch (editMode)
             {
             case EDITMODE_NORMAL:
