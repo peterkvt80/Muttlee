@@ -28,5 +28,8 @@
   },
   "engines": {
     "node": ">=0.12.7"
+  },
+  "devDependencies": {
+    "destroy": "^1.0.4"
   }
 }

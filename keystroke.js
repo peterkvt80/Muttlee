@@ -14,6 +14,7 @@
 var readline = require('readline')
 //var stream = require('stream')
 var fs = require('fs')
+var destroy = require('destroy')
 
 
 KeyStroke=function()
@@ -84,7 +85,7 @@ KeyStroke=function()
   /* Write the edits back to file */
   this.saveEdits=function()
   {
-    var tempFile='/run/shm/test.tti'; // where the edited file gets written first
+    var tempFile='/run/shm/work.tti'; // where the edited file gets written first
     
     if (this.debug) console.log("[keystroke::saveEdit]")
     // Are there any edits to save?
@@ -125,134 +126,144 @@ KeyStroke=function()
         // Get the filename
         service=this.event.S
         if (service==undefined) service='onair'
-        var filename='/var/www/'+service+'/p'+this.event.p.toString(16)+'.tti'
-        // Open a stream and get ready to read the file
-        var instream
-        instream = fs.createReadStream(filename,{encoding: "ascii"}) // Ascii strips bit 7 without messing up the rest of the text. latin1 does not work :-(
-        instream.on('error',function()
-        {
-            console.log("error routine not written")   
-            throw new Error("Something went badly wrong!")
-        })
-        var reader = readline.createInterface(
-        {
-            input: instream,
-            terminal: false
-        })
-        
-        this.outfile=fs.createWriteStream(tempFile) // Stick the edited file here until we prove that it is working
-        
-        // If not set, then set the service to default
-        if (this.event.S==undefined)
-        {
-            this.event.S='onair'
-        }
+        var filename='/var/www/'+service+'/p'+this.event.p.toString(16)+'.tti' // The filename of the original page
+        var copyFilename=service+'.p'+this.event.p.toString(16)+'.tti' // The filename of the copied page
+        var copyPath='/run/shm/'
         
         var that=this
-        reader.on('line', function(line)
-        { 
-        
-        
-            var SaveEvent=that.event    // Save so we can check if we stay on the same row
-            var subCode=0
-            if (line.indexOf('SC')==0)
+        copyFile(filename, copyPath+copyFilename, function(err)
+          {
+            // @todo Look at err and abandon if needed
+            // Open a stream and get ready to read the file
+            var instream
+            instream = fs.createReadStream(copyPath+copyFilename,{encoding: "ascii"}) // Ascii strips bit 7 without messing up the rest of the text. latin1 does not work :-(
+            instream.on('error',function()
             {
-                subCode=line.substring(3)
-                if (subCode>0) subCode--
-                console.log("Found subcode:"+subCode)  
-                //that.dump()
-            } 
-            if (that.event.s==subCode) // If the subcode matches, look for our line
+                console.log("error routine not written")   
+                throw new Error("Something went badly wrong!")
+            })
+            var reader = readline.createInterface(
             {
-                if (line.indexOf('OL,')==0) // teletext row?
+                input: instream,
+                terminal: false
+            })
+            
+            that.outfile=fs.createWriteStream(tempFile) // Stick the edited file here until we prove that it is working
+            
+            // If not set, then set the service to default
+            if (that.event.S==undefined)
+            {
+                that.event.S='onair'
+            }
+            
+            //var that=this
+            reader.on('line', function(line)
+            { 
+            
+            
+                var SaveEvent=that.event    // Save so we can check if we stay on the same row
+                var subCode=0
+                if (line.indexOf('SC')==0)
                 {
-                  var ix=3
-                  var row=0
-                  var ch
-                  ch=line.charAt(ix)
-                  if (ch!=',')
-                  {
-                    row=ch
-                  }
-                  ix++
-                  ch=line.charAt(ix)
-                  if (ch!=',')
-                  {
-                    row=row+ch // haha. Strange maths
-                    ix++
-                  }
-                  row=parseInt(row)
-                  ix++ // Should be pointing to the first character now
-                  // console.log('row='+row)
-
-                  var str=DeEscapePrestel(line)
-
-                  var changed=false
-                  var more=that.event.y==row // If the row matches, we have an entry to process
-                  while (more) // Any more characters on this line?
-                  {
-                    changed=true
-                    str=setCharAt(str,that.event.x+ix, that.event.k)
-                    // console.log("Setting key="+that.event.k)
-                    if (that.eventList.length>0)
+                    subCode=line.substring(3)
+                    if (subCode>0) subCode--
+                    console.log("Found subcode:"+subCode)  
+                    //that.dump()
+                } 
+                if (that.event.s==subCode) // If the subcode matches, look for our line
+                {
+                    if (line.indexOf('OL,')==0) // teletext row?
                     {
-                        that.event=that.eventList[0]
-                        if (that.event.S==undefined)
+                      var ix=3
+                      var row=0
+                      var ch
+                      ch=line.charAt(ix)
+                      if (ch!=',')
+                      {
+                        row=ch
+                      }
+                      ix++
+                      ch=line.charAt(ix)
+                      if (ch!=',')
+                      {
+                        row=row+ch // haha. Strange maths
+                        ix++
+                      }
+                      row=parseInt(row)
+                      ix++ // Should be pointing to the first character now
+                      // console.log('row='+row)
+
+                      var str=DeEscapePrestel(line)
+
+                      var changed=false
+                      var more=that.event.y==row // If the row matches, we have an entry to process
+                      while (more) // Any more characters on this line?
+                      {
+                        changed=true
+                        str=setCharAt(str,that.event.x+ix, that.event.k)
+                        // console.log("Setting key="+that.event.k)
+                        if (that.eventList.length>0)
                         {
-                            that.event.S='onair'
-                        }
-                        if (that.event.y!=row ||
-                            that.event.s!=SaveEvent.s ||
-                            that.event.S!=SaveEvent.S ||
-                            that.event.p!=SaveEvent.p) // If the next event is not on the same row
-                        {
-                            more=false // Done with this line
-                            console.log("S="+that.event.S)
-                            console.log(that.event)
-                            console.log(SaveEvent)                            
+                            that.event=that.eventList[0]
+                            if (that.event.S==undefined)
+                            {
+                                that.event.S='onair'
+                            }
+                            if (that.event.y!=row ||
+                                that.event.s!=SaveEvent.s ||
+                                that.event.S!=SaveEvent.S ||
+                                that.event.p!=SaveEvent.p) // If the next event is not on the same row
+                            {
+                                more=false // Done with this line
+                                console.log("S="+that.event.S)
+                                console.log(that.event)
+                                console.log(SaveEvent)                            
+                            }
+                            else
+                            {
+                                that.eventList.shift()  // Eat the event. It is on the same row                            
+                            }
+                            // console.log(that.event)
                         }
                         else
                         {
-                            that.eventList.shift()  // Eat the event. It is on the same row                            
+                            console.log("Nothing left to process")
+                            break // Nothing left to process
                         }
-                        // console.log(that.event)
-                    }
-                    else
-                    {
-                        console.log("Nothing left to process")
-                        break // Nothing left to process
-                    }
-                  }
-                  // The result of editing this row
-                  if (changed)
-                  {
-                      console.log("ix="+ix)
-                      console.log("[before]"+line)
-                      console.log("[edited]"+str)
-                      line=str; // Now we can write the line
-                  }
-                  
-                } // OL                    
-            } // If subcode matches
-           // Write the line out to the file
-            that.outfile.write(line+'\n')
+                      }
+                      // The result of editing this row
+                      if (changed)
+                      {
+                          console.log("ix="+ix)
+                          console.log("[before]"+line)
+                          console.log("[edited]"+str)
+                          line=str; // Now we can write the line
+                      }
+                      
+                    } // OL                    
+                } // If subcode matches
+               // Write the line out to the file
+                that.outfile.write(line+'\n')
 
-        }) // reader.on
-        
-        /* When the input stream ends */
-        reader.on('close', function(line)
-        {
-          console.log("Copy "+tempFile+" to "+filename)
-          reader.close()
-          copyFile(tempFile,filename,function(err)
+            }) // reader.on
+            
+            /* When the input stream ends */
+            reader.on('close', function(line)
             {
-              console.log("[reader.on] Something meaningful here about a file copy error="+err)
-            }
-          )
-          //This is when we will also close the output file and probably rename them.
-          that.outfile.end()
-          console.log("[reader.on] closed file. byebye.")
-        }) // reader.close
+              // console.log("Copy "+tempFile+" to "+filename)
+              reader.close()
+              // Oh. This fails because we are already nested inside copyfile
+              copyFile(tempFile,filename,function(err)
+                {
+                  console.log("[reader.on] Something meaningful here about a file copy error="+err)
+                }
+              )
+              //This is when we will also close the output file and probably rename them.
+              that.outfile.end()
+              console.log("[reader.on] closed file. byebye.")
+            }) // reader.close
+          }
+        )
         
         
     } // saveEdits
@@ -282,26 +293,40 @@ function setCharAt(str,index,chr)
     return str.substr(0,index) + chr + str.substr(index+1)
 }
 
-function copyFile(source, target, cb) {
-  var cbCalled = false;
+/** copyFile - Make a copy of a file
+ * @param source - Source file 
+ * @param target - Destination file
+ * @param cb - Callback when completed, with an error message
+ */
+function copyFile(source, target, cb)
+{
+  console.log ("[copyFile] Copying "+source+" to "+target)
+  var cbCalled = false
 
-  var rd = fs.createReadStream(source);
-  rd.on("error", function(err) {
-    done(err);
-  });
-  var wr = fs.createWriteStream(target);
-  wr.on("error", function(err) {
-    done(err);
-  });
-  wr.on("close", function(ex) {
-    done();
-  });
-  rd.pipe(wr);
+  var rd = fs.createReadStream(source)
+  rd.on("error", function(err)
+  {
+    done(err)
+  })
+  var wr = fs.createWriteStream(target)
+  wr.on("error", function(err)
+  {
+    done(err)
+  })
+  wr.on("close", function(ex)
+  {
+    console.log("[copyfile] closing files...")
+    destroy(rd) // doesn't work :-( It leaves the original source file open
+    done()
+  })
+  rd.pipe(wr)
 
-  function done(err) {
-    if (!cbCalled) {
-      cb(err);
-      cbCalled = true;
+  function done(err)
+  {
+    if (!cbCalled)
+    {
+      cb(err)
+      cbCalled = true
     }
   }
-}
+} // copyFile

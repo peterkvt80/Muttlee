@@ -155,8 +155,8 @@ function doInitialLoad(data)
 function doLoad(data)
 {
    
-    console.log ("[doLoad] Loading from session "+data.id+" Service:"+data.S);
-    console.log("[doLoad] data = "+JSON.stringify(data, null, 4));
+    //console.log ("[doLoad] Loading from session "+data.id+" Service:"+data.S);
+    //console.log("[doLoad] data = "+JSON.stringify(data, null, 4));
     
         
     var filename;
@@ -310,9 +310,9 @@ function doLoad(data)
         
         // Here is a line at a time
         var result=line.substring(ix) // snip out the row data
-        console.log ('Row(a)='+result)
+        //console.log ('Row(a)='+result)
         result=DeEscapePrestel(result) // remove Prestel escapes
-        console.log ('Row(b)='+result)
+        //console.log ('Row(b)='+result)
         
         data.k='?' // @todo Not sure what these values should be, if anything
         data.x=-1 
