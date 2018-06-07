@@ -444,9 +444,9 @@ function keyPressed() // This is called before keyTyped
             }
             myPage.editSwitch(editMode)
             break
-        case TAB: // Insert a space (@todo send edit to other clients)
-            myPage.insertSpace()
-            insertSpace()
+        case TAB: // Insert a space
+            myPage.insertSpace() // Do our page
+            insertSpace()       // Any other clients
             editMode=EDITMODE_EDIT            
             break
         case BACKSPACE: // Remove current character, move the remainder one char left.
@@ -646,17 +646,20 @@ function mouseClicked()
     var yLoc=int(mouseY/gTtxH)
     myPage.cursor.moveTo(xLoc,yLoc)
     // console.log('The mouse was clicked at '+xLoc+' '+yLoc)
-    return false; // ?
+    return false // ?
 }
 
-/* Swipes */
+/* Swipes @todo Get rid of these! They are just confusing and conflict with future block selection*/
+/*
 function touchStarted()
 {
-	if (touchY>550) // Only swipe on page
-		return;
+	if (touchY>550)  // Only swipe on page
+  {
+		return
+  }
   console.log('Touch started at '+touchX+' '+touchY)
 	swipeStart=createVector(touchX,touchY)
-	return false;
+	return false
 }
 
 function touchEnded()
@@ -667,7 +670,9 @@ function touchEnded()
 	swipeStart=null // Need this to be null in case we return!
 
 	if (touchY>550) // Only swipe on page
-		return;
+  {
+		return
+  }
 	// Swipe needs to be a minimum distance (& possibly velocity?
 	var mag=swipeEnd.mag()
 	if (mag<40)
@@ -690,6 +695,7 @@ function touchEnded()
 	}
 	return false	
 }
+*/
 
 function nextPage()
 {

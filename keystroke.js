@@ -14,17 +14,20 @@
 var readline = require('readline')
 //var stream = require('stream')
 var fs = require('fs')
-var destroy = require('destroy')
-
 
 KeyStroke=function()
 {
+  var that=this
+  this.sourceFile=""
+  this.destFile=""
+  
   this.event=undefined // Used to talk to inner function
   this.outfile=undefined
   
   this.eventList=[]
   this.debug=true
-  if (this.debug) console.log("[keystroke::constructor]")
+  
+  this.writebBackList
   
   /** Add a keystroke event to the list */
   this.addEvent=function(data)
@@ -85,7 +88,8 @@ KeyStroke=function()
   /* Write the edits back to file */
   this.saveEdits=function()
   {
-    var tempFile='/run/shm/work.tti'; // where the edited file gets written first
+    
+    var tempFile='/run/shm/work.tti' // where the edited file gets written first
     
     if (this.debug) console.log("[keystroke::saveEdit]")
     // Are there any edits to save?
@@ -130,9 +134,16 @@ KeyStroke=function()
         var copyFilename=service+'.p'+this.event.p.toString(16)+'.tti' // The filename of the copied page
         var copyPath='/run/shm/'
         
-        var that=this
         copyFile(filename, copyPath+copyFilename, function(err)
           {
+          // This shell copy move is also blocked. Remove it as a failed experiment!
+          //const shell = require('child_process').execSync ; 
+
+          const currentPath= filename;
+          const newPath= filename+".backup";
+
+          //shell(`mv ${currentPath} ${newPath}`);
+
             // @todo Look at err and abandon if needed
             // Open a stream and get ready to read the file
             var instream
@@ -156,7 +167,6 @@ KeyStroke=function()
                 that.event.S='onair'
             }
             
-            //var that=this
             reader.on('line', function(line)
             { 
             
@@ -237,7 +247,7 @@ KeyStroke=function()
                           console.log("ix="+ix)
                           console.log("[before]"+line)
                           console.log("[edited]"+str)
-                          line=str; // Now we can write the line
+                          line=str // Now we can write the line
                       }
                       
                     } // OL                    
@@ -246,51 +256,65 @@ KeyStroke=function()
                 that.outfile.write(line+'\n')
 
             }) // reader.on
-            
+            /*
+            reader.on('end', function()
+            {
+              reader.close()
+              that.sourceFile=tempFile
+              that.destFile=filename
+              setTimeout(that.copyback,5000)
+            })
+            */
             /* When the input stream ends */
             reader.on('close', function(line)
             {
               // console.log("Copy "+tempFile+" to "+filename)
               reader.close()
               // Oh. This fails because we are already nested inside copyfile
-              copyFile(tempFile,filename,function(err)
-                {
-                  console.log("[reader.on] Something meaningful here about a file copy error="+err)
-                }
-              )
+              that.sourceFile=tempFile
+              that.destFile=filename
+              setTimeout(that.copyback,500)
               //This is when we will also close the output file and probably rename them.
-              that.outfile.end()
+              // that.outfile.end()
               console.log("[reader.on] closed file. byebye.")
             }) // reader.close
           }
+        )     
+    } // if any events
+  } // saveEdits 
+  
+  this.copyback=function()
+  {
+     copyFile(that.sourceFile,that.destFile,function(err)
+          {
+            console.log("[copyback] Something meaningful here about a file copy error="+err)
+          }
         )
-        
-        
-    } // saveEdits
-  } // saveEdits
-    /** Dump the summary of the contents of the key events list   */
-    this.dump=function()
+  }
+  
+  /** Dump the summary of the contents of the key events list   */
+  this.dump=function()
+  {
+    console.log("Dump "+this.eventList.length+" items")
+    for (var i=0;i<this.eventList.length;i++)
     {
-        console.log("Dump "+this.eventList.length+" items")
-        for (var i=0;i<this.eventList.length;i++)
-        {
-            console.log(
-                "p:"+this.eventList[i].p.toString(16)+
-                " s:"+this.eventList[i].s+
-                " k:"+this.eventList[i].k+
-                " x:"+this.eventList[i].x+
-                " y:"+this.eventList[i].y
-            )
-            //console.log(this.eventList[i])
-        }        
-    } // dump
+      console.log(
+          "p:"+this.eventList[i].p.toString(16)+
+          " s:"+this.eventList[i].s+
+          " k:"+this.eventList[i].k+
+          " x:"+this.eventList[i].x+
+          " y:"+this.eventList[i].y
+      )
+      //console.log(this.eventList[i])
+    }        
+  } // dump
 } // keystroke class 
 
 /** Utility */
 function setCharAt(str,index,chr)
 {
-    if(index > str.length-1) return str
-    return str.substr(0,index) + chr + str.substr(index+1)
+  if(index > str.length-1) return str
+  return str.substr(0,index) + chr + str.substr(index+1)
 }
 
 /** copyFile - Make a copy of a file
@@ -313,12 +337,18 @@ function copyFile(source, target, cb)
   {
     done(err)
   })
+  wr.on("end", function(ex)
+  {
+    console.log("[copyfile] closing files...")
+    done()
+  })
+  /*
   wr.on("close", function(ex)
   {
     console.log("[copyfile] closing files...")
-    destroy(rd) // doesn't work :-( It leaves the original source file open
     done()
   })
+  */
   rd.pipe(wr)
 
   function done(err)
@@ -328,5 +358,7 @@ function copyFile(source, target, cb)
       cb(err)
       cbCalled = true
     }
+    rd.close()
+    rd=null
   }
 } // copyFile

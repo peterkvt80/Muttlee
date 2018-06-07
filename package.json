@@ -30,6 +30,6 @@
     "node": ">=0.12.7"
   },
   "devDependencies": {
-    "destroy": "^1.0.4"
+    "child-process": "^1.0.2"
   }
 }
