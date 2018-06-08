@@ -173,7 +173,7 @@ function setID(id)
 	S: myPage.service, // The codename of the service. eg. d2k or undefined
 	p: 0x100, // Page mpp
 	s:0,	// subpage 0
-	x:2000,
+	x:2000, // A secret flag to do an initial load
 	y: 0,
 	rowText: '',
 	id: gClientID
