@@ -4,7 +4,6 @@ const readline = require('readline')
 const stream = require('stream')
 
 require('./weather.js') // Should check if this is obsolete
-// require('./page.js') // Not so sure we will use this
 require('./service.js')
 require('./utils.js') // Prestal and other string handling
 
@@ -141,6 +140,7 @@ function newConnection(socket)
   
   socket.on('load', doLoad)
   socket.on('initialLoad',doInitialLoad)
+  socket.on('create',doCreate)
   
   // When this connection closes we remove the connection id
   socket.on('disconnect', function () {
@@ -149,9 +149,22 @@ function newConnection(socket)
   
 } // NewConnection
 
+/** Create the page and load it
+ */
+function doCreate(data)
+{
+  console.log('[doCreate] Creating page '+data.p.toString(16))
+  // Create a page from template
+  createPage(data, function()
+  {
+    console.log("todo Now kick off a doLoad")
+  })
+  // doLoad it
+}
+
 function doInitialLoad(data)
 {
-    console.log('[doInitialLoad]')
+  console.log('[doInitialLoad]')
 	data.p=parseInt(initialPage)
 	doLoad(data)
 }
@@ -288,7 +301,7 @@ function doLoad(data)
           // We will offer to make the page from template eventually
           if (data.p==0x404)
           {
-            data.fastext[2]=missingPage
+            data.fastext[2]='1'+ missingPage.toString(16) // Flag that this page doesn't exist
             console.log(data.fastext);            
           }          
           io.sockets.emit('fastext',data)	
@@ -326,6 +339,13 @@ function doLoad(data)
         
         // Here is a line at a time
         var result=line.substring(ix) // snip out the row data
+        // @todo Different services need different permissions
+        if (data.S=='wtf' && row==22 && data.p==0x404) // Special hack for 404 page. Replace this field with the missing page number
+        {
+          var first=result.substring(0,32)
+          var second=result.substr(35)
+          result=first+missingPage.toString(16)+second
+        }
         //console.log ('Row(a)='+result)
         result=DeEscapePrestel(result) // remove Prestel escapes
         //console.log ('Row(b)='+result)
@@ -365,3 +385,48 @@ function findService(name)
 }
 
 
+/** Create a page from template number data.p
+ */
+function createPage(data, callback)
+{
+  console.log('[createPage] Starts')
+  // what is my page name? /var/www/<service>/p<page number>.tti
+  // @todo Check for service being undefined
+  var filename='/var/www/'+data.S+'/p'+data.p.toString(16)+'.tti'
+  console.log('[createPage] filename='+filename)
+  var template=""
+  // open write file stream
+  var wstream = fs.createWriteStream(filename)
+  // write the template
+  wstream.write('DE,Topic: Created by user\n')
+  wstream.write('DS,muttlee\n')
+  wstream.write('SP,'+filename+'\n')
+  wstream.write('CT,8,T\n')
+  wstream.write('PN,'+data.p.toString(16)+'00\n') // @todo How can we add subpages?
+  wstream.write('SC,0000\n')
+  wstream.write('PS,8000\n') // To do languages
+  wstream.write('RE,0\n')
+  wstream.write('OL,0,XXXXXXXXWT-FAX mpp DAY dd MTH C hh:nn.ss\n')
+  wstream.write('OL,1,Q73#35R7ss35S7sskT]C| Wiki |FFacts at  |\n')
+  wstream.write('OL,2,Q55555R5 5 5S5=$jT]C| Tel  |Fyour      |\n')
+  wstream.write('OL,3,Qussq5Rupqp5SuqpzT]C| Fax  |Ffingertips|\n')
+  wstream.write('OL,4,MTemplate                               \n')
+  wstream.write('OL,5,Q                                       \n')
+  wstream.write('OL,6, ```````````````````````````````````````\n')
+  wstream.write('OL,7,CTemplateGhighlights other entries in   \n')
+  wstream.write('OL,8,CyellowGwith the first paragraph white. \n')
+  wstream.write('OL,10,FSubsequent paragraphs should be cyan.  \n')
+  wstream.write('OL,14,FThe last line is reserved for Fastext  \n')
+  wstream.write('OL,15,F                                       \n')
+  wstream.write('OL,16,F    NOW PRESS ESCAPE AND EDIT THIS     \n')
+  wstream.write('OL,17,F    WIKI TEL FAX PAGE                  \n')
+  wstream.write('OL,19,F                                       \n')
+  wstream.write('OL,20,F                                       \n')
+  wstream.write('OL,21,F                                       \n')
+  wstream.write('OL,24,A Next   B....       C....      FHelp   \n')
+  // @todo ONLY ALLOW NEXT LINK TO BE DECIMALS
+  wstream.write('FL,'+(data.p+1).toString(16)+',8ff,8ff,700,8ff,8ff  \n')
+  wstream.end()
+  // signal completion
+  wstream.on('finish',callback)
+}

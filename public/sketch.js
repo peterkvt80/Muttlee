@@ -16,6 +16,10 @@ var hdr
 var socket
 var gClientID=null
 
+// x signals
+const SIGNAL_PAGE_NOT_FOUND = -1
+const SIGNAL_INITIAL_LOAD = 2000
+
 // state
 const EDITMODE_NORMAL=0 // normal viewing
 const EDITMODE_EDIT=1   // edit mode
@@ -173,7 +177,7 @@ function setID(id)
 	S: myPage.service, // The codename of the service. eg. d2k or undefined
 	p: 0x100, // Page mpp
 	s:0,	// subpage 0
-	x:2000, // A secret flag to do an initial load
+	x:SIGNAL_INITIAL_LOAD, // A secret flag to do an initial load
 	y: 0,
 	rowText: '',
 	id: gClientID
@@ -228,11 +232,21 @@ function fastextIndex()
 function fastext(index)
 {
 	console.log('Fastext pressed: '+index)
+  var createPage=false // Special case. If yellow link is >0x0fff then create a page
 	switch (index)
 	{
 	case 1:page=myPage.redLink;break
 	case 2:page=myPage.greenLink;break
-	case 3:page=myPage.yellowLink;break
+	case 3:
+    // Special hack for yellow:
+    // If page is greater than 0x0fff then it is a request to create the page
+    page=myPage.yellowLink
+    if (page>0x0fff)
+    {
+      page &=0x0fff
+      createPage=true
+    }
+    break
 	case 4:page=myPage.cyanLink;break
 	case 6:page=myPage.indexLink;break
 	default:
@@ -242,17 +256,25 @@ function fastext(index)
 	if (page>=0x100 && page<=0x8ff) // Page in range
 	{
 		myPage.setPage(page) // We now have a different page number
-			var data=
-			{
-			S: myPage.service,
-			p: page, // Page mpp
-			s: 0,	// @ todo subpage	
-			x: 0,
-			y: 0,
-			rowText: '',
-			id: gClientID
-			}	
-		socket.emit('load',data)	
+    var data=
+    {
+      S: myPage.service,
+      p: page, // Page mpp
+      s: 0,	// @ todo subpage	
+      x: 0,
+      y: 0,
+      rowText: '',
+      id: gClientID
+    }	
+    if (createPage) // Special case
+    {
+      
+      socket.emit('create',data)	
+    }
+    else
+    {
+      socket.emit('load',data)	
+    }
 	}
 }
 
