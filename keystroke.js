@@ -136,13 +136,10 @@ KeyStroke=function()
         
         copyFile(filename, copyPath+copyFilename, function(err)
           {
-          // This shell copy move is also blocked. Remove it as a failed experiment!
-          //const shell = require('child_process').execSync ; 
-
+          console.log("File copied, now trying to parse "+copyFilename)
           const currentPath= filename;
           const newPath= filename+".backup";
 
-          //shell(`mv ${currentPath} ${newPath}`);
 
             // @todo Look at err and abandon if needed
             // Open a stream and get ready to read the file
@@ -287,7 +284,10 @@ KeyStroke=function()
   {
      copyFile(that.sourceFile,that.destFile,function(err)
           {
-            console.log("[copyback] Something meaningful here about a file copy error="+err)
+            if (err!=undefined)
+            {
+              console.log("[copyback] Something meaningful here about a file copy error="+err)
+            }
           }
         )
   }
@@ -339,16 +339,14 @@ function copyFile(source, target, cb)
   })
   wr.on("end", function(ex)
   {
-    console.log("[copyfile] closing files...")
+    console.log("[copyfile] closing files...(end)")
     done()
   })
-  /*
   wr.on("close", function(ex)
   {
-    console.log("[copyfile] closing files...")
+    console.log("[copyfile] closing files...(close)")
     done()
   })
-  */
   rd.pipe(wr)
 
   function done(err)

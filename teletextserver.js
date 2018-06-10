@@ -157,9 +157,8 @@ function doCreate(data)
   // Create a page from template
   createPage(data, function()
   {
-    console.log("todo Now kick off a doLoad")
+    doLoad(data)
   })
-  // doLoad it
 }
 
 function doInitialLoad(data)
@@ -416,10 +415,11 @@ function createPage(data, callback)
   wstream.write('OL,7,CTemplateGhighlights other entries in   \n')
   wstream.write('OL,8,CyellowGwith the first paragraph white. \n')
   wstream.write('OL,10,FSubsequent paragraphs should be cyan.  \n')
-  wstream.write('OL,14,FThe last line is reserved for Fastext  \n')
+  wstream.write('OL,11,FThe last line is reserved for Fastext  \n')
+  wstream.write('OL,12, To find out more about editing, press  \n')
+  wstream.write('OL,13, theFcyanGbutton.                       \n')  
   wstream.write('OL,15,F                                       \n')
-  wstream.write('OL,16,F    NOW PRESS ESCAPE AND EDIT THIS     \n')
-  wstream.write('OL,17,F    WIKI TEL FAX PAGE                  \n')
+  wstream.write('OL,16,M    NOW PRESSHESCAPEIAND EDIT THIS  \n')
   wstream.write('OL,19,F                                       \n')
   wstream.write('OL,20,F                                       \n')
   wstream.write('OL,21,F                                       \n')
