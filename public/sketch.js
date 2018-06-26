@@ -488,6 +488,18 @@ function keyPressed() // This is called before keyTyped
                 myPage.prevSubpage()
             }
             break
+        case 35: // END - move to the last character on this line
+          myPage.end()
+          break;
+        case 36: // HOME - move to the first character on this line
+          myPage.home()
+          break;
+        case 45: // INSERT - Add a subpage
+          myPage.addSubPage()
+          break;
+        case 46: // DELETE - Delete a subpage
+          myPage.removeSubPage()
+          break;
 		default:
 			console.log('unhandled keycode='+keyCode)
 		}

@@ -159,6 +159,17 @@ TTXPAGE=function()
     }
   }
   
+  this.addSubPage=function()
+  {
+    this.addPage(this.pageNumber)
+    this.setSubPage(this.subPageList.length-1)
+  }
+  
+  this.removeSubPage=function()
+  {
+    console.log("Remove subpage not implemented. @todo")
+  }
+  
   this.draw=function()
   {
     var dblHeight
@@ -240,6 +251,16 @@ TTXPAGE=function()
     {
         v[y].setchar(ch,x)
     }
+  }
+  
+  this.home=function()
+  {
+    this.cursor.x=0
+  }
+  
+  this.end=function()
+  {
+    this.cursor.x=39
   }
   
   // Insert a space at the current cursor location (TAB command)

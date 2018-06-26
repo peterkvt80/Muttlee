@@ -26,3 +26,28 @@ DeEscapePrestel=function (str)
   return result;
 } // DeEscapePrestel
 
+/**< Escape Prestel style 7 bit encoding.
+ * A Prestel encoded string is escaped so that
+ * Control code characters (<' ')
+ * are written as <esc> followed by the code plus 0x40.
+ * \param str - Raw teletext string
+ */
+EscapePrestel=function (str)
+{
+  console.log("encoding <"+str+">")
+  var result=''
+  for (var x=0; x<str.length; x++)
+  {
+    var ch=str.charAt(x)
+    if (ch.charCodeAt()<32)
+    {
+      result=result+String.fromCharCode(0x1B)+String.fromCharCode(ch+0x40)
+    }
+    else
+    {
+      result+=ch
+    }
+  }
+  return result;
+} // EscapePrestel
+

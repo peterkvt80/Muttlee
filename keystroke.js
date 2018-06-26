@@ -12,7 +12,6 @@
  */
  
 var readline = require('readline')
-//var stream = require('stream')
 var fs = require('fs')
 
 KeyStroke=function()
@@ -39,13 +38,13 @@ KeyStroke=function()
     var overwrite=false
     for (var i=0;i<this.eventList.length;i++)
     {
-        if (this.sameChar(data,this.eventList[i]))
-        {
-            this.eventList[i].k=data.k  // replace the key as this overwrites the original character
-            overwrite=true
-            console.log("Overwriting character")
-            break
-        }
+      if (this.sameChar(data,this.eventList[i]))
+      {
+        this.eventList[i].k=data.k  // replace the key as this overwrites the original character
+        overwrite=true
+        console.log("Overwriting character")
+        break
+      }
     }
     if (!overwrite)
     {
@@ -95,164 +94,230 @@ KeyStroke=function()
     // Are there any edits to save?
     if (this.eventList.length==0)
     { 
-        return
+      return
     }
     // Sort the event list by S(service name) p(page 100..8ff) s(subpage 0..99) y(row 0..24)
     this.eventList.sort(
-        function(a,b)
-        {
-            // the main service is never defined, so set it to the proper "onair"
-            if (a.S==undefined) a.S='onair'
-            if (b.S==undefined) a.S='onair'
-            // Service sort
-            if (a.S<b.S) return -1
-            if (a.S>b.S) return 1
-            // page sort
-            if (a.p<b.p) return -1
-            if (a.p>b.p) return 1
-            // subpage sort
-            if (a.s<b.s) return -1
-            if (a.s>b.s) return 1
-            // row sort
-            if (a.y<b.y) return -1
-            if (a.y>b.y) return 1
-            return 0 // same
-        }
+      function(a,b)
+      {
+        // the main service is never defined, so set it to the proper "onair"
+        if (a.S==undefined) a.S='onair'
+        if (b.S==undefined) a.S='onair'
+        // Service sort
+        if (a.S<b.S) return -1
+        if (a.S>b.S) return 1
+        // page sort
+        if (a.p<b.p) return -1
+        if (a.p>b.p) return 1
+        // subpage sort
+        if (a.s<b.s) return -1
+        if (a.s>b.s) return 1
+        // row sort
+        if (a.y<b.y) return -1
+        if (a.y>b.y) return 1
+        return 0 // same
+      }
     ) // sort
     // if (this.debug) this.dump()
     // Now that we are sorted we can apply the edits
     // However, due to the async nature, we only do one file at a time
     if (this.eventList.length>0)
     {
-        //console.log(this.event)
-        this.event=this.eventList[0]
-        this.eventList.shift()
-        // Get the filename
-        service=this.event.S
-        if (service==undefined) service='onair'
-        var filename='/var/www/'+service+'/p'+this.event.p.toString(16)+'.tti' // The filename of the original page
-        var copyFilename=service+'.p'+this.event.p.toString(16)+'.tti' // The filename of the copied page
-        var copyPath='/run/shm/'
+      //console.log(this.event)
+      this.event=this.eventList[0]
+      this.eventList.shift()
+      // Get the filename
+      service=this.event.S
+      if (service==undefined) service='onair'
+      var filename='/var/www/'+service+'/p'+this.event.p.toString(16)+'.tti' // The filename of the original page
+      var copyFilename=service+'.p'+this.event.p.toString(16)+'.tti' // The filename of the copied page
+      var copyPath='/run/shm/'
         
-        copyFile(filename, copyPath+copyFilename, function(err)
-          {
-          console.log("File copied, now trying to parse "+copyFilename)
-          const currentPath= filename;
-          const newPath= filename+".backup";
+      copyFile(filename, copyPath+copyFilename, function(err)
+        {
+        console.log("File copied, now trying to parse "+copyFilename)
+        const currentPath= filename
+        const newPath= filename+".backup"
 
 
-            // @todo Look at err and abandon if needed
-            // Open a stream and get ready to read the file
-            var instream
-            instream = fs.createReadStream(copyPath+copyFilename,{encoding: "ascii"}) // Ascii strips bit 7 without messing up the rest of the text. latin1 does not work :-(
-            instream.on('error',function()
+        // @todo Look at err and abandon if needed
+        // Open a stream and get ready to read the file
+        var instream
+        instream = fs.createReadStream(copyPath+copyFilename,{encoding: "ascii"}) // Ascii strips bit 7 without messing up the rest of the text. latin1 does not work :-(
+        instream.on('error',function()
+        {
+          console.log("error routine not written")   
+          throw new Error("Something went badly wrong!")
+        })
+        
+        var reader = readline.createInterface(
+        {
+          input: instream,
+          terminal: false
+        })
+          
+        that.outfile=fs.createWriteStream(tempFile) // Stick the edited file here until we prove that it is working
+        
+        // If not set, then set the service to default
+        if (that.event.S==undefined)
+        {
+          that.event.S='onair'
+        }
+          
+        reader.on('line', function(line)
+          { 
+                  
+            var SaveEvent=that.event    // Save so we can check if we stay on the same row
+            var subCode=0
+            if (line.indexOf('SC')==0)
             {
-                console.log("error routine not written")   
-                throw new Error("Something went badly wrong!")
-            })
-            var reader = readline.createInterface(
+              subCode=line.substring(3)
+              if (subCode>0) subCode--
+              console.log("Found subcode:"+subCode)  
+              //that.dump()
+            } 
+            if (that.event.s==subCode) // If the subcode matches, look for our line
             {
-                input: instream,
-                terminal: false
-            })
-            
-            that.outfile=fs.createWriteStream(tempFile) // Stick the edited file here until we prove that it is working
-            
-            // If not set, then set the service to default
-            if (that.event.S==undefined)
-            {
-                that.event.S='onair'
-            }
-            
-            reader.on('line', function(line)
-            { 
-            
-            
-                var SaveEvent=that.event    // Save so we can check if we stay on the same row
-                var subCode=0
-                if (line.indexOf('SC')==0)
+                // @todo: BUG. If the line doesn't exist, we can't add or edit it.
+                if (line.indexOf('OL,')==0) // teletext row?
                 {
-                    subCode=line.substring(3)
-                    if (subCode>0) subCode--
-                    console.log("Found subcode:"+subCode)  
-                    //that.dump()
-                } 
-                if (that.event.s==subCode) // If the subcode matches, look for our line
-                {
-                    if (line.indexOf('OL,')==0) // teletext row?
+                  var ix=3
+                  var row=0
+                  var ch
+                  ch=line.charAt(ix)
+                  if (ch!=',')
+                  {
+                    row=ch
+                  }
+                  ix++
+                  ch=line.charAt(ix)
+                  if (ch!=',')
+                  {
+                    row=row+ch // haha. Strange maths
+                    ix++
+                  }
+                  row=parseInt(row)
+                  ix++ // Should be pointing to the first character now
+                  // console.log('row='+row)
+                  
+                  // Pad strings shorter than 40 characters
+                  if (line.length<40)
+                  {
+                    line+="                                        " 
+                    line=line.substring(0,40)
+                  }                  
+
+                  var str=DeEscapePrestel(line)
+
+                  var changed=false
+                  
+                  // This is if we have changes to apply to a line that doesn't exist
+                  // We have to create the missing lines
+                  // This is annoyingly almost the same code repeated in the next block, We can factorise
+                  if (that.eventList.length>0 && that.event.y<row)
+                  {
+                    console.log("TODO: We are at row "+row+" but event.y="+that.event.y)
+                    var moreLines=true
+                    var moreEvents=true
+                    // We don't actually have a line from the file. We need to add one.
+                    
+                    while (moreLines)
                     {
-                      var ix=3
-                      var row=0
-                      var ch
-                      ch=line.charAt(ix)
-                      if (ch!=',')
+                      var currentRow=that.event.y
+                      var strPrefix="OL,"+that.event.y+","
+                      str="                                      "
+                      while (moreEvents)
                       {
-                        row=ch
-                      }
-                      ix++
-                      ch=line.charAt(ix)
-                      if (ch!=',')
-                      {
-                        row=row+ch // haha. Strange maths
-                        ix++
-                      }
-                      row=parseInt(row)
-                      ix++ // Should be pointing to the first character now
-                      // console.log('row='+row)
-
-                      var str=DeEscapePrestel(line)
-
-                      var changed=false
-                      var more=that.event.y==row // If the row matches, we have an entry to process
-                      while (more) // Any more characters on this line?
-                      {
-                        changed=true
-                        str=setCharAt(str,that.event.x+ix, that.event.k)
-                        // console.log("Setting key="+that.event.k)
-                        if (that.eventList.length>0)
+                        str=setCharAt(str,that.event.x, that.event.k) // Set the key of the event
+                        if (that.eventList.length>0) // Any more events?
                         {
-                            that.event=that.eventList[0]
-                            if (that.event.S==undefined)
-                            {
-                                that.event.S='onair'
-                            }
-                            if (that.event.y!=row ||
-                                that.event.s!=SaveEvent.s ||
-                                that.event.S!=SaveEvent.S ||
-                                that.event.p!=SaveEvent.p) // If the next event is not on the same row
-                            {
-                                more=false // Done with this line
-                                console.log("S="+that.event.S)
-                                console.log(that.event)
-                                console.log(SaveEvent)                            
-                            }
-                            else
-                            {
-                                that.eventList.shift()  // Eat the event. It is on the same row                            
-                            }
-                            // console.log(that.event)
+                          that.event=that.eventList[0]
+                          if (that.event.S==undefined) // default service is onair
+                          {
+                            that.event.S='onair'
+                          }
+                          if (that.event.y!=currentRow ||
+                              that.event.s!=SaveEvent.s ||
+                              that.event.S!=SaveEvent.S ||
+                              that.event.p!=SaveEvent.p) // If the next event is not on the same row
+                          {
+                            moreEvents=false // Done with this line
+                            // Don't eat the event, it belongs to the next line
+                          }
+                          else
+                          {
+                            that.eventList.shift()  // Eat the event. It is on the same row                            
+                          }                                
+                        }
+                        else
+                        {  
+                          moreLines=false
+                          that.event.y=0 // Signal that we ar
+                          break; // Done! There are no more events to process
+                        }
+                      } // moreEvents
+                      if (that.eventList.length>0 || that.event.y>=row) // Are we caught up with the actual rows yet?
+                      {
+                        moreLines=false;
+                      }
+                      line=strPrefix+EscapePrestel(str); // Escape and write the line
+                      console.log("Writing out "+line)
+                      that.outfile.write(line+'\n')
+                    }
+                  } // Create missing line(s)
+                  
+                  var more=that.event.y==row // If the row matches, we have an entry to process
+                  while (more) // Any more changes on this line?
+                  {
+                    changed=true
+                    str=setCharAt(str,that.event.x+ix, that.event.k)
+                    console.log("Setting key="+that.event.k)
+                    if (that.eventList.length>0)
+                    {
+                        that.event=that.eventList[0]
+                        if (that.event.S==undefined)
+                        {
+                          that.event.S='onair'
+                        }
+                        if (that.event.y!=row ||
+                            that.event.s!=SaveEvent.s ||
+                            that.event.S!=SaveEvent.S ||
+                            that.event.p!=SaveEvent.p) // If the next event is not on the same row
+                        {
+                          more=false // Done with this line
+                          console.log("S="+that.event.S)
+                          console.log(that.event)
+                          console.log(SaveEvent)                            
                         }
                         else
                         {
-                            console.log("Nothing left to process")
-                            break // Nothing left to process
+                          that.eventList.shift()  // Eat the event. It is on the same row                            
                         }
-                      }
-                      // The result of editing this row
-                      if (changed)
-                      {
-                          console.log("ix="+ix)
-                          console.log("[before]"+line)
-                          console.log("[edited]"+str)
-                          line=str // Now we can write the line
-                      }
-                      
-                    } // OL                    
-                } // If subcode matches
-               // Write the line out to the file
-                that.outfile.write(line+'\n')
+                        // console.log(that.event)
+                    }
+                    else
+                    {
+                      console.log("Nothing left to process")
+                      break // Nothing left to process
+                    }
+                  }
+                  // The result of editing this row
+                  if (changed)
+                  {
+                    console.log("ix="+ix)
+                    console.log("[1. before]"+line+">")
+                    console.log("[2. edited]"+str+">")
+                    
+                    line=EscapePrestel(str); // Escape and write the line
+                    console.log("[3. escaped]"+line+">")
+                  }
+                  
+                } // OL                    
+            } // If subcode matches
+           // Write the line out to the file
+            that.outfile.write(line+'\n')
 
-            }) // reader.on
+        }) // reader.on
             /*
             reader.on('end', function()
             {
@@ -264,33 +329,34 @@ KeyStroke=function()
             */
             /* When the input stream ends */
             reader.on('close', function(line)
-            {
-              // console.log("Copy "+tempFile+" to "+filename)
-              reader.close()
-              // Oh. This fails because we are already nested inside copyfile
-              that.sourceFile=tempFile
-              that.destFile=filename
-              setTimeout(that.copyback,500)
-              //This is when we will also close the output file and probably rename them.
-              // that.outfile.end()
-              console.log("[reader.on] closed file. byebye.")
-            }) // reader.close
-          }
+              {
+                // console.log("Copy "+tempFile+" to "+filename)
+                reader.close()
+                // Oh. This fails because we are already nested inside copyfile
+                // Instead we schedule the file write so that it doesn't interfere with the current thread.
+                that.sourceFile=tempFile
+                that.destFile=filename
+                setTimeout(that.copyback,500)
+                //This is when we will also close the output file and probably rename them.
+                // that.outfile.end()
+                console.log("[reader.on] closed file. byebye.")
+              }) // lambda/reader.close
+          } // lambda
         )     
     } // if any events
   } // saveEdits 
   
   this.copyback=function()
   {
-     copyFile(that.sourceFile,that.destFile,function(err)
+    copyFile(that.sourceFile,that.destFile,function(err)
+        {
+          if (err!=undefined)
           {
-            if (err!=undefined)
-            {
-              console.log("[copyback] Something meaningful here about a file copy error="+err)
-            }
+            console.log("[copyback] Something meaningful here about a file copy error="+err)
           }
-        )
-  }
+        } //lambda
+      ) // copyfile
+  } // copyback
   
   /** Dump the summary of the contents of the key events list   */
   this.dump=function()
