@@ -41,7 +41,7 @@ EscapePrestel=function (str)
     var ch=str.charAt(x)
     if (ch.charCodeAt()<32)
     {
-      result=result+String.fromCharCode(0x1B)+String.fromCharCode(ch+0x40)
+      result=result+'\u001b'+String.fromCharCode((ch.charCodeAt() & 0x7f) | 0x40)
     }
     else
     {

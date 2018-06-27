@@ -488,7 +488,7 @@ function keyPressed() // This is called before keyTyped
                 myPage.prevSubpage()
             }
             break
-        case 35: // END - move to the last character on this line
+        case 35: // END - move to the last character on this line (ideally the first blank character after the last non-blank)
           myPage.end()
           break;
         case 36: // HOME - move to the first character on this line

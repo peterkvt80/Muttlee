@@ -260,7 +260,33 @@ TTXPAGE=function()
   
   this.end=function()
   {
-    this.cursor.x=39
+    var page=this.subPageList[this.subPage]
+    var row=page[this.cursor.y].txt
+    // Find the last non blank character
+    for (var x=39;x>0;x--)
+    {
+      if (row.charAt(x) != ' ')
+      {
+        break;
+      }
+    }
+    // Did we find a non blank character?
+    if (x>0)
+    {
+      // Is it before the right hand side?
+      if (x<38)
+      {
+        this.cursor.x=x+1 // Advance to the blank space
+      }
+      else
+      {
+        this.cursor.x=39 // Clip, because we can't advance
+      }
+    }
+    else // Another edge case, If the line is entirely blank, move to the right edge
+    {
+      this.cursor.x=39
+    }
   }
   
   // Insert a space at the current cursor location (TAB command)
