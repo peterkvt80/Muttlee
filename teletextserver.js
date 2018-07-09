@@ -179,7 +179,7 @@ function doLoad(data)
   var found=findService(serviceString)
   if (found===false)
   {
-    console.log("[doLoad] Adding service called "+serviceString)
+    console.log("[doLoad] Adding service called "+serviceString+" buffered key count ="+keystroke.length)
     services.push(new Service(serviceString))	// create the service
     found=services.length-1 // The index of the service we just created
   }
