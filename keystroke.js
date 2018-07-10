@@ -89,16 +89,18 @@ KeyStroke=function()
   /*( Helper for saveEdits() */
   this.savePage=function()
   {
-    page.filename="/dev/shm/mypage.tti"
-          page.savePage(function()
-            {
-              console.log("Write completed")
-            },
-            function(err)
-            {
-              console.log("Write failed"+err)
-            }
-          )
+    console.log("[keystroke::savePage] enters")
+    //page.filename="/dev/shm/mypage.tti"
+    page.savePage("dummy",
+      function()
+      {
+        console.log("Write completed")
+      },
+      function(err)
+      {
+        console.log("Write failed"+err)
+      }
+    )
   }  
   
   /* Write the edits back to file */

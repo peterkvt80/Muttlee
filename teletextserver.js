@@ -37,6 +37,14 @@ var missingPage=0
 console.log("Server is running on "+process.platform)
 io.sockets.on('connection',newConnection)
 
+function save()
+{
+  console.log("Autosave")
+  keystroke.saveEdits()
+}
+
+setInterval(save, 60000)  // every minute we save away the edits
+
 function newConnection(socket)
 {
   // Try to split the parameters from ?service=BBCNEWS&page=120    

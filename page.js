@@ -7,6 +7,8 @@
 // io stream stuff
 const fs = require('fs')
 const readline = require('readline')
+ 
+require('./utils.js') // Prestal and other string handling 
 
 Page=function()
 {
@@ -19,7 +21,7 @@ Page=function()
   this.ttiLines.push("DE,random comment 1")
   this.changed=false  /// true if the page has been edited
   this.filename=''
-  var that=this
+  var that=this  // should use bind(this) instead!
   
   this.loadPage=function(filename, callback, error)
   {
@@ -41,7 +43,7 @@ Page=function()
 
     rl.on('line', function(line)
     {
-      that.ttiLines.push(line)
+      that.ttiLines.push(DeEscapePrestel(line))
     })
     
     rl.on('close', function(line)
@@ -152,18 +154,35 @@ Page=function()
     this.ttiLines[rowIndex]=setCharAt(this.ttiLines[rowIndex], key.x+offset, key.k)
   }
   
-  this.savePage=function(good,bad)
+  this.savePage=function(filename, cb, error)
   {
+  // WARNING. We are saving to the stored filename!
     console.log("Saving: "+this.filename)
+    this.callback=cb
+    // this.filename='/dev/shm/test.tti' // @todo Check the integrity
+    var txt=""  
+    // Copy and escape the resulting lines, being careful not to escape the terminator
+    for (var i=0;i<this.ttiLines.length;i++)
+    {
+      txt+=(EscapePrestel(this.ttiLines[i])+'\n')
+    }
     fs.writeFile(
       this.filename,
-      JSON.stringify(this.ttiLines),
+      txt,
       function (err)
       {
-        console.log("Oops writing file")
-        console.log(err)
-        //bad(err)
-      }
+        if (err)
+        {
+          console.log("Oops writing file")
+          console.log(err)
+          error(err)         
+        }
+        else
+        {
+          // this.callback() // Can't get this callback to work. Says NOT a function
+        }
+        
+      }.bind(this)
     )
   }
   
