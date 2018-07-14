@@ -328,7 +328,14 @@ function newCharFromServer(data)
 }
 
 // Message handlers....
-function newChar(data, advance=true) // 'keystroke'
+/** newChar
+ * \param data - keyStroke
+ * \param local - default true. Set advance to false if the keystroke came from the server
+ This is because 1) we don't want the remote user to move our cursor. 2) We don't want to interpret qwaszx from a remote user
+ * \return The data key is returned and if graphics then the mosaic
+ *
+ */
+function newChar(data, local=true) // 'keystroke'
 {
   //if (data.k<' ')
   // console.log("returned keycode="+(data.k))
@@ -339,14 +346,16 @@ function newChar(data, advance=true) // 'keystroke'
   // If graphics mode is set, only allow qwaszx and map the bits of the current character
   // At (x,y) on subpage s, place the character k
   var graphicsMode=myPage.IsGraphics(data) // what about the subpage???
-  // Do the graphics, unless this an edit tf escape
-  if (graphicsMode && editMode!=EDITMODE_INSERT) // Take the original pixel and xor our selected bit
+  if (local)
   {
-    
-    key=data.k.toUpperCase() // @todo. Do we need to consider subpages and services? Maybe just subpages.
-    var bit=0
-    switch (key)
+    // Do the graphics, unless this an edit tf escape
+    if (graphicsMode && editMode!=EDITMODE_INSERT) // Take the original pixel and xor our selected bit
     {
+      
+      key=data.k.toUpperCase() // @todo. Do we need to consider subpages and services? Maybe just subpages.
+      var bit=0
+      switch (key)
+      {
         // sixel modifying
         case 'Q' : bit=0x01;break        
         case 'W' : bit=0x02;break
@@ -359,38 +368,37 @@ function newChar(data, advance=true) // 'keystroke'
         case 'F' : bit=0xff;break // set all bits
         case 'C' : bit=0x00;break // clear all bits
         
-        default: return        
-    }
-    if (bit==0)
-    {
+        default: return key       
+      }
+      if (bit==0)
+      {
         key=0x20 // All pixels off
-    }
-    else if (bit==0xff)
-    {
+      }
+      else if (bit==0xff)
+      {
         key=0x7f // All pixels on
-    }
-    else
-    {
+      }
+      else
+      {
         key=myPage.getChar(data) // Get the original character
         key=key^bit | 0x20 // And set bit 5 so we only make mosaics
-    }
-    key=String.fromCharCode(key) // Convert to ascii
-    console.log ("[newChar] Graphics key="+key+" bit="+bit)
-    // What is the problem? The data is being inserted as an ascii number rather than the code
-  }
-  else
-  { 
-      if (advance)  // advance the cursor if it is not from the server
-      {
-        myPage.cursor.right()
       }
+      key=String.fromCharCode(key) // Convert to ascii
+      console.log ("[newChar] Graphics key="+key+" bit="+bit)
+      // What is the problem? The data is being inserted as an ascii number rather than the code
+    }
+    else
+    { 
+        myPage.cursor.right()  // advance the cursor if it is the local user
+    }
   }
   myPage.drawchar(key,data.x,data.y,data.s) // write the character
   console.log(data)
   if (editMode==EDITMODE_INSERT)
   {
-        editMode=EDITMODE_EDIT
+    editMode=EDITMODE_EDIT
   }
+  return key
 } // newChar
 
 // A whole line is updated at a time
@@ -587,15 +595,15 @@ function keyTyped()
 function processKey(keyPressed)
 {
 	console.log('processKey='+keyPressed)
-    if (editMode==EDITMODE_ESCAPE)
-    {
-        console.log("[keyPressed] Reminder that this is where edit.tf commands are processed")
-        editMode=EDITMODE_INSERT
-        myPage.editSwitch(editMode)
-        console.log("[keyPressed] keyCode="+keyCode+" key="+key)
-        editTF(key)
-        return
-    }    
+  if (editMode==EDITMODE_ESCAPE)
+  {
+      console.log("[keyPressed] Reminder that this is where edit.tf commands are processed")
+      editMode=EDITMODE_INSERT
+      myPage.editSwitch(editMode)
+      console.log("[keyPressed] keyCode="+keyCode+" key="+key)
+      editTF(key)
+      return
+  }    
 	if (editMode!=EDITMODE_NORMAL) // Numbers are typed into the page
 	{
 		var data=
@@ -608,8 +616,8 @@ function processKey(keyPressed)
 			y: myPage.cursor.y,
 			id: gClientID
 		}
+		data.k=newChar(data)  // Return the key in case we are in mosaic twiddle mode. ie. don't return qwaszx.
 		socket.emit('keystroke', data)
-		newChar(data)
 	}
 	else // Numbers are used for the page selection
 	{

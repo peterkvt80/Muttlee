@@ -126,7 +126,7 @@ function newConnection(socket)
       services[i].keyMessage(data)
     }
     // Temporary hack. Use ] to trigger the writeback mechanism.
-    if (data.k==']')
+    if (data.k==']' || false)
     {
       keystroke.saveEdits()
     }
