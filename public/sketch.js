@@ -37,6 +37,35 @@ var expiredState=true // True for four seconds after the last keypad number was 
 var forceUpdate=false // Set true if the screen needs to be updated
 var timeoutVar
 
+/** mapKey
+ *  \brief Maps a keyboard key to a teletext code
+ * Currently only maps English but should be extended to at least WST
+ * \return The mapped key
+ */
+function mapKey(key)
+{
+  // These are english mappings
+  // Don't need to do $, @, ^, | because they are the same
+  // Don't need to do  [, ], \, ¬  because they can't be mapped
+  switch (key)
+  {
+   // '@' // 0x40 ampersand
+   // '[' // 0x5b left arrow
+   // '\' // 0x5c half
+   // ']' // 0x5d right arrow
+   // '^' // 0x5e up arrow
+   // Only these need mapping where the ASCII code does not match the teletext
+   case '£' : return '#' // 0x23 -> 0x24
+   case '#' : return '_' // 0x24 -> 0x5f
+   case '_' : return '`' // 0x5f -> 0x60
+   // '{' quarter 0x7b
+   // '|' pipe 0x7c
+   // '}' three quarters 0x7d
+   // '~' divide 0x7e
+  }
+  return key
+}
+
 function startTimer()
 {
 	expiredState=false
@@ -71,7 +100,7 @@ var btnkx, btnky, btnkback, btnkfwd
 
 // swipe
 var swipeStart // @todo This conflicts with block select in edit.tf. 
-// Use click/move to select a block.
+// @todo Use click/move to select a block.
 
 function preload()
 {
@@ -327,6 +356,31 @@ function newCharFromServer(data)
   newChar(data,false)
 }
 
+/** AlphaInGraphics
+ *  \param key - Key to test 
+ * \return - true if it is a prinatable character when in graphics mode
+ * Note that this is only valid for the England character set
+ * When processKey translates keys, we probably don't need to alter this?
+ */
+function AlphaInGraphics(key)
+{
+  return (key.charCodeAt()>=0x40 && key.charCodeAt()<0x60)
+// This code not needed now that we pre-map characters into teletext space  
+/*
+  if (key>='A' && key<='Z')    
+  {
+    return true
+  }    
+  if (key=='[') return true // left arrow
+  if (key==']') return true // right arrow
+  if (key=='@') return true
+  if (key=='\\') return true // half
+  if (key=='^') return true // up arrow
+  if (key=='_') return true // hash  
+  return false
+  */
+}
+
 // Message handlers....
 /** newChar
  * \param data - keyStroke
@@ -346,14 +400,17 @@ function newChar(data, local=true) // 'keystroke'
   // If graphics mode is set, only allow qwaszx and map the bits of the current character
   // At (x,y) on subpage s, place the character k
   var graphicsMode=myPage.IsGraphics(data) // what about the subpage???
+  var advanceCursor=local // Cursor advances, unless it is a remote user or a graphics twiddle
+  var alphaInGraphics=AlphaInGraphics(key) // Graphics but not a twiddle key?
   if (local)
   {
-    // Do the graphics, unless this an edit tf escape
-    if (graphicsMode && editMode!=EDITMODE_INSERT) // Take the original pixel and xor our selected bit
+    // Do the graphics, unless this an edit tf escape. Or an upper case letter.
+    if (graphicsMode && editMode!=EDITMODE_INSERT && !alphaInGraphics) // Take the original pixel and xor our selected bit
     {
       
       key=data.k.toUpperCase() // @todo. Do we need to consider subpages and services? Maybe just subpages.
       var bit=0
+      advanceCursor=false
       switch (key)
       {
         // sixel modifying
@@ -387,10 +444,14 @@ function newChar(data, local=true) // 'keystroke'
       console.log ("[newChar] Graphics key="+key+" bit="+bit)
       // What is the problem? The data is being inserted as an ascii number rather than the code
     }
-    else
-    { 
-        myPage.cursor.right()  // advance the cursor if it is the local user
-    }
+  }
+  else
+  {
+    advanceCursor=false
+  }
+  if (advanceCursor)
+  { 
+    myPage.cursor.right()  // advance the cursor if it is the local user
   }
   myPage.drawchar(key,data.x,data.y,data.s) // write the character
   console.log(data)
@@ -587,6 +648,7 @@ function keyTyped()
 	}
 	else // Anywhere else
 	{	
+    key=mapKey(key)
 		processKey(key)
 		return false
 	}
@@ -595,6 +657,8 @@ function keyTyped()
 function processKey(keyPressed)
 {
 	console.log('processKey='+keyPressed)
+  // @todo need to map codes to national options at this point.
+  // @todo Also need to fix AlphaInGraphics when I do this
   if (editMode==EDITMODE_ESCAPE)
   {
       console.log("[keyPressed] Reminder that this is where edit.tf commands are processed")

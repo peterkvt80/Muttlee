@@ -664,7 +664,8 @@ function row(page,y,str)
       if (printable && (flashState || !flashMode) && !concealed) 
       {
         fill(fgColor)
-        if (textmode || (ch>='A' && ch<='Z'))
+        // if (textmode || (ch>='A' && ch<='Z'))  // Oops. There are special characters that can also be in here
+        if (textmode || (ch.charCodeAt()>=0x40 && ch.charCodeAt()<0x60))          
         {
           ch=this.mapchar(ch)
           this.drawchar(ch,i,this.row,dblHeight)
