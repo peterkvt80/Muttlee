@@ -253,10 +253,39 @@ TTXPAGE=function()
     }
   }
   
+  /** home
+   * Move to the start of the line or the start of text
+   */
   this.home=function()
   {
-    this.cursor.x=0
-  }
+    var col;
+    var page=this.subPageList[this.subPage]
+    var row=page[this.cursor.y].txt 
+    // Find the first printable character
+    for (col=0;col<39;col++)
+    {
+      if (row.charAt(col)>' ')
+      {
+        break;
+      }
+    }    
+    // Did we find a non blank?
+    if (col<39) // Yes. We found the new position
+    {
+      if (this.cursor.x!=col)
+      {        
+        this.cursor.x=col    // If we aren't there already, then go there   
+      }
+      else
+      {
+        this.cursor.x=0    // otherwise go back to the start of the row
+      }
+    }
+    else // No. Skip to the start of the line
+    {
+      this.cursor.x=0      
+    }  
+  }  // home
   
   this.end=function()
   {
@@ -276,7 +305,14 @@ TTXPAGE=function()
       // Is it before the right hand side?
       if (x<38)
       {
-        this.cursor.x=x+1 // Advance to the blank space
+      	if (this.cursor.x==x+1) // Already there?
+      	{
+			this.cursor.x=39
+      	}
+      	else
+      	{
+        	this.cursor.x=x+1 // Advance to the blank space
+      	}
       }
       else
       {
@@ -657,14 +693,18 @@ function row(page,y,str)
       noStroke()
       fill(bgColor)
       // except if this is the cursor position
-      if (cpos==i && flashState) fill(255) // However, this is hidden when all pixels are set. @todo
+      if (cpos==i && flashState) // Flash the orange cursor
+      {
+        fill(255,100,0) // However, this is hidden when all sixels are set. @todo
+      }
 			if (this.row<23)
-				this.drawchar(String.fromCharCode(0xe6df),i,this.row+1,false) //edge case: a single height character on a double height row has double height backhround
+      {
+				this.drawchar(String.fromCharCode(0xe6df),i,this.row+1,false) //edge case: a single height character on a double height row has double height background
+      }
       this.drawchar(String.fromCharCode(0xe6df),i,this.row,dblHeight)
       if (printable && (flashState || !flashMode) && !concealed) 
       {
-        fill(fgColor)
-        // if (textmode || (ch>='A' && ch<='Z'))  // Oops. There are special characters that can also be in here
+          fill(fgColor)          // Normal
         if (textmode || (ch.charCodeAt()>=0x40 && ch.charCodeAt()<0x60))          
         {
           ch=this.mapchar(ch)
@@ -673,10 +713,20 @@ function row(page,y,str)
         else // mosaics
         {
 		  
-          fill(fgColor)
+          //fill(fgColor)
 					var ic2=ic
 					if (holdGfx)
+          {
 						ic2=holdChar // hold char replaces
+          }
+          if (cpos==i && flashState)
+          {
+            var r=red(fgColor)
+            var g=green(fgColor)
+            var b=blue(fgColor)
+            fill(color(255-r,255-g,255-b))   
+            //fill ('magenta')            
+          }
           if (contiguous)
           {
             stroke(fgColor)
