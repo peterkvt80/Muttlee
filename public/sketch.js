@@ -37,6 +37,9 @@ var expiredState=true // True for four seconds after the last keypad number was 
 var forceUpdate=false // Set true if the screen needs to be updated
 var timeoutVar
 
+var cnv;
+
+
 /** mapKey
  *  \brief Maps a keyboard key to a teletext code
  * Currently only maps English but should be extended to at least WST
@@ -108,6 +111,7 @@ function preload()
   ttxFontDH=loadFont("assets/teletext4.ttf") // Double height 
 }
 
+
 function setup()
 {
   // Try to make a debug and on-air version
@@ -115,8 +119,9 @@ function setup()
   socket=io.connect(':8080')
 //  socket=io.connect('http://23.251.131.26:8080')
   // socket=io.connect('http://localhost:80')
-  var cnv=createCanvas(600,550)
-	cnv.position(0,0)
+  cnv=createCanvas(600,550)
+  centerCanvas();
+//	cnv.position(0,0)
 	//createCanvas(displayWidth, displayHeight)	
   // font metrics
   textFont(ttxFont)
@@ -184,6 +189,11 @@ function setup()
 	btnkfwd.mousePressed(kfwd)
 	
 	inputPage=select('#pageNumber')
+  frameRate(10)
+  
+  button = createButton('x')
+  //button.position(input.x + input.width, 65)
+  button.mousePressed(exportPage)
 }
 
 function setSubPage(data)
@@ -939,4 +949,36 @@ function editTF(key)
     }
     socket.emit('keystroke', data)    
     newChar(data)
+}
+
+function centerCanvas()
+{
+  var x = (windowWidth - width) / 2
+  var y = (windowHeight - height) / 2
+  cnv.position(x, 0)
+}
+
+function windowResized()
+{
+  centerCanvas()
+}
+
+function exportPage()
+{
+//  var name = input.value()
+//  greeting.html('hello '+name+'!')
+//  input.value('')
+var url="http://edit.tf/#1:oMWTJAgQIK9RbGg2EG3hwQRINlBkyIJtSQgBoNGh1u3LufMi3Zo2bUk3582bUm3589ZQ6D-IK-nXpQfA0bDj6c0GHogQfCLVq1atSTVA1QNSbV6k1FDoP4gqZdiBB8Ded_XkgQIECBB8I9efPi1JdeHHg1J9ePD0UOg_iCNh8IEHwNm07s-Xl008OfwbUy7MvTL46IIuTT038kEHZpz7tuXd0QQ9GHl0QIECBAgQICKBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQYMGDBgwYMGDBgwYMGDBgwYMGDBgwYMGDBgwYMGDBgwYMGAEgQIECBAgGzINeNVmIECBAgnRatSlBmIECBAgQQ5EGfUkw0CBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECAbHnz4iBAgB2rE7L0QIECBAg7-KkWIgQIECBAgQVMvjplyIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIAaBAgQIECBAgQIECBAgQIECBAgQIEDjFzQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgGzotWpSgzA0aDCQIECBAgQIMuTT0XdMyBAgQIEEGFaQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIBsWtJmIECALCw5EEHhw2ZUCCb16dNmXKgQIECBBN07tNSLEQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgXIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgAzsvjoCQIECBAgQIECBAgQIECBAgQIECBAgQIECANIy7OCA:PN=122:SC=0000:PS=8000:X270=12300008FF00008FF000070000008FF00008FF0000"
+createA(url,'_blank');
+
+nane="Teefax"
+  for (var i=0; i<200; i++)
+  {
+    push()
+    fill(random(255), 255, 255)
+    translate(random(width), random(height))
+    rotate(random(2*PI))
+    text(name, 0, 0)
+    pop()
+  }
 }
