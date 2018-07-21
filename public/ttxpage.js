@@ -2,6 +2,11 @@
 // page class defines a page and subpages.
 // row class defines a teletext row.
 
+const EDITMODE_NORMAL=0 // normal viewing
+const EDITMODE_EDIT=1   // edit mode
+const EDITMODE_ESCAPE=2 // expect next character to be either an edit.tf function or Escape again to exit.
+const EDITMODE_INSERT=3 // The next character is ready to insert
+
 // Timer for flashing cursor and text
 var flashState=false
 var tickCounter=0 // For timing carousels (in steps of half a second)
@@ -47,7 +52,8 @@ TTXPAGE=function()
   // @todo check range
   this.init=function(number)
   {
-        this.pageNumber=number
+   
+     this.pageNumber=number
         //this.service=undefined // @todo Services
 
         this.addPage(number)

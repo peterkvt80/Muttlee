@@ -21,10 +21,10 @@ const SIGNAL_PAGE_NOT_FOUND = -1
 const SIGNAL_INITIAL_LOAD = 2000
 
 // state
-const EDITMODE_NORMAL=0 // normal viewing
-const EDITMODE_EDIT=1   // edit mode
-const EDITMODE_ESCAPE=2 // expect next character to be either an edit.tf function or Escape again to exit.
-const EDITMODE_INSERT=3 // The next character is ready to insert
+//const EDITMODE_NORMAL=0 // normal viewing
+//const EDITMODE_EDIT=1   // edit mode
+//const EDITMODE_ESCAPE=2 // expect next character to be either an edit.tf function or Escape again to exit.
+//const EDITMODE_INSERT=3 // The next character is ready to insert
 var editMode=EDITMODE_NORMAL
 
 // dom
@@ -965,13 +965,23 @@ function windowResized()
 
 function exportPage()
 {
-//  var name = input.value()
-//  greeting.html('hello '+name+'!')
-//  input.value('')
-var url="http://edit.tf/#1:oMWTJAgQIK9RbGg2EG3hwQRINlBkyIJtSQgBoNGh1u3LufMi3Zo2bUk3582bUm3589ZQ6D-IK-nXpQfA0bDj6c0GHogQfCLVq1atSTVA1QNSbV6k1FDoP4gqZdiBB8Ded_XkgQIECBB8I9efPi1JdeHHg1J9ePD0UOg_iCNh8IEHwNm07s-Xl008OfwbUy7MvTL46IIuTT038kEHZpz7tuXd0QQ9GHl0QIECBAgQICKBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQYMGDBgwYMGDBgwYMGDBgwYMGDBgwYMGDBgwYMGDBgwYMGAEgQIECBAgGzINeNVmIECBAgnRatSlBmIECBAgQQ5EGfUkw0CBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECAbHnz4iBAgB2rE7L0QIECBAg7-KkWIgQIECBAgQVMvjplyIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIAaBAgQIECBAgQIECBAgQIECBAgQIEDjFzQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgGzotWpSgzA0aDCQIECBAgQIMuTT0XdMyBAgQIEEGFaQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIBsWtJmIECALCw5EEHhw2ZUCCb16dNmXKgQIECBBN07tNSLEQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgXIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgQIECBAgAzsvjoCQIECBAgQIECBAgQIECBAgQIECBAgQIECANIy7OCA:PN=122:SC=0000:PS=8000:X270=12300008FF00008FF000070000008FF00008FF0000"
-createA(url,'_blank');
 
-nane="Teefax"
+var cset=0 // @todo language
+var website="http://edit.tf"  // @todo zxnet
+var url=save_to_hash(cset, website, myPage)
+
+// If the export link already exists, remove it
+var span=document.getElementById("dynamicLink")
+if (span!=null)
+{
+	span.parentNode.removeChild(span)
+}
+
+// Create the A tag link
+createA(url,'<span id="dynamicLink" style="color: white;">open in<br/>edit.tf</span>','_blank')
+
+// pointless stuff below here
+name="Teefax"
   for (var i=0; i<200; i++)
   {
     push()
