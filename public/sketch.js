@@ -12,6 +12,9 @@ var digit3='0'
 
 var hdr
 
+const CANVAS_WIDTH=600
+const CANVAS_HEIGHT=550
+
 // comms
 var socket
 var gClientID=null
@@ -101,9 +104,8 @@ function startTimer()
 var btnk0, btnk1, btnk2, btnk3, btnk4, btnk5, btnk6, btnk7, btnk8, btnk9
 var btnkx, btnky, btnkback, btnkfwd
 
-// swipe
-var swipeStart // @todo This conflicts with block select in edit.tf. 
-// @todo Use click/move to select a block.
+// block
+var blockStart // block select
 
 function preload()
 {
@@ -119,7 +121,7 @@ function setup()
   socket=io.connect(':8080')
 //  socket=io.connect('http://23.251.131.26:8080')
   // socket=io.connect('http://localhost:80')
-  cnv=createCanvas(600,550)
+  cnv=createCanvas(CANVAS_WIDTH,CANVAS_HEIGHT)
   centerCanvas();
 //	cnv.position(0,0)
 	//createCanvas(displayWidth, displayHeight)	
@@ -152,32 +154,7 @@ function setup()
   cyanButton.mousePressed(fastextC)
   //indexButton=select('#index')
 	//indexButton.mousePressed(fastextIndex)
-	
-	// keypad - Doesn't work well. In fact, it is really bad
-	/*
-  btnk0=select('#k0')
-	btnk0.mousePressed(k0)
-  btnk1=select('#k1')
-	btnk1.mousePressed(k1)
-  btnk2=select('#k2')
-	btnk2.mousePressed(k2)
-  btnk3=select('#k3')
-	btnk3.mousePressed(k3)
-  btnk4=select('#k4')
-	btnk4.mousePressed(k4)
-  btnk5=select('#k5')
-	btnk5.mousePressed(k5)
-  btnk6=select('#k6')
-	btnk6.mousePressed(k6)
-  btnk7=select('#k7')
-	btnk7.mousePressed(k7)
-  btnk8=select('#k8')
-	btnk8.mousePressed(k8)
-  btnk9=select('#k9')
-	btnk9.mousePressed(k9)
-	*/
-	
-	
+		
 	
   btnkx=select('#khold')
 	btnkx.mousePressed(khold)
@@ -191,9 +168,32 @@ function setup()
 	inputPage=select('#pageNumber')
   frameRate(10)
   
-  button = createButton('x')
-  //button.position(input.x + input.width, 65)
-  button.mousePressed(exportPage)
+
+  // Don't offer to edit on a small screen
+  if (displayWidth>1024)
+  {
+    var offset=CANVAS_WIDTH+(displayWidth-CANVAS_WIDTH)/2
+    btn = createButton('Grab')
+    btn.mousePressed(exportPage)
+    
+    btn.elt.style="position:absolute; left: "+offset+"px; top: 0px;"
+  }
+  
+  // Do positioning by overriding p5js defaults
+//  span.style = 'width: 600px;height: 550px;position: absolute; top: 0px;'
+  //span.style/* visibility: hidden; */width: 600px;height: 550px;position: absolute;left: 540px;top: 0px;
+  var span=document.getElementById("defaultCanvas0")
+  // class contains the static style
+  span.setAttribute("class","centre-div")
+
+  // dynamic style
+  span.removeAttribute("style")
+  var offset=(displayWidth-CANVAS_WIDTH)/2
+  if (offset<0)
+  {
+    offset=0
+  }
+  span.style="left: "+offset+"px;"
 }
 
 function setSubPage(data)
@@ -334,7 +334,7 @@ function draw()
 	// No updating while we are pressing the mouse OR while typing in a page number
 	if (!forceUpdate)
 	{
-		if (swipeStart!=null || !expiredState )
+		if (blockStart!=null || !expiredState )
 			return
 	}
 	else
@@ -345,7 +345,6 @@ function draw()
   fill(255,255,255)
   // ellipse(mouseX,mouseY,10,10)
   myPage.draw()
-	
 }
 
 // Does our page match the incoming message?
@@ -765,53 +764,42 @@ function mouseClicked()
     return false // ?
 }
 
-/* Swipes @todo Get rid of these! They are just confusing and conflict with future block selection*/
-/*
+/* Block editing. Touch marks the first corner of an area
+*/
 function touchStarted()
 {
-	if (touchY>550)  // Only swipe on page
+	if (touchY>CANVAS_HEIGHT)  // Only start block on a page
   {
 		return
   }
   console.log('Touch started at '+touchX+' '+touchY)
-	swipeStart=createVector(touchX,touchY)
+	blockStart=createVector(touchX,touchY)
 	return false
 }
 
 function touchEnded()
 {
   // console.log('Touch ended at '+touchX+' '+touchY);
-	var swipeEnd=createVector(touchX,touchY)
-	swipeEnd.sub(swipeStart)
-	swipeStart=null // Need this to be null in case we return!
+	var blockEnd=createVector(touchX,touchY)
+	blockEnd.sub(blockStart)
+	blockStart=null // Need this to be null in case we return!
 
-	if (touchY>550) // Only swipe on page
+	if (touchY>CANVAS_HEIGHT) // Restrict to the actual page (need to check width too)
   {
 		return
   }
-	// Swipe needs to be a minimum distance (& possibly velocity?
-	var mag=swipeEnd.mag()
+	// Block needs to be a minimum distance (& possibly velocity?
+	var mag=blockEnd.mag()
 	if (mag<40)
 		return;
-	var heading=swipeEnd.heading()
+	var heading=blockEnd.heading()
 	// left
-	//console.log("swiped! Heading="+degrees(heading))
+	console.log("block select ! Heading="+degrees(heading))
 		
 	var dir=4*heading/PI
-	console.log("Swiped! dir="+dir)
-	if (dir>=-1 && dir<=1)
-	{
-		console.log("swiped right (back)")
-		prevPage()
-	}
-	if (dir>3 || dir<-3)
-	{
-		// console.log("swiped left")
-		nextPage()
-	}
+	console.log("Block! dir="+dir)
 	return false	
 }
-*/
 
 function nextPage()
 {
@@ -977,8 +965,13 @@ if (span!=null)
 	span.parentNode.removeChild(span)
 }
 
+var pg=hex(myPage.pageNumber,3)
+
+var style="color: white; position: absolute; top:200px; left: "+(CANVAS_WIDTH+(displayWidth-CANVAS_WIDTH)/2)+"px;"
+style+="background-color: #BB5000;"
 // Create the A tag link
-createA(url,'<span id="dynamicLink" style="color: white;">open in<br/>edit.tf</span>','_blank')
+var link='<span id="dynamicLink" style="'+style+'">open P'+pg+'<br/>in edit.tf</span>'
+createA(url,link,'_blank')
 
 // pointless stuff below here
 name="Teefax"

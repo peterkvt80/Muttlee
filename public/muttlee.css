@@ -8,7 +8,7 @@ body {
   align-items: top;  
   position: relative;
 }
-canvas {display: block; margin-left: auto; margin-right: auto;vertical-align: center; horizontal-align: center;}
+canvas {display: block; margin-left: auto; margin-right: auto;vertical-align: center; horizontal-align: center; left: 0px}
 button{font-size: 100%; font-family:arial, helvetica, sans-serif;}
 input{font-size: 100%;}
 button:focus {outline:0;}
@@ -183,4 +183,22 @@ button2
 	width:140px;
 	height:50px;
 	-webkit-border-radius: 3px; 
+}
+
+.centre-div
+{
+    margin: auto;     
+    width: 600px;
+    height: 550px;
+    position: absolute;
+    top: 0px;
+visibility:visible;    
+}
+.grabButton
+{
+    margin: 0 auto;     
+    width: 600px;
+    height: 550px;
+    position: absolute;
+    top: 0px;     
 }
