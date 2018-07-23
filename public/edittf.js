@@ -183,22 +183,23 @@ save_to_hash=function(cset, website, page)
   {
 		encoding+=base64[b64[i]]
 	}
-	{ // metadata (@todo for zxnet )
-//	  var pageNumber=page.pageNumber
-	  //var subcode=page.subPage
+	// metadata (@todo for zxnet )
+	  var pageNumber=page.pageNumber
+	  var subcode=page.subPage
 	  //var status="0x8000" // page.GetPageStatus()
-//	  encoding+=":PN="+pageNumber >> 8 // 3
-    //encoding+=":SC="+ subcode // 4
-    //encoding+=":PS="+status // 4
-//    :X270=%03X%04X%03X%04X%03X%04X%03X%04X%03X%04X%03X%04X",pagenumber >> 8, subcode, status,
-           //page->GetFastextLink(0),0, // The six Fastext links
-           //page->GetFastextLink(1),0,
-           //page->GetFastextLink(2),0,
-           //page->GetFastextLink(3),0,
-           //page->GetFastextLink(4),0,
-           //page->GetFastextLink(5),0
+	  encoding+=":PN="+(pageNumber.toString(16)) // 3
+    encoding+=":SC="+ subcode // 4
+    encoding+=":X270="+page.redLink.toString(16)+"0000"+ // The six Fastext links
+           page.greenLink.toString(16)+"0000"+
+           page.yellowLink.toString(16)+"0000"+
+           page.cyanLink.toString(16)+"0000"+
+           "8ff0000"+
+           page.indexLink+"0000"
+    if (page.redLink!=0x900)
+    {
+      encoding+="F" // If we got a Fastext FL line, display it.
+    }
   //   encoding+=":X270=12300008FF00008FF000070000008FF00008FF0000" // @todo
-  }
 	// encoding[1167+sz]=0;
   return encoding
 }

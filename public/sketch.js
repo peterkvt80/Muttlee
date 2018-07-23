@@ -955,8 +955,11 @@ function exportPage()
 {
 
 var cset=0 // @todo language
-var website="http://edit.tf"  // @todo zxnet
+var website="http://edit.tf"  // edit.tf
 var url=save_to_hash(cset, website, myPage)
+
+website="https://zxnet.co.uk/teletext/editor"  // zxnet
+var url2=save_to_hash(cset, website, myPage)
 
 // If the export link already exists, remove it
 var span=document.getElementById("dynamicLink")
@@ -965,14 +968,21 @@ if (span!=null)
 	span.parentNode.removeChild(span)
 }
 
+span=document.getElementById("dynamicLink2")
+if (span!=null)
+{
+	span.parentNode.removeChild(span)
+}
+
 var pg=hex(myPage.pageNumber,3)
 
-var style="color: white; position: absolute; top:200px; left: "+(CANVAS_WIDTH+(displayWidth-CANVAS_WIDTH)/2)+"px;"
+var style="color: white; position: absolute; left: "+(CANVAS_WIDTH+(displayWidth-CANVAS_WIDTH)/2)+"px;"
 style+="background-color: #BB5000;"
 // Create the A tag link
-var link='<span id="dynamicLink" style="'+style+'">open P'+pg+'<br/>in edit.tf</span>'
+var link='<span id="dynamicLink" style="'+style+' top:150px;" >open P'+pg+'<br/>in edit.tf</span>'
 createA(url,link,'_blank')
-
+link='<span id="dynamicLink2" style="'+style+' top:300px;" >open P'+pg+'<br/>in zxnet</span>'
+createA(url2,link,'_blank')
 // pointless stuff below here
 name="Teefax"
   for (var i=0; i<200; i++)

@@ -12,9 +12,11 @@ require('./ttxpage.js')
 console.log("Test configuring")
 
 var page=new TTXPAGE()
-  page.init(0x100)
+  page.init(0x190)
+  page.setSubPage(0001)
 
-var website="http://edit.tf" // could be zxnet. Up to you
+// var website="http://edit.tf" // could be zxnet. Up to you
+var website="https://zxnet.co.uk/teletext/editor/" // could be zxnet. Up to you
 var cset=0 // WST EN
 
 var encoding
