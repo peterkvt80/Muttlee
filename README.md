@@ -57,7 +57,7 @@ npm install request --save
 Keep alive
 The system stays alive by using PM2. The environment is Debian so this is what worked for me.
 
-sudo npm pm2@latest -g
+sudo npm install pm2@latest -g
 
 pm2 start teletextserver.js
 
