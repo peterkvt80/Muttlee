@@ -393,7 +393,7 @@ function AlphaInGraphics(key)
 // Message handlers....
 /** newChar
  * \param data - keyStroke
- * \param local - default true. Set advance to false if the keystroke came from the server
+ * \param local - default true. Set local to false if the keystroke came from the server
  This is because 1) we don't want the remote user to move our cursor. 2) We don't want to interpret qwaszx from a remote user
  * \return The data key is returned and if graphics then the mosaic
  *
@@ -752,16 +752,14 @@ function khold()  {myPage.toggleHold() }
 
 function mouseClicked()
 {
-    // Only need to do this in edit mode
-    if (editMode==EDITMODE_NORMAL)
-    {
-        return
-    }
+  if (editMode!=EDITMODE_NORMAL)    // Only need to do this in edit mode
+  {
     var xLoc=int(mouseX/gTtxW)
     var yLoc=int(mouseY/gTtxH)
     myPage.cursor.moveTo(xLoc,yLoc)
     // console.log('The mouse was clicked at '+xLoc+' '+yLoc)
-    return false // ?
+  }
+  return false // Prevent default behaviour
 }
 
 /* Block editing. Touch marks the first corner of an area

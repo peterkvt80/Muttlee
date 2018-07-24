@@ -26,7 +26,7 @@ TTXPAGE=function()
     this.service=undefined
 
     // Misc page properties
-    this.redLink=0x100
+    this.redLink=0x900
     this.greenLink=0x100
     this.yellowLink=0x100
     this.cyanLink=0x100
@@ -395,7 +395,7 @@ TTXPAGE=function()
     {
         if (data==undefined)
         {
-            return
+            return false
         }
 
         var subpage=data.s
