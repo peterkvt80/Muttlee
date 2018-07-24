@@ -47,23 +47,33 @@ It was run for a while on Google's Compute Engine with Bitnami Node.js.
 Express is used to serve static http from the Public folder
 
 Install express and socket.io using the node package manager:
+
 npm install express --save
+
 npm install socket.io --save
+
 npm install request --save
 
 Keep alive
 The system stays alive by using PM2. The environment is Debian so this is what worked for me.
+
 sudo npm pm2@latest -g
+
 pm2 start teletextserver.js
+
 pm2 startup ubuntu
+
 pm2 save
 
 Developing.
 
 There are a lot of print messages that are useful in debugging the system
 Stop the system and run it in a shell:
+
 pm2 stop teletextserver.js
+
 node teletextserver.js
 
 Don't forget to restart the automatic service afterwards.
+
 pm2 start teletextserver.js
