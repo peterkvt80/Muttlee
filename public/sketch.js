@@ -194,6 +194,9 @@ function setup()
     offset=0
   }
   span.style="left: "+offset+"px;"
+  
+  // Force a resize
+  windowResized()
 }
 
 function setSubPage(data)
@@ -506,6 +509,7 @@ function inputNumber()
 function keyPressed() // This is called before keyTyped
 {
 	var active=document.activeElement
+  var handled=true
 	console.log("Active element="+active.id)
 	if (document.activeElement.id!='pageNumber') // todo: Kill refresh cycles while the input is active.
 	{
@@ -580,9 +584,14 @@ function keyPressed() // This is called before keyTyped
           break;
 		default:
 			console.log('unhandled keycode='+keyCode)
+      handled=false
 		}
 	}
-	// return false // Do not do this! This stops keyTyped 
+  
+	if (handled)
+  {    
+     return false // Signal that the key should not be processed any further.
+  }
 }
 
 /** This inserts a space on the server and any listening client,
@@ -659,8 +668,8 @@ function keyTyped()
 	{	
     key=mapKey(key)
 		processKey(key)
-		return false
 	}
+  return false
 }
 
 function processKey(keyPressed)
