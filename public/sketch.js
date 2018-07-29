@@ -353,7 +353,7 @@ function draw()
 // Does our page match the incoming message?
 function matchpage(data)
 {
-	console.log ("Matching myPage.service, data.S "+myPage.service+' '+data.S)
+	//console.log ("Matching myPage.service, data.S "+myPage.service+' '+data.S)
 	if (myPage.service!=data.S) return false
 	//console.log ("Matching data.p, myPage.pageNumber"+data.p.toString(16)+' '+myPage.pageNumber.toString(16))
 	if (myPage.pageNumber!=data.p) return false
@@ -506,11 +506,20 @@ function inputNumber()
 	}
 }
 
+function keyRelease()
+{
+  console.log (" release")
+}
+
 function keyPressed() // This is called before keyTyped
 {
+  console.log (" k="+keyCode)
 	var active=document.activeElement
   var handled=true
-	console.log("Active element="+active.id)
+  if (active.id.length>1)
+  {
+    console.log("Active element="+active.id)
+  }
 	if (document.activeElement.id!='pageNumber') // todo: Kill refresh cycles while the input is active.
 	{
 		switch (keyCode)
@@ -583,7 +592,6 @@ function keyPressed() // This is called before keyTyped
           myPage.removeSubPage()
           break;
 		default:
-			console.log('unhandled keycode='+keyCode)
       handled=false
 		}
 	}
@@ -591,6 +599,10 @@ function keyPressed() // This is called before keyTyped
 	if (handled)
   {    
      return false // Signal that the key should not be processed any further.
+  }
+  else
+  {
+ 			console.log('unhandled keycode='+keyCode)
   }
 }
 
@@ -660,9 +672,10 @@ function backSpace()
  */
 function keyTyped()
 {	
+  console.log('keyTyped keycode='+keyCode)
 	if (document.activeElement.id=='pageNumber') // Input a page number
 	{
-    console.log('keyTyped keycode='+keyCode)
+    // console.log('keyTyped keycode='+keyCode)
 	}
 	else // Anywhere else
 	{	
@@ -1002,3 +1015,5 @@ name="Teefax"
     pop()
   }
 }
+
+

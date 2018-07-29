@@ -7,6 +7,8 @@ body {
   justify-content: center;  
   align-items: top;  
   position: relative;
+  overflow-y: hidden;
+  overflow-x: hidden;
 }
 canvas {display: block; margin-left: auto; margin-right: auto;vertical-align: center; horizontal-align: center; left: 0px}
 button{font-size: 100%; font-family:arial, helvetica, sans-serif;}
