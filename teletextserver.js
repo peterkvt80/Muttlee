@@ -304,6 +304,15 @@ function doLoad(data)
         return
       }
       else
+      if (line.indexOf('CT,')==0) // Counter timer
+      {
+        // Hack: Send the time in Fastext[0]
+        data.fastext=[]
+        data.fastext[0]=line[3]  // Need allow numbers greater than 9!
+        io.sockets.emit('timer',data)	
+        return
+      }
+      else
       if (line.indexOf('OL,')==0) // Detect a teletext row
       {
         var p=0

@@ -16,47 +16,65 @@ function toggle()
 	tickCounter++
   flashState=!flashState
 }
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Not much of a class
+function MetaData(displayTiming)
+{
+  this.timer=displayTiming
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 TTXPAGE=function()
 {
-    // Basic page properties
-    this.pageNumber=0x100
-    this.subPage=0 // This is used to address the sub page
-    this.cursor=new TTXCURSOR()
-    this.service=undefined
+  // Basic page properties
+  this.pageNumber=0x100
+  this.subPage=0 // This is the integer to index the current sub page
+  this.cursor=new TTXCURSOR()
+  this.service=undefined
 
-    // Misc page properties
-    this.redLink=0x900
-    this.greenLink=0x100
-    this.yellowLink=0x100
-    this.cyanLink=0x100
-    this.indexLink=0x100
-    this.editMode=EDITMODE_NORMAL
-    this.description='none'
-    this.showGrid=false
+  // Misc page properties
+  this.redLink=0x900
+  this.greenLink=0x100
+  this.yellowLink=0x100
+  this.cyanLink=0x100
+  this.indexLink=0x100
+  this.editMode=EDITMODE_NORMAL
+  this.description='none'
+  this.showGrid=false
+
+  // this.timer=7 // This is global. Replaced by a per page timer
 	
-	this.subPageList=new Array()
-	
+  // subPageList contains the rows. metadata contains other data like timing.
+  // if subPageList is modified, then metadata must be done at the same time
+	this.subPageList=[] // Subpage just contains rows.
+  this.metadata=[]	 // Metadata contains other things that a subpage needs, just the timer at the moment
+  
 	this.pageNumberEntry='100' // Page number as entered (used to allow partial page numbers) 
 		
 	this.revealMode=false
 	this.holdMode=false
+  
+  // timer
+  this.setTimer=function(t)
+  {
+    // this.timer=t
+    this.metadata[this.subPage].timer=t
+  }
     
-    // edit mode 
-    this.editSwitch=function(mode)
-    {
-        this.editMode=mode
-        this.cursor.hide=(mode==EDITMODE_NORMAL)
-    }
+  // edit mode 
+  this.editSwitch=function(mode)
+  {
+    this.editMode=mode
+    this.cursor.hide=(mode==EDITMODE_NORMAL)
+  }
 
   // @todo check range
   this.init=function(number)
   {
-   
-     this.pageNumber=number
-        //this.service=undefined // @todo Services
-
-        this.addPage(number)
+    this.pageNumber=number
+    //this.service=undefined // @todo Services
+    this.addPage(number)
   }
 	
 	this.toggleReveal=function ()
@@ -80,7 +98,9 @@ TTXPAGE=function()
 		
 		this.pageNumberEntry=p.toString(16)
 		
-		this.subPageList=new Array()
+		this.subPageList=[]
+    this.metaData=[]
+    
 		this.addPage(this.pageNumber)
   }
   
@@ -93,7 +113,7 @@ TTXPAGE=function()
 	 */
 	this.addPage=function(number)
 	{
-    this.rows = new Array()
+    this.rows = []
 	// As rows go from 0 to 31 and pages start at 100, we can use the same parameter for both
     this.rows.push(new row(number,0,"Pnn     CEEFAX 1 100 Sun 08 Jan 12:58/57"))
     for (var i=1;i<26;i++)
@@ -102,6 +122,7 @@ TTXPAGE=function()
       this.rows.push(new row(number,i,"                                        "))
     }  
 		this.subPageList.push(this.rows)
+    this.metadata.push(new MetaData(7))
 	}
 	
 	/**
@@ -181,13 +202,13 @@ TTXPAGE=function()
     var dblHeight
     if (!(this.holdMode || this.editMode!=EDITMODE_NORMAL)) // Only cycle if we are not in hold mode or edit
     {
-        // carousel timing
-        if (tickCounter % 14==0) // 7 seconds (@todo This should come from the tti file)
-        {
-            this.nextSubpage()
+      // carousel timing
+      if (tickCounter % ((1+round(this.metadata[this.subPage].timer))*2)==0) // Times 2 because the tick is 2Hz.
+      {
+        this.nextSubpage()
         console.log("drawing subpage "+this.subPage)
-            tickCounter=1 // Prevent a cascade of page changes!
-        }
+        tickCounter=1 // Prevent a cascade of page changes!
+      }
     }
     for (var row=0;row<this.rows.length;row++)
     {
@@ -251,11 +272,11 @@ TTXPAGE=function()
     var v=this.subPageList[s]
     if (v==undefined)
     {
-        console.log("Can not draw on a subpage that doesn't exist :-(")
+      console.log("Can not draw on a subpage that doesn't exist :-(")
     }
     else
     {
-        v[y].setchar(ch,x)
+      v[y].setchar(ch,x)
     }
   }
   
@@ -313,7 +334,7 @@ TTXPAGE=function()
       {
       	if (this.cursor.x==x+1) // Already there?
       	{
-			this.cursor.x=39
+          this.cursor.x=39
       	}
       	else
       	{
@@ -337,17 +358,13 @@ TTXPAGE=function()
   this.insertSpace=function()
   {
     var pg=this.subPageList[this.subPage]
-    if (pg==undefined)
-    {
-       return
-    }
-    else
+    if (pg!=undefined)
     {
       var x=this.cursor.x
       var y=this.cursor.y
       str=pg[y].txt
       str=str.substr(0,x) + ' ' + str.substr(x)
-// might want to trim back to 40 chars?   
+      // might want to trim back to 40 chars?   
       pg[y].setrow(str)
     }    
   }
@@ -358,11 +375,7 @@ TTXPAGE=function()
   this.backSpace=function()
   {
     var pg=this.subPageList[this.subPage]
-    if (pg==undefined)
-    {
-       return
-    }
-    else
+    if (pg!=undefined)
     {
       var x=this.cursor.x
       var y=this.cursor.y
@@ -379,7 +392,9 @@ TTXPAGE=function()
   this.setBlank=function()
   {
 		// console.log(" Clear all rows to blank")
-		this.subPageList=new Array()
+		this.subPageList=[]
+    this.metadata=[]
+    
 		this.addPage(this.pageNumber)
 		
 //    for (var y=1;y<this.rows.length;y++)
@@ -391,69 +406,69 @@ TTXPAGE=function()
    * \return true if the character at the location (data.x, data.y) is a graphics character
    * \param data : {p: page x: column y: row s: subpage S: service
    */
-    this.IsGraphics=function(data)  
+  this.IsGraphics=function(data)  
+  {
+    if (data==undefined)
     {
-        if (data==undefined)
-        {
-            return false
-        }
+      return false
+    }
 
-        var subpage=data.s
-        if (subpage!=this.subPage)
-        {
-            // Need to access the subpage data.s rather than the local
-            // However things will get complicated.
-            // Consider another client sending a keystroke.
-            console.log("[TTXPAGE::IsGraphics] subPage does not match. Need think about what to do")
-            return false
-        }
-        
-        var myPage=this.subPageList[data.s]
-        var row=myPage[data.y].txt
-        // console.log("[TTXPAGE::IsGraphics]"+row)
-        
-        var len=data.x
-        if (len>40)
-        {
-            len=40
-        }
-        var gfxMode=false
-        for (var i=0;i<len;i++)
-        {
-            var ch=row.charCodeAt(i) & 0x7f
-            if (ch<0x08)
-            {
-                gfxMode=false
-            }
-            if (ch>=0x10 && ch<0x18)
-            {
-                gfxMode=true
-            }
-        }
-        console.log("[TTXPAGE::IsGraphics] gfxMode="+gfxMode)
-
-        return gfxMode
+    var subpage=data.s
+    if (subpage!=this.subPage)
+    {
+      // Need to access the subpage data.s rather than the local
+      // However things will get complicated.
+      // Consider another client sending a keystroke.
+      console.log("[TTXPAGE::IsGraphics] subPage does not match. Need think about what to do")
+      return false
     }
     
-    /** \return the character at location given in data.x amd data.y */
-    this.getChar=function(data)
+    var myPage=this.subPageList[data.s]
+    var row=myPage[data.y].txt
+    // console.log("[TTXPAGE::IsGraphics]"+row)
+    
+    var len=data.x
+    if (len>40)
     {
-        if (data==undefined)
-        {
-            return 0
-        } 
-        var subpage=data.s
-        if (subpage!=this.subPage)
-        {
-            return false // @todo
-        }
-        var myPage=this.subPageList[data.s]
-        var row=myPage[data.y].txt
-        
-        var ch=row.charCodeAt(data.x) & 0x7f    
-        console.log("[getChar] row="+row+" ch="+ch)        
-        return ch        
-    }  
+      len=40
+    }
+    var gfxMode=false
+    for (var i=0;i<len;i++)
+    {
+      var ch=row.charCodeAt(i) & 0x7f
+      if (ch<0x08)
+      {
+        gfxMode=false
+      }
+      if (ch>=0x10 && ch<0x18)
+      {
+        gfxMode=true
+      }
+    }
+    console.log("[TTXPAGE::IsGraphics] gfxMode="+gfxMode)
+
+    return gfxMode
+  }
+    
+  /** \return the character at location given in data.x amd data.y */
+  this.getChar=function(data)
+  {
+    if (data==undefined)
+    {
+      return 0
+    } 
+    var subpage=data.s
+    if (subpage!=this.subPage)
+    {
+      return false // @todo
+    }
+    var myPage=this.subPageList[data.s]
+    var row=myPage[data.y].txt
+    
+    var ch=row.charCodeAt(data.x) & 0x7f    
+    console.log("[getChar] row="+row+" ch="+ch)        
+    return ch        
+  }  
   
 } // page
 

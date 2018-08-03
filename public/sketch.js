@@ -140,6 +140,7 @@ function setup()
   socket.on('setpage',setPageNumber) // Allow the server to change the page number (Page 404 etc)
   socket.on('description',setDescription)
   socket.on('subpage',setSubPage) // Subpage number for carousels (Expect two digits 00..99) [99 is higher than actual spec]
+  socket.on("timer",setTimer) // Subpage timing. Currently this is just an overall value. Need to implement for animations
   socket.on("id",setID) // id is a socket id that identifies this client. Use this when requesting a page load
   //hdr=new header(0,1,0,0)
 
@@ -197,6 +198,11 @@ function setup()
   
   // Force a resize
   windowResized()
+}
+
+function setTimer(data)
+{
+  myPage.setTimer(data.fastext[0])  
 }
 
 function setSubPage(data)

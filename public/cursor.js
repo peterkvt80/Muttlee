@@ -59,7 +59,7 @@ TTXCURSOR=function()
   
   this.dump=function(ch)
   {
-    console.log("cursor="+ch+" ("+this.x+","+this.y+")")    
+    // console.log("cursor="+ch+" ("+this.x+","+this.y+")")    
   }
 } // TTXCursor
 
