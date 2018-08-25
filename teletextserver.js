@@ -5,7 +5,7 @@ const stream = require('stream')
 
 require('./weather.js') // Should check if this is obsolete
 require('./service.js')
-require('./utils.js') // Prestal and other string handling
+require('./utils.js') // Prestel and other string handling
 require('./keystroke.js') // Editing data from clients
 
 var services=[] // List of services
@@ -20,7 +20,10 @@ const SIGNAL_INITIAL_LOAD = 2000
 
 const express=require('express')
 var app = express()
-app.use(express.static('public'))
+//app.use(express.static('public'))
+console.log("dirname="+__dirname)
+app.use('/', express.static(__dirname + '/public'));
+
 var server= app.listen(8080)
 
 var weather=new Weather(doLoad)
@@ -55,8 +58,8 @@ function newConnection(socket)
     new RegExp("([^?=&]+)(=([^&]*))?", "g"),
     function($0, $1, $2, $3) { queryString[$1] = $3 }
   )
-  // console.log('[newConnection] Service: ' + queryString['service'])     // ID: 2140
-  // console.log('[newConnection] Page: ' + queryString['page']) // Name: undefined
+  console.log('[newConnection] Service: ' + queryString['service'])     // ID: 2140
+  console.log('[newConnection] Page: ' + queryString['page']) // Name: undefined
   
   var p=parseInt("0x"+queryString['page'],16)
   

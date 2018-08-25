@@ -118,7 +118,7 @@ function setup()
 {
   // Try to make a debug and on-air version
 //  socket=io.connect('http://192.168.1.11:3010')
-  socket=io.connect(':8080')
+  socket=io.connect('http://www.xenoxxx.com:80')
 //  socket=io.connect('http://23.251.131.26:8080')
   // socket=io.connect('http://localhost:80')
   cnv=createCanvas(CANVAS_WIDTH,CANVAS_HEIGHT)

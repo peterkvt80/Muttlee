@@ -21,10 +21,10 @@
   "license": "ISC",
   "dependencies": {
     "datastore": "^1.1.1",
-    "express": "^4.13.4",
+    "express": "^4.16.3",
     "gcloud": "^0.31.0",
-    "request": "^2.72.0",
-    "socket.io": "^1.4.6"
+    "request": "^2.88.0",
+    "socket.io": "^1.7.4"
   },
   "engines": {
     "node": ">=0.12.7"
