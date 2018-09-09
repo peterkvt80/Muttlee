@@ -517,6 +517,9 @@ function keyRelease()
   console.log (" release")
 }
 
+/** built in function.
+ *  Fires on all key presses
+ */
 function keyPressed() // This is called before keyTyped
 {
   console.log (" k="+keyCode)
@@ -675,6 +678,7 @@ function backSpace()
 
 /** edit mode is entered if any non numeric code is typed
  *  edit mode exits if <esc> is pressed
+ *  This p5js function doesn't fire on Ctrl, Alt, Shift etc.
  */
 function keyTyped()
 {	
@@ -688,9 +692,12 @@ function keyTyped()
     key=mapKey(key)
 		processKey(key)
 	}
-  return false
+  return false // Prevent triggering any other behaviour
 }
 
+/**
+ * 
+*/
 function processKey(keyPressed)
 {
 	console.log('processKey='+keyPressed)
@@ -784,8 +791,11 @@ function mouseClicked()
   {
     var xLoc=int(mouseX/gTtxW)
     var yLoc=int(mouseY/gTtxH)
-    myPage.cursor.moveTo(xLoc,yLoc)
-    // console.log('The mouse was clicked at '+xLoc+' '+yLoc)
+    if (xLoc>=0 && xLoc<40 && yLoc>=0 && yLoc<25)
+    {
+      myPage.cursor.moveTo(xLoc,yLoc)
+      console.log('The mouse was clicked at '+xLoc+' '+yLoc)
+    }
   }
   return false // Prevent default behaviour
 }

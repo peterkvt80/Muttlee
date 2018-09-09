@@ -174,7 +174,7 @@ KeyStroke=function()
           }
           page.print()
           // At this point we trigger off a timer
-          setTimeout(this.savePage(), 500);
+          setTimeout(this.savePage, 500);
         }
         ,function(err)
         {

@@ -18,6 +18,12 @@ var services=[] // List of services
 const SIGNAL_PAGE_NOT_FOUND = -1
 const SIGNAL_INITIAL_LOAD = 2000
 
+// SSL stuff
+//var https = require('https');
+//var privateKey = fs.readFileSync('privkey.pem', 'utf8');
+//var certificate = fs.readFileSync('fullchain.pem', 'utf8');
+//var credentials = {key: privateKey, cert: certificate};
+
 const express=require('express')
 var app = express()
 //app.use(express.static('public'))

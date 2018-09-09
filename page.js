@@ -26,9 +26,10 @@ Page=function()
   this.loadPage=function(filename, callback, error)
   {
     that.filename=filename
-    var that2=this
+    this.filename=filename
     this.cb=callback
     this.err=error
+    var that2=this
     console.log("Loading filename="+filename) 
     that.ttiLines=[]  // Clear the tti array
     var instream = fs.createReadStream(filename,{encoding: "ascii"}) // Ascii strips bit 7 without messing up the rest of the text. latin1 does not work :-(
@@ -64,10 +65,10 @@ Page=function()
     var fastext="8ff,8ff,8ff,8ff,8ff,8ff"
     console.log("Page::keyMessage: Entered. row="+key.y)
     // Scan for the subpage of the key
-    for (var i=0;i<this.ttiLines.length;i++)
+    for (let i=0;i<this.ttiLines.length;i++)
     {
-      var line=this.ttiLines[i] // get the next line
-      var code=line.substring(0,2) // get the two character command
+      let line=this.ttiLines[i] // get the next line
+      let code=line.substring(0,2) // get the two character command
       line=line.substring(3)       // get the tail from the line
       // console.log("Command="+code)
       if (code=="FL") // Fastext Link: Save the fastext link
@@ -90,10 +91,9 @@ Page=function()
       }
       if (code=='OL') // Output Line
       {
-        var ix=0
-        var row=0
-        var ch
-        ch=line.charAt(ix++)
+        let ix=0
+        let row=0
+        let ch=line.charAt(ix++)
         row=ch
         ch=line.charAt(ix)
         if (ch!=',')
@@ -162,7 +162,7 @@ Page=function()
     // this.filename='/dev/shm/test.tti' // @todo Check the integrity
     var txt=""  
     // Copy and escape the resulting lines, being careful not to escape the terminator
-    for (var i=0;i<this.ttiLines.length;i++)
+    for (let i=0;i<this.ttiLines.length;i++)
     {
       txt+=(EscapePrestel(this.ttiLines[i])+'\n')
     }
@@ -184,11 +184,11 @@ Page=function()
         
       }.bind(this)
     )
-  }
+  }.bind(this)
   
   this.print=function()
   {
-    for (var i=0;i<this.ttiLines.length;i++)
+    for (let i=0;i<this.ttiLines.length;i++)
     {
       console.log('['+i+'] '+this.ttiLines[i])
     }    
