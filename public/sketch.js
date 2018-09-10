@@ -122,6 +122,20 @@ function setup()
 //  socket=io.connect('http://23.251.131.26:8080')
   // socket=io.connect('http://localhost:80')
   cnv=createCanvas(CANVAS_WIDTH,CANVAS_HEIGHT)
+  cnv.mousePressed(function()
+    {
+      if (editMode!=EDITMODE_NORMAL)    // Only need to do this in edit mode
+      {
+        const xLoc=int(mouseX/gTtxW)
+        const yLoc=int(mouseY/gTtxH)
+        if (xLoc>=0 && xLoc<40 && yLoc>=0 && yLoc<25)
+        {
+          myPage.cursor.moveTo(xLoc,yLoc)
+          console.log('The mouse was clicked at '+xLoc+' '+yLoc)
+        }
+      }
+      return false // Prevent default behaviour
+    })
   centerCanvas();
 //	cnv.position(0,0)
 	//createCanvas(displayWidth, displayHeight)	
@@ -784,21 +798,6 @@ function krvl() {	myPage.toggleReveal() }
 function kback() {prevPage() }
 function kfwd()  {nextPage() }
 function khold()  {myPage.toggleHold() }
-
-function mouseClicked()
-{
-  if (editMode!=EDITMODE_NORMAL)    // Only need to do this in edit mode
-  {
-    var xLoc=int(mouseX/gTtxW)
-    var yLoc=int(mouseY/gTtxH)
-    if (xLoc>=0 && xLoc<40 && yLoc>=0 && yLoc<25)
-    {
-      myPage.cursor.moveTo(xLoc,yLoc)
-      console.log('The mouse was clicked at '+xLoc+' '+yLoc)
-    }
-  }
-  return false // Prevent default behaviour
-}
 
 /* Block editing. Touch marks the first corner of an area
 */
