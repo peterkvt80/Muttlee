@@ -1,23 +1,23 @@
 // teletext
-var myPage, ttxFont
+let myPage, ttxFont
 
 //metrics
-var gTtxW, gTtxH
-var gTtxFontSize=20
+let gTtxW, gTtxH
+const gTtxFontSize=20
 
 // page selection
-var digit1='1'
-var digit2='0'
-var digit3='0'
+let digit1='1'
+let digit2='0'
+let digit3='0'
 
-var hdr
+let hdr
 
 const CANVAS_WIDTH=600
 const CANVAS_HEIGHT=550
 
 // comms
-var socket
-var gClientID=null
+let socket
+let gClientID=null
 
 // x signals
 const SIGNAL_PAGE_NOT_FOUND = -1
@@ -28,19 +28,19 @@ const SIGNAL_INITIAL_LOAD = 2000
 //const EDITMODE_EDIT=1   // edit mode
 //const EDITMODE_ESCAPE=2 // expect next character to be either an edit.tf function or Escape again to exit.
 //const EDITMODE_INSERT=3 // The next character is ready to insert
-var editMode=EDITMODE_NORMAL
+let editMode=EDITMODE_NORMAL
 
 // dom
-var redButton, greenButton, yellowButton, cyanButton
-var indexButton
+let redButton, greenButton, yellowButton, cyanButton
+let indexButton
 
 // timer
 // Timer for expiring incomplete keypad entries
-var expiredState=true // True for four seconds after the last keypad number was typed OR until a valid page number is typed
-var forceUpdate=false // Set true if the screen needs to be updated
-var timeoutVar
+let expiredState=true // True for four seconds after the last keypad number was typed OR until a valid page number is typed
+let forceUpdate=false // Set true if the screen needs to be updated
+let timeoutVar
 
-var cnv;
+let cnv;
 
 
 /** mapKey
@@ -90,7 +90,7 @@ function startTimer()
 		expiredState=true
 		// console.log("Expire actions get done here")
 		// todo: Restore the page number. Enable the refresh loop
-		var p=myPage.pageNumber
+		let p=myPage.pageNumber
 		digit1=(String)((p >> 8) & 0xf)
 		digit2=(String)((p >> 4) & 0xf)
 		digit3=(String)(p & 0xf)
@@ -101,11 +101,11 @@ function startTimer()
 	} , 4000)
 }
 
-var btnk0, btnk1, btnk2, btnk3, btnk4, btnk5, btnk6, btnk7, btnk8, btnk9
-var btnkx, btnky, btnkback, btnkfwd
+let btnk0, btnk1, btnk2, btnk3, btnk4, btnk5, btnk6, btnk7, btnk8, btnk9
+let btnkx, btnky, btnkback, btnkfwd
 
 // block
-var blockStart // block select
+let blockStart // block select
 
 function preload()
 {
@@ -187,7 +187,7 @@ function setup()
   // Don't offer to edit on a small screen
   if (displayWidth>1024)
   {
-    var offset=CANVAS_WIDTH+(displayWidth-CANVAS_WIDTH)/2
+    let offset=CANVAS_WIDTH+(displayWidth-CANVAS_WIDTH)/2
     btn = createButton('Grab')
     btn.mousePressed(exportPage)
     
@@ -197,13 +197,13 @@ function setup()
   // Do positioning by overriding p5js defaults
 //  span.style = 'width: 600px;height: 550px;position: absolute; top: 0px;'
   //span.style/* visibility: hidden; */width: 600px;height: 550px;position: absolute;left: 540px;top: 0px;
-  var span=document.getElementById("defaultCanvas0")
+  let span=document.getElementById("defaultCanvas0")
   // class contains the static style
   span.setAttribute("class","centre-div")
 
   // dynamic style
   span.removeAttribute("style")
-  var offset=(displayWidth-CANVAS_WIDTH)/2
+  let offset=(displayWidth-CANVAS_WIDTH)/2
   if (offset<0)
   {
     offset=0
@@ -234,7 +234,7 @@ function setID(id)
 	gClientID=id
 	
   // Now we can load the initial page 100
-  var data=
+  let data=
   {
 	S: myPage.service, // The codename of the service. eg. d2k or undefined
 	p: 0x100, // Page mpp
@@ -294,7 +294,7 @@ function fastextIndex()
 function fastext(index)
 {
 	console.log('Fastext pressed: '+index)
-  var createPage=false // Special case. If yellow link is >0x0fff then create a page
+  let createPage=false // Special case. If yellow link is >0x0fff then create a page
 	switch (index)
 	{
 	case 1:page=myPage.redLink;break
@@ -318,7 +318,7 @@ function fastext(index)
 	if (page>=0x100 && page<=0x8ff) // Page in range
 	{
 		myPage.setPage(page) // We now have a different page number
-    var data=
+    let data=
     {
       S: myPage.service,
       p: page, // Page mpp
@@ -427,13 +427,13 @@ function newChar(data, local=true) // 'keystroke'
   // console.log("returned keycode="+(data.k))
   // @todo page number test
   if (!matchpage(data)) return; // Char is not for our page?
-  var key=data.k
+  let key=data.k
   // We should now look if graphic mode is set at this char.
   // If graphics mode is set, only allow qwaszx and map the bits of the current character
   // At (x,y) on subpage s, place the character k
-  var graphicsMode=myPage.IsGraphics(data) // what about the subpage???
-  var advanceCursor=local // Cursor advances, unless it is a remote user or a graphics twiddle
-  var alphaInGraphics=AlphaInGraphics(key) // Graphics but not a twiddle key?
+  let graphicsMode=myPage.IsGraphics(data) // what about the subpage???
+  let advanceCursor=local // Cursor advances, unless it is a remote user or a graphics twiddle
+  let alphaInGraphics=AlphaInGraphics(key) // Graphics but not a twiddle key?
   if (local)
   {
     // Do the graphics, unless this an edit tf escape. Or an upper case letter.
@@ -441,7 +441,7 @@ function newChar(data, local=true) // 'keystroke'
     {
       
       key=data.k.toUpperCase() // @todo. Do we need to consider subpages and services? Maybe just subpages.
-      var bit=0
+      let bit=0
       advanceCursor=false
       switch (key)
       {
@@ -514,7 +514,7 @@ function setBlank(data) // 'blank'
 function inputNumber()
 {
 	console.log("inputNumber changed")
-	var page=document.getElementById('pageNumber')
+	let page=document.getElementById('pageNumber')
 		console.log("Opening page="+page.value)
 	// Now load the page
 	if (page.value.length==3)
@@ -537,8 +537,8 @@ function keyRelease()
 function keyPressed() // This is called before keyTyped
 {
   console.log (" k="+keyCode)
-	var active=document.activeElement
-  var handled=true
+	let active=document.activeElement
+  let handled=true
   if (active.id.length>1)
   {
     console.log("Active element="+active.id)
@@ -634,8 +634,8 @@ function keyPressed() // This is called before keyTyped
  */
 function insertSpace()
 {
-  var xp=39
-  var txt=
+  let xp=39
+  let txt=
   {
     S: myPage.service, // service number
     p: myPage.pageNumber,
@@ -645,11 +645,11 @@ function insertSpace()
     y: myPage.cursor.y,
     id: gClientID
   }
-  for (var xp=39;xp>myPage.cursor.x;xp--)
+  for (let xp=39;xp>myPage.cursor.x;xp--)
   {
     // This looks a bit weird, but keystroke automatically advances the insert position
     txt.x=xp
-    var ch=myPage.getChar(txt)
+    let ch=myPage.getChar(txt)
     // txt.x=xp
     txt.k=String.fromCharCode(ch)
     socket.emit('keystroke', txt)
@@ -666,8 +666,7 @@ function insertSpace()
  */
 function backSpace()
 {
-  var xp
-  var txt=
+  let txt=
   {
     S: myPage.service, // service number
     p: myPage.pageNumber,
@@ -677,10 +676,10 @@ function backSpace()
     y: myPage.cursor.y,
     id: gClientID
   }
-  for (var xp=myPage.cursor.x;xp<40;xp++)
+  for (let xp=myPage.cursor.x;xp<40;xp++)
   {
     txt.x=xp
-    var ch=myPage.getChar(txt)
+    let ch=myPage.getChar(txt)
     txt.k=String.fromCharCode(ch)
     socket.emit('keystroke', txt)
   }
@@ -728,7 +727,7 @@ function processKey(keyPressed)
   }    
 	if (editMode!=EDITMODE_NORMAL) // Numbers are typed into the page
 	{
-		var data=
+		let data=
 		{
 			S: myPage.service, // service number
 			p: myPage.pageNumber,
@@ -753,8 +752,8 @@ function processKey(keyPressed)
 			digit3=keyPressed
 			if (digit1!=' ')
 			{
-				//var page=Number(digit1+digit2+digit3)
-				var page=parseInt("0x"+digit1+digit2+digit3)
+				//let page=Number(digit1+digit2+digit3)
+				let page=parseInt("0x"+digit1+digit2+digit3)
 				myPage.pageNumberEntry=digit1+digit2+digit3
 				if (page>=0x100)
 				{
@@ -762,7 +761,7 @@ function processKey(keyPressed)
 					// console.log('@todo: pass the page '+page)
 					console.log("Page number is 0x"+page.toString(16))
 					myPage.setPage(page) // We now have a different page number
-					var data=
+					let data=
 					{
 					S: myPage.service, // service
 					p: page, // Page mpp
@@ -815,7 +814,7 @@ function touchStarted()
 function touchEnded()
 {
   // console.log('Touch ended at '+touchX+' '+touchY);
-	var blockEnd=createVector(touchX,touchY)
+	let blockEnd=createVector(touchX,touchY)
 	blockEnd.sub(blockStart)
 	blockStart=null // Need this to be null in case we return!
 
@@ -824,21 +823,21 @@ function touchEnded()
 		return
   }
 	// Block needs to be a minimum distance (& possibly velocity?
-	var mag=blockEnd.mag()
+	let mag=blockEnd.mag()
 	if (mag<40)
 		return;
-	var heading=blockEnd.heading()
+	let heading=blockEnd.heading()
 	// left
 	console.log("block select ! Heading="+degrees(heading))
 		
-	var dir=4*heading/PI
+	let dir=4*heading/PI
 	console.log("Block! dir="+dir)
 	return false	
 }
 
 function nextPage()
 {
-	var p=myPage.pageNumber
+	let p=myPage.pageNumber
 	p++
 	if ((p & 0xf)==0xa) // Hex numbers should be skipped. Users should not select them.
     {
@@ -849,7 +848,7 @@ function nextPage()
         p=0x8fe
     }
 	myPage.setPage(p) // We now have a different page number
-	var data=
+	let data=
 	{
 	S: myPage.service,
 	p: p, // Page mpp
@@ -864,7 +863,7 @@ function nextPage()
 
 function prevPage()
 {
-	var p=myPage.pageNumber
+	let p=myPage.pageNumber
 	p--
 	if ((p & 0xf)==0xf) // Hex numbers should be skipped. Users should not select them.
     {
@@ -875,7 +874,7 @@ function prevPage()
         p=0x100
     }
 	myPage.setPage(p) // We now have a different page number
-	var data=
+	let data=
 	{
 	S: myPage.service,
 	p: p, // Page mpp
@@ -893,7 +892,7 @@ function prevPage()
  */
 function editTF(key)
 {
-    var chr    // The character that the editTF escape creates
+    let chr    // The character that the editTF escape creates
     switch (key)
     {
     case 'k' : chr='\x00';break // alpha black
@@ -961,7 +960,7 @@ function editTF(key)
         return
     }
     // Construct object to define exactly where this key code will go
-    var data=
+    let data=
     {
         S: myPage.service,
         p: myPage.pageNumber, // Page mpp
@@ -976,8 +975,8 @@ function editTF(key)
 
 function centerCanvas()
 {
-  var x = (windowWidth - width) / 2
-  var y = (windowHeight - height) / 2
+  let x = (windowWidth - width) / 2
+  let y = (windowHeight - height) / 2
   cnv.position(x, 0)
 }
 
@@ -989,15 +988,15 @@ function windowResized()
 function exportPage()
 {
 
-var cset=0 // @todo language
-var website="http://edit.tf"  // edit.tf
-var url=save_to_hash(cset, website, myPage)
+let cset=0 // @todo language
+let website="http://edit.tf"  // edit.tf
+let url=save_to_hash(cset, website, myPage)
 
 website="https://zxnet.co.uk/teletext/editor"  // zxnet
-var url2=save_to_hash(cset, website, myPage)
+let url2=save_to_hash(cset, website, myPage)
 
 // If the export link already exists, remove it
-var span=document.getElementById("dynamicLink")
+let span=document.getElementById("dynamicLink")
 if (span!=null)
 {
 	span.parentNode.removeChild(span)
@@ -1009,18 +1008,18 @@ if (span!=null)
 	span.parentNode.removeChild(span)
 }
 
-var pg=hex(myPage.pageNumber,3)
+let pg=hex(myPage.pageNumber,3)
 
-var style="color: white; position: absolute; left: "+(CANVAS_WIDTH+(displayWidth-CANVAS_WIDTH)/2)+"px;"
+let style="color: white; position: absolute; left: "+(CANVAS_WIDTH+(displayWidth-CANVAS_WIDTH)/2)+"px;"
 style+="background-color: #BB5000;"
 // Create the A tag link
-var link='<span id="dynamicLink" style="'+style+' top:150px;" >open P'+pg+'<br/>in edit.tf</span>'
+let link='<span id="dynamicLink" style="'+style+' top:150px;" >open P'+pg+'<br/>in edit.tf</span>'
 createA(url,link,'_blank')
 link='<span id="dynamicLink2" style="'+style+' top:300px;" >open P'+pg+'<br/>in zxnet</span>'
 createA(url2,link,'_blank')
 // pointless stuff below here
 name="Teefax"
-  for (var i=0; i<200; i++)
+  for (let i=0; i<200; i++)
   {
     push()
     fill(random(255), 255, 255)

@@ -454,8 +454,8 @@ function createPage(data, callback)
   wstream.write('OL,22,F                                       \n')
   wstream.write('OL,23,F                                       \n')
   wstream.write('OL,24,A Next   B....       C....      FHelp   \n')
-  // @todo ONLY ALLOW NEXT LINK TO BE DECIMALS
-  wstream.write('FL,'+(data.p+1).toString(16)+',8ff,8ff,700,8ff,8ff  \n')
+  // Write hex then read as decimal, so we don't increment to any hex pages.
+  wstream.write('FL,'+(parseInt(data.p.toString(16))+1)+',8ff,8ff,700,8ff,8ff  \n')
   wstream.end()
   // signal completion
   wstream.on('finish',callback)

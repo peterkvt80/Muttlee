@@ -8,8 +8,8 @@ const EDITMODE_ESCAPE=2 // expect next character to be either an edit.tf functio
 const EDITMODE_INSERT=3 // The next character is ready to insert
 
 // Timer for flashing cursor and text
-var flashState=false
-var tickCounter=0 // For timing carousels (in steps of half a second)
+let flashState=false
+let tickCounter=0 // For timing carousels (in steps of half a second)
 setInterval(toggle, 500)
 function toggle()
 {
@@ -210,10 +210,10 @@ TTXPAGE=function()
         tickCounter=1 // Prevent a cascade of page changes!
       }
     }
-    for (var row=0;row<this.rows.length;row++)
+    for (let row=0;row<this.rows.length;row++)
     {
 	// console.log("drawing row "+row+" of "+this.rows.length)
-      var cpos=-1
+      let cpos=-1
 			if (this.editMode!=EDITMODE_NORMAL && row==this.cursor.y) // If in edit mode and it is the correct row...
 			cpos=this.cursor.x
 			//this.rows[row].draw(cpos) // Original version
@@ -222,7 +222,7 @@ TTXPAGE=function()
 			if (this.subPage>=this.subPageList.length) // This shouldn't happen much but it does during start up
 				this.subPage=this.subPageList.length-1
 				
-			var v=this.subPageList[this.subPage]
+			let v=this.subPageList[this.subPage]
 			if (v==undefined)
 			{      
         console.log("Undefined :-(")
@@ -269,7 +269,7 @@ TTXPAGE=function()
   {
     //console.log('Attempting to draw row '+y)
     // Select the subpage to update
-    var v=this.subPageList[s]
+    let v=this.subPageList[s]
     if (v==undefined)
     {
       console.log("Can not draw on a subpage that doesn't exist :-(")
@@ -285,7 +285,7 @@ TTXPAGE=function()
    */
   this.home=function()
   {
-    var col;
+    let col;
     var page=this.subPageList[this.subPage]
     var row=page[this.cursor.y].txt 
     // Find the first printable character
@@ -316,10 +316,11 @@ TTXPAGE=function()
   
   this.end=function()
   {
-    var page=this.subPageList[this.subPage]
-    var row=page[this.cursor.y].txt
-    // Find the last non blank character
-    for (var x=39;x>0;x--)
+    let page=this.subPageList[this.subPage]
+    let row=page[this.cursor.y].txt
+    let x
+    // Find the last non blank character    
+    for (x=39;x>0;x--)
     {
       if (row.charAt(x) != ' ')
       {
