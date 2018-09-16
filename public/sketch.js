@@ -40,7 +40,11 @@ let expiredState=true // True for four seconds after the last keypad number was 
 let forceUpdate=false // Set true if the screen needs to be updated
 let timeoutVar
 
+// canvas
 let cnv;
+
+// Indicated changes that have not been processed by the server yet
+let changed
 
 
 /** mapKey
@@ -210,6 +214,8 @@ function setup()
   }
   span.style="left: "+offset+"px;"
   
+  changed=new CHARCHANGED()
+    
   // Force a resize
   windowResized()
 }
@@ -367,7 +373,7 @@ function draw()
   noStroke()
   fill(255,255,255)
   // ellipse(mouseX,mouseY,10,10)
-  myPage.draw()
+  myPage.draw(changed)
 }
 
 // Does our page match the incoming message?
@@ -485,6 +491,15 @@ function newChar(data, local=true) // 'keystroke'
   { 
     myPage.cursor.right()  // advance the cursor if it is the local user
   }
+  if (local)
+  {
+    changed.set(data.x,data.y) // local change
+  }
+  else
+  {
+    changed.clear(data.x,data.y) // remote change
+  }
+  
   myPage.drawchar(key,data.x,data.y,data.s) // write the character
   console.log(data)
   if (editMode==EDITMODE_INSERT)
