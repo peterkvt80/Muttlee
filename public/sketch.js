@@ -440,6 +440,17 @@ function newChar(data, local=true) // 'keystroke'
   let graphicsMode=myPage.IsGraphics(data) // what about the subpage???
   let advanceCursor=local // Cursor advances, unless it is a remote user or a graphics twiddle
   let alphaInGraphics=AlphaInGraphics(key) // Graphics but not a twiddle key?
+
+  // Indicate that the text has changed
+  if (local)
+  {
+    changed.set(data.x,data.y) // local change
+  }
+  else
+  {
+    changed.clear(data.x,data.y) // remote change
+  }
+
   if (local)
   {
     // Do the graphics, unless this an edit tf escape. Or an upper case letter.
@@ -490,14 +501,6 @@ function newChar(data, local=true) // 'keystroke'
   if (advanceCursor)
   { 
     myPage.cursor.right()  // advance the cursor if it is the local user
-  }
-  if (local)
-  {
-    changed.set(data.x,data.y) // local change
-  }
-  else
-  {
-    changed.clear(data.x,data.y) // remote change
   }
   
   myPage.drawchar(key,data.x,data.y,data.s) // write the character
