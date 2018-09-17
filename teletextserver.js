@@ -1,3 +1,4 @@
+// This is helpful https://socket.io/docs/emit-cheatsheet/
 // io stream stuff
 const fs = require('fs')
 const readline = require('readline')
@@ -126,7 +127,9 @@ function newConnection(socket)
   socket.on('keystroke', keyMessage)
   function keyMessage(data)
   {
-    socket.broadcast.emit('keystroke', data)
+    // socket.broadcast.emit('keystroke', data) // To all but sender
+    io.emit('keystroke', data) // To everyone
+    
     console.log("Main::keyMessage"+data)  // @todo Comment this line out
     // Also send this keymessage to our pages
     // Or maybe to our services who can then switch the message as needed?

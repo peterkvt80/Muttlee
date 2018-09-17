@@ -17,7 +17,7 @@ const CANVAS_HEIGHT=550
 
 // comms
 let socket
-let gClientID=null
+let gClientID=null // Our unique connection id
 
 // x signals
 const SIGNAL_PAGE_NOT_FOUND = -1
@@ -429,6 +429,17 @@ function AlphaInGraphics(key)
  */
 function newChar(data, local=true) // 'keystroke'
 {
+  // If nothing else, we note that our character returned and can be marked as "processed"
+  if (local)
+  {
+    changed.set(data.x,data.y) // local change
+    console.log("Set x="+data.x);
+  }
+  else
+  {
+    changed.clear(data.x,data.y) // remote change
+    console.log("Cleared x="+data.x);
+  }
   //if (data.k<' ')
   // console.log("returned keycode="+(data.k))
   // @todo page number test
@@ -440,17 +451,6 @@ function newChar(data, local=true) // 'keystroke'
   let graphicsMode=myPage.IsGraphics(data) // what about the subpage???
   let advanceCursor=local // Cursor advances, unless it is a remote user or a graphics twiddle
   let alphaInGraphics=AlphaInGraphics(key) // Graphics but not a twiddle key?
-
-  // Indicate that the text has changed
-  if (local)
-  {
-    changed.set(data.x,data.y) // local change
-  }
-  else
-  {
-    changed.clear(data.x,data.y) // remote change
-  }
-
   if (local)
   {
     // Do the graphics, unless this an edit tf escape. Or an upper case letter.
@@ -504,7 +504,7 @@ function newChar(data, local=true) // 'keystroke'
   }
   
   myPage.drawchar(key,data.x,data.y,data.s) // write the character
-  console.log(data)
+  //console.log(data)
   if (editMode==EDITMODE_INSERT)
   {
     editMode=EDITMODE_EDIT
@@ -643,7 +643,7 @@ function keyPressed() // This is called before keyTyped
   }
   else
   {
- 			console.log('unhandled keycode='+keyCode)
+ 			// console.log('unhandled keycode='+keyCode)
   }
 }
 
@@ -731,15 +731,15 @@ function keyTyped()
 */
 function processKey(keyPressed)
 {
-	console.log('processKey='+keyPressed)
+	// console.log('processKey='+keyPressed)
   // @todo need to map codes to national options at this point.
   // @todo Also need to fix AlphaInGraphics when I do this
   if (editMode==EDITMODE_ESCAPE)
   {
-      console.log("[keyPressed] Reminder that this is where edit.tf commands are processed")
+      // console.log("[keyPressed] Reminder that this is where edit.tf commands are processed")
       editMode=EDITMODE_INSERT
       myPage.editSwitch(editMode)
-      console.log("[keyPressed] keyCode="+keyCode+" key="+key)
+      // console.log("[keyPressed] keyCode="+keyCode+" key="+key)
       editTF(key)
       return
   }    
@@ -824,7 +824,7 @@ function touchStarted()
   {
 		return
   }
-  console.log('Touch started at '+touchX+' '+touchY)
+  // console.log('Touch started at '+touchX+' '+touchY)
 	blockStart=createVector(touchX,touchY)
 	return false
 }
@@ -846,10 +846,10 @@ function touchEnded()
 		return;
 	let heading=blockEnd.heading()
 	// left
-	console.log("block select ! Heading="+degrees(heading))
+	//console.log("block select ! Heading="+degrees(heading))
 		
 	let dir=4*heading/PI
-	console.log("Block! dir="+dir)
+	// console.log("Block! dir="+dir)
 	return false	
 }
 

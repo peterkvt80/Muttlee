@@ -448,7 +448,7 @@ TTXPAGE=function()
         gfxMode=true
       }
     }
-    console.log("[TTXPAGE::IsGraphics] gfxMode="+gfxMode)
+    // console.log("[TTXPAGE::IsGraphics] gfxMode="+gfxMode)
 
     return gfxMode
   }
@@ -529,12 +529,15 @@ function row(page,y,str)
               txt=replace(txt,'P'+this.pagetext+'    ',0)
           
           // Substitute mpp for the page number
-          let ix
-          ix=txt.indexOf('%%#')
+          let ix=txt.indexOf('%%#')
           if (ix<0)
-              ix=txt.indexOf('mpp')
+          {
+            ix=txt.indexOf('mpp')
+          }
           if (ix>0)
-              txt=replace(txt,this.page.toString(16),ix)
+          {
+            txt=replace(txt,this.page.toString(16),ix)
+          }
               
           // Substitute dd for the day 1..31 (or %d)
           ix=txt.indexOf('%d')
@@ -543,17 +546,21 @@ function row(page,y,str)
               ix=txt.indexOf('dd')
           }
           if (ix>0)
-              txt=replace(txt,nf(day(),2),ix)
+          {
+            txt=replace(txt,nf(day(),2),ix)
+          }
 
               // Substitute DAY for the three letter abbreviated day 
           ix=txt.indexOf('%%a')
           if (ix<0)
-              ix=txt.indexOf('DAY')
+          {
+            ix=txt.indexOf('DAY')
+          }
           if (ix>0)
           {
-              let week = new Date().getDay() 
-              let str="MonTueWedThuFriSatSun".substr((week-1)*3,3)
-              txt=replace(txt,str,ix)
+            let week = new Date().getDay() 
+            let str="MonTueWedThuFriSatSun".substr((week-1)*3,3)
+            txt=replace(txt,str,ix)
           }
           // Substitute MTH for the three letter abbreviated month 
           ix=txt.indexOf('%%b')
