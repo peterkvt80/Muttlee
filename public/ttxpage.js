@@ -59,7 +59,8 @@ TTXPAGE=function()
   this.setTimer=function(t)
   {
     // this.timer=t
-    this.metadata[this.subPage].timer=t
+    if (this.metadata[this.subPage] != undefined)
+      this.metadata[this.subPage].timer=t
   }
     
   // edit mode 

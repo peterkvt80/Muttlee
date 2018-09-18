@@ -1,5 +1,6 @@
 // teletext
 let myPage, ttxFont
+let serviceSelector
 
 //metrics
 let gTtxW, gTtxH
@@ -187,16 +188,18 @@ function setup()
 	inputPage=select('#pageNumber')
   frameRate(10)
   
+  let offset=CANVAS_WIDTH+(displayWidth-CANVAS_WIDTH)/2
 
   // Don't offer to edit on a small screen
   if (displayWidth>1024)
   {
-    let offset=CANVAS_WIDTH+(displayWidth-CANVAS_WIDTH)/2
     btn = createButton('Grab')
     btn.mousePressed(exportPage)
     
     btn.elt.style="position:absolute; left: "+offset+"px; top: 0px;"
   }
+  
+  serviceSelect(offset);
   
   // Do positioning by overriding p5js defaults
 //  span.style = 'width: 600px;height: 550px;position: absolute; top: 0px;'
@@ -207,7 +210,7 @@ function setup()
 
   // dynamic style
   span.removeAttribute("style")
-  let offset=(displayWidth-CANVAS_WIDTH)/2
+  offset=(displayWidth-CANVAS_WIDTH)/2
   if (offset<0)
   {
     offset=0
@@ -218,6 +221,48 @@ function setup()
     
   // Force a resize
   windowResized()
+  
+}
+
+serviceSelect=function(offset)
+{
+  let x=0
+  let btn=createButton('teefax')
+  btn.mousePressed(openTeefax)    
+  btn.elt.style="position:absolute; left: "+(offset+150)+"px; top: "+x+"px;"
+
+  x+=110
+  btn=createButton('Digitiser')
+  btn.mousePressed(openWTF)    
+  btn.elt.style="position:absolute; left: "+(offset+150)+"px; top: "+x+"px;"
+
+  x+=110
+  btn=createButton('Archive')
+  btn.mousePressed(openReadback)    
+  btn.elt.style="position:absolute; left: "+(offset+150)+"px; top: "+x+"px;"
+
+  x+=110
+  btn=createButton('wiki')
+  btn.mousePressed(openWTF)    
+  btn.elt.style="position:absolute; left: "+(offset+150)+"px; top: "+x+"px;"
+//  serviceSelector=createSelect()
+//  serviceSelector.elt.style="position:absolute; left: "+offset+"px; top: 110px;"
+
+//  serviceSelector.option("Teefax")
+//  serviceSelector.option("WikiTelFax")
+//  serviceSelector.option("R series")
+//  serviceSelector.changed(serviceChange)
+}
+
+openTeefax=function(){window.open('?service=')}
+openD2K=function(){window.open('?service=d2k')}
+openReadback=function(){window.open('?service=readback')}
+openWTF=function(){window.open('?service=wtf')}
+
+function serviceChange()
+{
+  let item=serviceSelector.value()
+  console.log("Selected option= "+item)
 }
 
 function setTimer(data)
