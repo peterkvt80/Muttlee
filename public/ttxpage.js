@@ -201,7 +201,17 @@ TTXPAGE=function()
   this.draw=function(changed)
   {
     let dblHeight
-    if (!(this.holdMode || this.editMode!=EDITMODE_NORMAL)) // Only cycle if we are not in hold mode or edit
+    // Sometimes the carousel isn't ready
+    if (typeof this.subPage==='undefined')
+    {
+      return;
+    }
+    let carouselReady=typeof this.subPage!='undefined'
+    if (carouselReady)
+    {
+      carouselReady=typeof this.metadata[this.subPage]!='undefined'
+    }
+    if (!(this.holdMode || this.editMode!=EDITMODE_NORMAL) && carouselReady) // Only cycle if we are not in hold mode or edit
     {
       // carousel timing
       if (tickCounter % ((1+round(this.metadata[this.subPage].timer))*2)==0) // Times 2 because the tick is 2Hz.

@@ -233,7 +233,7 @@ serviceSelect=function(offset)
 
   x+=110
   btn=createButton('Digitiser')
-  btn.mousePressed(openWTF)    
+  btn.mousePressed(openD2K)    
   btn.elt.style="position:absolute; left: "+(offset+150)+"px; top: "+x+"px;"
 
   x+=110
@@ -245,6 +245,12 @@ serviceSelect=function(offset)
   btn=createButton('wiki')
   btn.mousePressed(openWTF)    
   btn.elt.style="position:absolute; left: "+(offset+150)+"px; top: "+x+"px;"
+
+  x+=110
+  btn=createButton('Cheat sheet')
+  btn.mousePressed(cheatSheet)
+  btn.elt.style="position:absolute; left: "+(offset+150)+"px; top: "+x+"px;"
+  
 //  serviceSelector=createSelect()
 //  serviceSelector.elt.style="position:absolute; left: "+offset+"px; top: 110px;"
 
@@ -258,6 +264,7 @@ openTeefax=function(){window.open('?service=')}
 openD2K=function(){window.open('?service=d2k')}
 openReadback=function(){window.open('?service=readback')}
 openWTF=function(){window.open('?service=wtf')}
+cheatSheet=function(){window.open('/assets/WikiTelFax.pdf')}
 
 function serviceChange()
 {
@@ -952,40 +959,57 @@ function prevPage()
 
 /** Execute an editTF escape command
  *  This is the key that follows the escape key
+ *  As zxnet keys are handled the same way, we add aliases for those too
  */
 function editTF(key)
 {
     let chr    // The character that the editTF escape creates
     switch (key)
     {
+    case '8' :; // zxnet
     case 'k' : chr='\x00';break // alpha black
-    case 'r' : chr='\x01';break // alpha red
+    case '1' :; // zxnet
+    case 'r' : chr='\x01';break // alpha 5c
+    case '2' :; // zxnet
     case 'g' : chr='\x02';break // alpha green
+    case '3' :; // zxnet
     case 'y' : chr='\x03';break // alpha yellow
+    case '4' :; // zxnet
     case 'b' : chr='\x04';break // alpha blue
+    case '5' :; // zxnet
     case 'm' : chr='\x05';break // alpha magenta
+    case '6' :; // zxnet
     case 'c' : chr='\x06';break // alpha cyan
+    case '7' :; // zxnet
     case 'w' : chr='\x07';break // alpha white
 
-    case 'F' : chr='\x08';break // flash on
-    case 'f' : chr='\x09';break // steady
+    case 'F' : chr='\x08';break // flash on (same as zxnet)
+    case 'f' : chr='\x09';break // steady )same as zxnet)
     
     // chr='\x0a';break // endbox
     // chr='\x0b';break // startbox
     
-    case 'd' : chr='\x0c';break // normal height
-    case 'D' : chr='\x0d';break // double height
+    case 'd' : chr='\x0c';break // normal height (same as zxnet)
+    case 'D' : chr='\x0d';break // double height (same as zxnet)
     
     // 0x0e SO - SHIFT OUT
     // 0x0f SI - SHIFT IN
     
+    case '*' :; // zxnet    
     case 'K' : chr='\x10';break // graphics black
+    case '!' :; // zxnet    
     case 'R' : chr='\x11';break // graphics red
+    case '"' :; // zxnet    
     case 'G' : chr='\x12';break // graphics green
+    case '£' :; // zxnet    
     case 'Y' : chr='\x13';break // graphics yellow
+    case '$' :; // zxnet    
     case 'B' : chr='\x14';break // graphics blue
+    case '%' :; // zxnet    
     case 'M' : chr='\x15';break // graphics magenta
+    case '^' :; // zxnet    
     case 'C' : chr='\x16';break // graphics cyan
+    case '&' :; // zxnet    
     case 'W' : chr='\x17';break // graphics white
 
     case 'O' : chr='\x18';break // conceal
@@ -993,12 +1017,32 @@ function editTF(key)
     case 's' : chr='\x19';break // Contiguous graphics
     case 'S' : chr='\x1a';break // Separated graphics
 
-    case 'n' : chr='\x1c';break // 28 black background
-    case 'N' : chr='\x1d';break // 29: new background
-    case 'H' : chr='\x1e';break // 30: Hold graphics mode
-    case 'h' : chr='\x1f';break // 31 Release hold mode
+    case 'n' : chr='\x1c';break // 28 black background (same as zxnet)
+    case 'N' : chr='\x1d';break // 29: new background (same as zxnet)
+    case 'H' : chr='\x1e';break // 30: Hold graphics mode (same as zxnet)
+    case 'h' : chr='\x1f';break // 31 Release hold mode (same as zxnet)
     
     case 'x' : myPage.showGrid=!myPage.showGrid;return // toggle grid display
+    case 'Z' : // clear screen
+      // @todo At this point, send a signal to the server
+      // Send the page details so we know which page to clear!
+      let data=
+      {
+        S: myPage.service, // service number
+        p: myPage.pageNumber,
+        s: myPage.subPage,
+        k: keyPressed,
+        x: myPage.cursor.x,
+        y: myPage.cursor.y,
+        id: gClientID
+      }      
+      socket.emit('clearPage',data)
+      editMode=EDITMODE_EDIT    
+      return
+      
+    case 'i' : // Insert row
+      // Not usre how we do this locally or remotely
+      break;
     /*
     edit.tf functions not implemented
     Number pad: need to find out what the keys do
@@ -1012,7 +1056,6 @@ function editTF(key)
     'U' : // Duplicate row
     'Q' : // toggle control codes
     '-' : // Toggle conceal/reveal
-    'Z' : // clear screen
     
     editing with blocks
     Select blocks with <esc> arrow keys

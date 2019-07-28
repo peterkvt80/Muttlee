@@ -151,6 +151,7 @@ function newConnection(socket)
   socket.on('load', doLoad)
   socket.on('initialLoad',doInitialLoad)
   socket.on('create',doCreate)
+  socket.on('clearPage',doClearPage)
   
   // When this connection closes we remove the connection id
   socket.on('disconnect', function () {
@@ -158,6 +159,17 @@ function newConnection(socket)
   })
   
 } // NewConnection
+
+/** Clear the current page to blank
+ */
+function doClearPage(data)
+{
+  console.log('[doClearPage] Clearing page ') // +data.p.toString(16))
+  console.log("Main::keyMessage S,p,s= "+data.S+", "+data.p+", ",data.s)
+  // TODO!!! Clear down the data on the server
+  io.sockets.emit('blank',data) // Clear down the old data on te clients
+
+}
 
 /** Create the page and load it
  */
