@@ -1041,7 +1041,7 @@ function editTF(key)
       return
       
     case 'i' : // Insert row
-      // Not usre how we do this locally or remotely
+      // Not sure how we do this locally or remotely
       break;
     /*
     edit.tf functions not implemented

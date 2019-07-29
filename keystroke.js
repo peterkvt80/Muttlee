@@ -7,7 +7,7 @@
  * 
  *  addEvent(data) - Adds a key event to the list
  *  replayEvents() - Replays the events to newly connected clients
- *  saveEvents()
+ *  saveEvents() - Saves the events to file
  *  matchPage(event) - Returns a matching event if there is one in the list. (page, subpage, service)
  *
  & @todo Move all the file stuff out of here!
@@ -29,6 +29,32 @@ KeyStroke=function()
   this.debug=true
   
   this.writebBackList
+  
+  // Not sophisticated. Just set all the characters to space
+  this.clearPage=function(data)
+  {
+    console.log("[clearPage] Clearing page svc="+data.S+", page="+data.p+" "+data.s)
+    data.k=' '
+    for (var row=0;row<24;row++)
+    {
+      data.y=row
+      for (var col=0;col<40;col++)
+      {
+        let d=
+        {
+          S: data.S, // service number
+          p: data.p,
+          s: data.s,
+          k: data.k,
+          x: col,
+          y: row,
+          id: data.id
+        }      
+        this.addEvent(d)
+        //console.log(JSON.stringify(data))
+      }
+    }
+  }
   
   /** Add a keystroke event to the list */
   this.addEvent=function(data)
@@ -59,6 +85,8 @@ KeyStroke=function()
    */
   this.sameChar=function(a,b)
   {
+        //console.log("a="+JSON.stringify(a))
+        //console.log("b="+JSON.stringify(b))
     if (a==undefined) return false
     if (b==undefined) return false
     if (a.x!=b.x) return false // Column
