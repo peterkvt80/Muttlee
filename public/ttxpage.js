@@ -148,13 +148,16 @@ TTXPAGE=function()
   }
 
   /** @brief Set row r to txt
+   * Note that this is the page level setrow.
    */   
   this.setRow=function(r,txt)
   {
     if (r>=0 && r<=24)
     {
       if (this.subPage<0)
+      {
         this.subPage=0
+      }
       let v=this.subPageList[this.subPage]
       if (v==undefined)
       {
@@ -168,6 +171,29 @@ TTXPAGE=function()
       // Might want to find out why this happens. Doesn't seem to matter
       console.log('not setting row '+r+' to '+txt)
       */
+  }
+   
+  // Return the text of row r on the current subpage
+  this.getRow=function(r)
+  {
+    if (r>=0 && r<=24)
+    {
+      if (this.subPage<0)
+      {
+        this.subPage=0
+      }
+      let v=this.subPageList[this.subPage]
+      if (v==undefined)
+      {
+        console.log('where is our subpage, dammit?')
+        return "                                       "
+      }
+      return v[r].txt
+    }
+    else
+    {
+      return "                                        "    
+    }
   }
   
   // Helpers for navigating subpages
@@ -674,7 +700,7 @@ function row(page,y,str)
       // Do the set-before codes
       switch (ic)
       {
-      case  0 : ; // 0: black. Only for level 1 rebels.
+      case  0 : ; // 0: black. Level 1 purists need not apply
       case  1 : ; // 1:red 
       case  2 : ; // 2:green
       case  3 : ; // 3:yellow

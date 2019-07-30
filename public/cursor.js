@@ -1,12 +1,15 @@
 /** Cursor class for teletext
  */
-TTXCURSOR=function()
+class TTXCURSOR
 {
-  this.x=0
-  this.y=0
-  this.hide=true
+  constructor()
+  {
+    this.x=0
+    this.y=0
+    this.hide=true
+  }
   
-  this.right = function(t)
+  right()
   {
     this.x++
     if (this.x>39)
@@ -17,7 +20,7 @@ TTXCURSOR=function()
     return this.x
   }
   
-  this.left=function()
+  left()
   {
     this.x--
     if (this.x<0)
@@ -28,7 +31,7 @@ TTXCURSOR=function()
     return this.x
   }
   
-  this.up=function()
+  up()
   {
     this.y--
     if (this.y<0)
@@ -39,7 +42,7 @@ TTXCURSOR=function()
     return this.y
   }
   
-  this.down=function()
+  down()
   {
     this.y++
     if (this.y>24)
@@ -50,14 +53,14 @@ TTXCURSOR=function()
     return this.y
   }
   
-  this.moveTo=function(x,y)
+  moveTo(x,y)
   {    
     this.x=constrain(x,0,39)
     this.y=constrain(y,0,24)
     this.dump("M")    
   }
   
-  this.dump=function(ch)
+  dump(ch)
   {
     // console.log("cursor="+ch+" ("+this.x+","+this.y+")")    
   }

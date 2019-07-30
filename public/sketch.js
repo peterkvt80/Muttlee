@@ -1023,6 +1023,46 @@ function editTF(key)
     case 'h' : chr='\x1f';break // 31 Release hold mode (same as zxnet)
     
     case 'x' : myPage.showGrid=!myPage.showGrid;return // toggle grid display
+    case 'i' : // Insert row      
+      editMode=EDITMODE_EDIT
+      {
+        let y=myPage.cursor.y
+        if (y<=0 || y>=24) // Can't insert row on the header or fastext row
+        {
+          return
+        }
+        // @TODO All this must be duplicated in keyevents
+        for (let r=(23-1);r>=y;r--)
+        {
+          let row=myPage.getRow(r)
+          // console.log("Row "+r+" = "+row)
+          myPage.setRow(r+1,row)
+          sendRow(r+1,row)
+        }
+        // Clear the current row
+        myPage.setRow(y,"                                        ")
+        sendRow(y,"                                        ")
+      }
+      return
+    case 'I' : // Delete row    
+      editMode=EDITMODE_EDIT
+      let y=myPage.cursor.y
+      if (y<=0 || y>=24) // Can't delete header or fastext
+      {
+        return
+      }
+      for (let r=y;r<23;r++)
+      {
+        let row=myPage.getRow(r+1)
+        // console.log("Row "+r+" = "+row)
+        myPage.setRow(r,row)
+        sendRow(r,row)
+      }
+      // Clear the current row
+      myPage.setRow(23,"                                        ")
+      sendRow(23,"                                        ")
+      
+      return
     case 'Z' : // clear screen
       // @todo At this point, send a signal to the server
       // Send the page details so we know which page to clear!
@@ -1031,7 +1071,7 @@ function editTF(key)
         S: myPage.service, // service number
         p: myPage.pageNumber,
         s: myPage.subPage,
-        k: keyPressed,
+        k: ' ',
         x: myPage.cursor.x,
         y: myPage.cursor.y,
         id: gClientID
@@ -1040,9 +1080,7 @@ function editTF(key)
       editMode=EDITMODE_EDIT    
       return
       
-    case 'i' : // Insert row
-      // Not sure how we do this locally or remotely
-      break;
+
     /*
     edit.tf functions not implemented
     Number pad: need to find out what the keys do
@@ -1077,6 +1115,28 @@ function editTF(key)
     }
     socket.emit('keystroke', data)    
     newChar(data)
+}
+
+/** Transmit a row of text
+ *  Woefully inefficient. Really need to implement whole row transmission
+ * \param r : row number
+ * \param txt : Row of teletext
+ */
+function sendRow(r,txt)
+{
+  for (let c=0;c<txt.length;c++)
+  {
+    let data=
+    {
+        S: myPage.service,
+        p: myPage.pageNumber, // Page mpp
+        s: myPage.subPage,
+        x: c,
+        y: r,
+        k: txt[c]
+    }
+    socket.emit('keystroke', data)
+  }
 }
 
 function centerCanvas()
