@@ -1183,6 +1183,13 @@ let link='<span id="dynamicLink" style="'+style+' top:150px;" >open P'+pg+'<br/>
 createA(url,link,'_blank')
 link='<span id="dynamicLink2" style="'+style+' top:300px;" >open P'+pg+'<br/>in zxnet</span>'
 createA(url2,link,'_blank')
+
+// Download the tti page
+let svc=myPage.getService()
+let url3='www/'+svc+'/p'+pg+'.tti'
+link='<span id="dynamicLink2" style="'+style+' top:450px;" > P'+pg+'.tti<br/>download</span>'
+createA(url3,link,'_blank') 
+
 // pointless stuff below here
 name="Teefax"
   for (let i=0; i<200; i++)

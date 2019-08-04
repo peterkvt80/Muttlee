@@ -110,6 +110,16 @@ TTXPAGE=function()
     this.service=S
   }
   
+  this.getService=function()
+  {
+    let svc=String(this.service)
+    if (svc=='undefined')
+    {
+      svc='onair'
+    }
+    return svc
+  }
+  
   /** @brief Add a page to the sub page list
    */
   this.addPage=function(number)
