@@ -223,6 +223,9 @@ function doLoad(data)
 
   console.log('[doLoad] called '+filename+' data.x='+data.x+' id='+data.id)
   //	console.log(data)
+  
+/////// SKIP THIS 410 STUFF. NOT USED ANY MORE
+/*  
   if (data.y==0 && data.p==0x410) // Special hack. Intercept P410. First time we will load weather
   {
     data.x=SIGNAL_PAGE_NOT_FOUND
@@ -239,6 +242,7 @@ function doLoad(data)
       return
     }
   }
+*/
   //console.log("blank")
   io.sockets.emit('blank',data) // Clear down the old data. // TODO This should emit only to socket.emit, not all units
   var fail=false
@@ -460,13 +464,13 @@ function createPage(data, callback)
   wstream.write('OL,13, theFcyanGbutton.                       \n')  
   wstream.write('OL,14,F                                       \n')
   wstream.write('OL,15,F                                       \n')
-  wstream.write('OL,16,M    NOW PRESSHESCAPEIAND EDIT THIS  \n')
+  wstream.write('OL,16,M  NOW PRESSHESCAPEIAND EDIT THIS   \n')
   wstream.write('OL,17,F                                       \n')
   wstream.write('OL,18,F                                       \n')
   wstream.write('OL,19,F                                       \n')
   wstream.write('OL,20,F                                       \n')
-  wstream.write('OL,21,F                                       \n')
-  wstream.write('OL,22,F                                       \n')
+  wstream.write('OL,21,F  PRO TIP: To clear the screen, press  \n')
+  wstream.write('OL,22,F           Escape then Z               \n')
   wstream.write('OL,23,F                                       \n')
   wstream.write('OL,24,A Next   B....       C....      FHelp   \n')
   // Write hex then read as decimal, so we don't increment to any hex pages.

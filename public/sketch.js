@@ -632,7 +632,7 @@ function keyPressed() // This is called before keyTyped
             if (editMode==EDITMODE_EDIT) myPage.cursor.down()
             break
 		case ESCAPE:
-            if (myPage.service!='wtf') // @todo A more sophisticated access scheme
+            if (myPage.service!='wtf' && myPage.service!='artfax') // @todo A more sophisticated access scheme
             {
               break;
             }

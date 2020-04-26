@@ -8,7 +8,6 @@
     "test": "npm run lint && npm run mocha",
     "start": "node teletextserver.js",
     "monitor": "nodemon teletextserver.js",
-    "deploy": "gcloud preview app deploy app.yaml",
     "lint": "jshint --exclude-path=../.gitignore .",
     "mocha": "mocha test/index.js -t 30000"
   },
@@ -22,7 +21,6 @@
   "dependencies": {
     "datastore": "^1.1.1",
     "express": "^4.16.3",
-    "gcloud": "^0.31.0",
     "request": "^2.88.0",
     "socket.io": "^1.7.4"
   },
