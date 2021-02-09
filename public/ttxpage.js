@@ -620,12 +620,24 @@ function row(page,y,str)
             let str="JanFebMarAprMayJunJulAugSepOctNovDec".substr((month()-1)*3,3)
             txt=replace(txt,str,ix)
           }
-          
+          // Substitute %m for two digit month
+          ix=txt.indexOf('%m')
+	  if (ix>0)
+	  {
+	  	txt=replace(txt,nf(month(),2),ix)
+	  }
+	  // Substitute %y for two digit year
+	  ix=txt.indexOf('%y')
+          if (ix>0)
+          {
+		let y=nf(year()%100,2)
+		txt=replace(txt,y,ix)
+          }
           // Substitute hh for the two digit hour 
           ix=txt.indexOf('%H')
           if (ix<0)
               ix=txt.indexOf('hh')
-          if (ix>0)
+          if (ix>0)		
               txt=replace(txt,nf(hour(),2),ix)
               
           // Substitute nn for the two digit minutes
