@@ -1063,6 +1063,9 @@ function editTF(key)
       sendRow(23,"                                        ")
       
       return
+    case 'J' : // block
+        chr = '\x7f'
+        break;
     case 'Z' : // clear screen
       // @todo At this point, send a signal to the server
       // Send the page details so we know which page to clear!
