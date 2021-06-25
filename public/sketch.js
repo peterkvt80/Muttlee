@@ -1001,7 +1001,8 @@ function editTF(key)
     case 'R' : chr='\x11';break // graphics red
     case '"' :; // zxnet    
     case 'G' : chr='\x12';break // graphics green
-    case '£' :; // zxnet    
+    case '£' :; // zxnet
+    case '#' :; // alternate character
     case 'Y' : chr='\x13';break // graphics yellow
     case '$' :; // zxnet    
     case 'B' : chr='\x14';break // graphics blue
