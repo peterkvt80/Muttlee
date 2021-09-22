@@ -33,6 +33,7 @@ let editMode=EDITMODE_NORMAL
 
 // dom
 let redButton, greenButton, yellowButton, cyanButton
+let inputPage
 let indexButton
 
 // timer
@@ -583,17 +584,22 @@ function setBlank(data) // 'blank'
 
 function inputNumber()
 {
-	console.log("inputNumber changed")
-	let page=document.getElementById('pageNumber')
-		console.log("Opening page="+page.value)
-	// Now load the page
-	if (page.value.length==3)
-	{
-		processKey(page.value.charAt(0))
-		processKey(page.value.charAt(1))
-		processKey(page.value.charAt(2))
-		page.blur()
-	}
+  console.log("inputNumber changed");
+
+  if (inputPage && inputPage.elt) {
+    const pageValue = inputPage.elt.value;
+
+    console.log("Opening page=" + pageValue);
+
+    // Now load the page
+    if (pageValue.length === 3) {
+      processKey(pageValue.charAt(0));
+      processKey(pageValue.charAt(1));
+      processKey(pageValue.charAt(2));
+
+      inputPage.elt.blur();
+    }
+  }
 }
 
 function keyRelease()
@@ -606,96 +612,114 @@ function keyRelease()
  */
 function keyPressed() // This is called before keyTyped
 {
-  console.log (" k="+keyCode)
-	let active=document.activeElement
-  let handled=true
-  if (active.id.length>1)
-  {
-    console.log("Active element="+active.id)
+  console.log("k=" + keyCode);
+
+  let active=document.activeElement;
+  let handled=true;
+
+  if (active.id.length > 1) {
+    console.log("Active element=" + active.id);
   }
-	if (document.activeElement.id!='pageNumber') // todo: Kill refresh cycles while the input is active.
-	{
-		switch (keyCode)
-		{
-        //case PAGE_UP:
-		case LEFT_ARROW:
-            if (editMode==EDITMODE_EDIT) myPage.cursor.left()
-            break
-        //case PAGE_DOWN:
-		case RIGHT_ARROW: 
-            if (editMode==EDITMODE_EDIT) myPage.cursor.right()
-            break
-		case UP_ARROW:
-            if (editMode==EDITMODE_EDIT) myPage.cursor.up()
-            break
-		case DOWN_ARROW:
-            if (editMode==EDITMODE_EDIT) myPage.cursor.down()
-            break
-		case ESCAPE:
-            if (myPage.service!='wtf' && myPage.service!='amigarob' && myPage.service!='artfax' && myPage.service!='channel19') // @todo A more sophisticated access scheme
-            {
-              break;
-            }
-            switch (editMode)
-            {
-            case EDITMODE_NORMAL:
-                editMode=EDITMODE_EDIT
-                break
-            case EDITMODE_EDIT:
-                editMode=EDITMODE_ESCAPE
-                break
-            case EDITMODE_ESCAPE:
-                editMode=EDITMODE_NORMAL
-                break
-            }
-            myPage.editSwitch(editMode)
-            break
-        case TAB: // Insert a space
-            myPage.insertSpace() // Do our page
-            insertSpace()       // Any other clients
-            editMode=EDITMODE_EDIT            
-            break
-        case BACKSPACE: // Remove current character, move the remainder one char left.
-            myPage.backSpace()
-            backSpace()
-            editMode=EDITMODE_EDIT            
-            break
-        case 33: // PAGE_UP (next subpage when in edit mode)
-            if (editMode==EDITMODE_EDIT)
-            {
-                myPage.nextSubpage()
-            }
-            break
-        case 34: // PAGE_DOWN (prev subpage when in edit mode)
-            if (editMode==EDITMODE_EDIT)
-            {
-                myPage.prevSubpage()
-            }
-            break
-        case 35: // END - move to the last character on this line (ideally the first blank character after the last non-blank)
-          myPage.end()
+
+  if (document.activeElement.id !== 'pageNumber') {
+    // todo: Kill refresh cycles while the input is active.
+    switch (keyCode) {
+      case LEFT_ARROW:
+        if (editMode === EDITMODE_EDIT) myPage.cursor.left();
+        break;
+
+      case RIGHT_ARROW:
+        if (editMode === EDITMODE_EDIT) myPage.cursor.right();
+        break;
+
+      case UP_ARROW:
+        if (editMode === EDITMODE_EDIT) myPage.cursor.up();
+        break;
+
+      case DOWN_ARROW:
+        if (editMode === EDITMODE_EDIT) myPage.cursor.down();
+        break;
+
+      case ESCAPE:
+        // @todo A more sophisticated access scheme
+        if (
+          [
+            'wtf',
+            'amigarob',
+            'artfax',
+            'channel19'
+          ].includes(myPage.service)
+        ) {
           break;
-        case 36: // HOME - move to the first character on this line
-          myPage.home()
-          break;
-        case 45: // INSERT - Add a subpage
-          myPage.addSubPage()
-          break;
-        case 46: // DELETE - Delete a subpage
-          myPage.removeSubPage()
-          break;
-		default:
-      handled=false
-		}
-	}
-  
-	if (handled)
-  {    
-     return false // Signal that the key should not be processed any further.
+        }
+
+        switch (editMode) {
+          case EDITMODE_NORMAL:
+            editMode = EDITMODE_EDIT;
+            break;
+
+          case EDITMODE_EDIT:
+            editMode = EDITMODE_ESCAPE;
+            break;
+
+          case EDITMODE_ESCAPE:
+            editMode = EDITMODE_NORMAL;
+            break;
+        }
+
+        myPage.editSwitch(editMode);
+        break;
+
+      case TAB: // Insert a space
+        myPage.insertSpace(); // Do our page
+        insertSpace();       // Any other clients
+        editMode = EDITMODE_EDIT;
+        break;
+
+      case BACKSPACE: // Remove current character, move the remainder one char left.
+        myPage.backSpace();
+        backSpace();
+        editMode = EDITMODE_EDIT;
+        break;
+
+      case 33: // PAGE_UP (next subpage when in edit mode)
+        if (editMode === EDITMODE_EDIT) {
+          myPage.nextSubpage();
+        }
+        break;
+
+      case 34: // PAGE_DOWN (prev subpage when in edit mode)
+        if (editMode === EDITMODE_EDIT) {
+          myPage.prevSubpage();
+        }
+        break;
+
+      case 35: // END - move to the last character on this line (ideally the first blank character after the last non-blank)
+        myPage.end();
+        break;
+
+      case 36: // HOME - move to the first character on this line
+        myPage.home();
+        break;
+
+      case 45: // INSERT - Add a subpage
+        myPage.addSubPage();
+        break;
+
+      case 46: // DELETE - Delete a subpage
+        myPage.removeSubPage();
+        break;
+
+      default:
+        handled = false;
+    }
   }
-  else
-  {
- 			// console.log('unhandled keycode='+keyCode)
+
+  if (handled) {
+    return false; // Signal that the key should not be processed any further.
+
+  } else {
+    // console.log('unhandled keycode='+keyCode)
   }
 }
 
@@ -764,18 +788,20 @@ function backSpace()
  *  This p5js function doesn't fire on Ctrl, Alt, Shift etc.
  */
 function keyTyped()
-{	
-  console.log('keyTyped keycode='+keyCode)
-	if (document.activeElement.id=='pageNumber') // Input a page number
-	{
-    // console.log('keyTyped keycode='+keyCode)
-	}
-	else // Anywhere else
-	{	
-    key=mapKey(key)
-		processKey(key)
-	}
-  return false // Prevent triggering any other behaviour
+{
+  console.log('keyTyped keycode=' + keyCode);
+
+  if (document.activeElement.id === 'pageNumber') {
+    // Input a page number
+    // console.log('input keycode=' + keyCode);
+
+  } else {
+    // Anywhere else
+    key = mapKey(key);
+    processKey(key);
+  }
+
+  return false;   // Prevent triggering any other behaviour
 }
 
 /**
