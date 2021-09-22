@@ -1,51 +1,48 @@
 // teletext
-let myPage, ttxFont
-let serviceSelector
+let myPage, ttxFont;
+let serviceSelector;
 
-//metrics
-let gTtxW, gTtxH
-const gTtxFontSize=20
+// metrics
+let gTtxW, gTtxH;
+const gTtxFontSize = 20;
 
 // page selection
-let digit1='1'
-let digit2='0'
-let digit3='0'
+let digit1 = '1';
+let digit2 = '0';
+let digit3 = '0';
 
-let hdr
+let hdr;
 
-const CANVAS_WIDTH=600
-const CANVAS_HEIGHT=550
+const CANVAS_WIDTH = 600;
+const CANVAS_HEIGHT = 550;
 
 // comms
-let socket
-let gClientID=null // Our unique connection id
+let socket;
+let gClientID = null; // Our unique connection id
 
 // x signals
-const SIGNAL_PAGE_NOT_FOUND = -1
-const SIGNAL_INITIAL_LOAD = 2000
+const SIGNAL_PAGE_NOT_FOUND = -1;
+const SIGNAL_INITIAL_LOAD = 2000;
 
 // state
-//const EDITMODE_NORMAL=0 // normal viewing
-//const EDITMODE_EDIT=1   // edit mode
-//const EDITMODE_ESCAPE=2 // expect next character to be either an edit.tf function or Escape again to exit.
-//const EDITMODE_INSERT=3 // The next character is ready to insert
-let editMode=EDITMODE_NORMAL
+let editMode = EDITMODE_NORMAL;
 
-// dom
-let redButton, greenButton, yellowButton, cyanButton
-let indexButton
+// DOM
+let indexButton;
 
-// timer
-// Timer for expiring incomplete keypad entries
-let expiredState=true // True for four seconds after the last keypad number was typed OR until a valid page number is typed
-let forceUpdate=false // Set true if the screen needs to be updated
-let timeoutVar
+// timer for expiring incomplete keypad entries
+let expiredState = true; // True for four seconds after the last keypad number was typed OR until a valid page number is typed
+let forceUpdate = false; // Set true if the screen needs to be updated
+let timeoutVar;
 
 // canvas
 let cnv;
 
-// Indicated changes that have not been processed by the server yet
-let changed
+// indicate changes that have not been processed by the server yet
+let changed;
+
+// block
+let blockStart; // block select
 
 
 /** mapKey
@@ -77,6 +74,7 @@ function mapKey(key)
   return key
 }
 
+
 function startTimer()
 {
 	expiredState=false
@@ -106,165 +104,102 @@ function startTimer()
 	} , 4000)
 }
 
-let btnk0, btnk1, btnk2, btnk3, btnk4, btnk5, btnk6, btnk7, btnk8, btnk9
-let btnkx, btnky, btnkback, btnkfwd
 
-// block
-let blockStart // block select
 
-function preload()
-{
-  ttxFont=loadFont("assets/teletext2.ttf") // Normal  
-  ttxFontDH=loadFont("assets/teletext4.ttf") // Double height 
+
+function preload() {
+  // load font files
+  ttxFont = loadFont("assets/teletext2.ttf"); // Normal
+  ttxFontDH = loadFont("assets/teletext4.ttf"); // Double height
 }
 
 
-function setup()
-{
+function setup() {
   // Try to make a debug and on-air version
-//  socket=io.connect('http://192.168.1.11:3010')
-  socket=io.connect('http://www.xenoxxx.com:80')
-//  socket=io.connect('http://23.251.131.26:8080')
-  // socket=io.connect('http://localhost:80')
-  cnv=createCanvas(CANVAS_WIDTH,CANVAS_HEIGHT)
-  cnv.mousePressed(function()
-    {
-      if (editMode!=EDITMODE_NORMAL)    // Only need to do this in edit mode
-      {
-        const xLoc=int(mouseX/gTtxW)
-        const yLoc=int(mouseY/gTtxH)
-        if (xLoc>=0 && xLoc<40 && yLoc>=0 && yLoc<25)
-        {
-          myPage.cursor.moveTo(xLoc,yLoc)
-          console.log('The mouse was clicked at '+xLoc+' '+yLoc)
+  // socket=io.connect('http://192.168.1.11:3010');
+  socket=io.connect('http://www.xenoxxx.com:80');
+  // socket=io.connect('http://23.251.131.26:8080');
+  // socket=io.connect('http://localhost:80');
+
+  // create the p5 canvas, and move it into the #canvas DOM element
+  cnv = createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+  cnv.parent('canvas');
+
+  // observe mouse press events on p5 canvas
+  cnv.mousePressed(
+    function () {
+      if (editMode !== EDITMODE_NORMAL) {   // Only need to do this in edit mode
+        const xLoc = int(mouseX / gTtxW);
+        const yLoc = int(mouseY / gTtxH);
+
+        if (xLoc >= 0 && xLoc < 40 && yLoc >= 0 && yLoc < 25) {
+          myPage.cursor.moveTo(xLoc, yLoc);
+
+          console.log('The mouse was clicked at ' + xLoc + ' ' + yLoc);
         }
       }
-      return false // Prevent default behaviour
-    })
-  centerCanvas();
-//	cnv.position(0,0)
-	//createCanvas(displayWidth, displayHeight)	
+
+      return false; // Prevent default behaviour
+    }
+  );
+
   // font metrics
-  textFont(ttxFont)
-  textSize(gTtxFontSize)
-  gTtxW=textWidth('M')
-  gTtxH=gTtxFontSize
-  myPage=new TTXPAGE()
-  myPage.init(0x100)
+  textFont(ttxFont);
+  textSize(gTtxFontSize);
+
+  gTtxW = textWidth('M');
+  gTtxH = gTtxFontSize;
+
+  myPage = new TTXPAGE();
+  myPage.init(0x100);
+
   // message events
-  socket.on('keystroke',newCharFromServer)
-  socket.on('row',setRow) // A teletext row
-  socket.on('blank',setBlank) // Clear the page
-  socket.on('fastext',setFastext)
-  socket.on('setpage',setPageNumber) // Allow the server to change the page number (Page 404 etc)
-  socket.on('description',setDescription)
-  socket.on('subpage',setSubPage) // Subpage number for carousels (Expect two digits 00..99) [99 is higher than actual spec]
-  socket.on("timer",setTimer) // Subpage timing. Currently this is just an overall value. Need to implement for animations
-  socket.on("id",setID) // id is a socket id that identifies this client. Use this when requesting a page load
+  socket.on('keystroke', newCharFromServer);
+  socket.on('row', setRow); // A teletext row
+  socket.on('blank', setBlank); // Clear the page
+  socket.on('fastext', setFastext);
+  socket.on('setpage', setPageNumber); // Allow the server to change the page number (Page 404 etc)
+  socket.on('description', setDescription);
+  socket.on('subpage', setSubPage); // Subpage number for carousels (Expect two digits 00..99) [99 is higher than actual spec]
+  socket.on('timer', setTimer); // Subpage timing. Currently this is just an overall value. Need to implement for animations
+  socket.on('id', setID); // id is a socket id that identifies this client. Use this when requesting a page load
   //hdr=new header(0,1,0,0)
 
-  // dom
-  redButton=select('#red')
-  redButton.mousePressed(fastextR)
-  greenButton=select('#green')
-  greenButton.mousePressed(fastextG)
-  yellowButton=select('#yellow')
-  yellowButton.mousePressed(fastextY)
-  cyanButton=select('#cyan')
-  cyanButton.mousePressed(fastextC)
   //indexButton=select('#index')
-	//indexButton.mousePressed(fastextIndex)
-		
-	
-  btnkx=select('#khold')
-	btnkx.mousePressed(khold)
-  btnky=select('#krvl')
-	btnky.mousePressed(krvl)
-  btnkback=select('#kback')
-	btnkback.mousePressed(kback)
-  btnkfwd=select('#kfwd')
-	btnkfwd.mousePressed(kfwd)
-	
-	inputPage=select('#pageNumber')
-  frameRate(10)
-  
-  let offset=CANVAS_WIDTH+(displayWidth-CANVAS_WIDTH)/2
+  //indexButton.mousePressed(fastextIndex)
 
-  // Don't offer to edit on a small screen
-  if (displayWidth>1024)
-  {
-    btn = createButton('Grab')
-    btn.mousePressed(exportPage)
-    
-    btn.elt.style="position:absolute; left: "+offset+"px; top: 0px;"
-  }
-  
-  serviceSelect(offset);
-  
-  // Do positioning by overriding p5js defaults
-//  span.style = 'width: 600px;height: 550px;position: absolute; top: 0px;'
-  //span.style/* visibility: hidden; */width: 600px;height: 550px;position: absolute;left: 540px;top: 0px;
-  let span=document.getElementById("defaultCanvas0")
-  // class contains the static style
-  span.setAttribute("class","centre-div")
 
-  // dynamic style
-  span.removeAttribute("style")
-  offset=(displayWidth-CANVAS_WIDTH)/2
-  if (offset<0)
-  {
-    offset=0
-  }
-  span.style="left: "+offset+"px;"
-  
-  changed=new CHARCHANGED()
-    
-  // Force a resize
-  windowResized()
-  
+  // create page number input field
+  inputPage = select('#pageNumber');
+
+  // set frame rate
+  frameRate(10);
+
+  // indicate changes that have not been processed by the server yet
+  changed = new CHARCHANGED();
 }
 
-serviceSelect=function(offset)
-{
-  let x=0
-  let btn=createButton('teefax')
-  btn.mousePressed(openTeefax)    
-  btn.elt.style="position:absolute; left: "+(offset+150)+"px; top: "+x+"px;"
 
-  x+=110
-  btn=createButton('Digitiser')
-  btn.mousePressed(openD2K)    
-  btn.elt.style="position:absolute; left: "+(offset+150)+"px; top: "+x+"px;"
+openTeefax = function () {
+  window.open('?service=');
+};
 
-  x+=110
-  btn=createButton('Archive')
-  btn.mousePressed(openReadback)    
-  btn.elt.style="position:absolute; left: "+(offset+150)+"px; top: "+x+"px;"
+openD2K = function () {
+  window.open('?service=d2k');
+};
 
-  x+=110
-  btn=createButton('wiki')
-  btn.mousePressed(openWTF)    
-  btn.elt.style="position:absolute; left: "+(offset+150)+"px; top: "+x+"px;"
+openReadback = function () {
+  window.open('?service=readback');
+};
 
-  x+=110
-  btn=createButton('Cheat sheet')
-  btn.mousePressed(cheatSheet)
-  btn.elt.style="position:absolute; left: "+(offset+150)+"px; top: "+x+"px;"
-  
-//  serviceSelector=createSelect()
-//  serviceSelector.elt.style="position:absolute; left: "+offset+"px; top: 110px;"
+openWTF = function () {
+  window.open('?service=wtf');
+};
 
-//  serviceSelector.option("Teefax")
-//  serviceSelector.option("WikiTelFax")
-//  serviceSelector.option("R series")
-//  serviceSelector.changed(serviceChange)
-}
+cheatSheet = function () {
+  window.open('/assets/WikiTelFax.pdf');
+};
 
-openTeefax=function(){window.open('?service=')}
-openD2K=function(){window.open('?service=d2k')}
-openReadback=function(){window.open('?service=readback')}
-openWTF=function(){window.open('?service=wtf')}
-cheatSheet=function(){window.open('/assets/WikiTelFax.pdf')}
 
 function serviceChange()
 {
@@ -305,13 +240,14 @@ function setID(id)
   socket.emit('load',data)
 }
 
-function setDescription(data)
-{
-	if (data.id!=gClientID && gClientID!=null) return;	// Not for us?
+function setDescription(data) {
+  if (data.id !== gClientID && gClientID !== null) {
+    return;  // Not for us?
+  }
 
-	// console.log('[setDescription]setting page description to '+desc)
-	myPage.description=data.desc
-	document.getElementById('description').innerHTML = 'Page info: '+data.desc
+  // console.log('[setDescription]setting page description to '+desc)
+  myPage.description=data.desc;
+  document.getElementById('description').innerHTML = '<strong>Page info</strong>: ' + data.desc;
 }
 
 function setPageNumber(data)
@@ -1143,68 +1079,66 @@ function sendRow(r,txt)
   }
 }
 
-function centerCanvas()
-{
-  let x = (windowWidth - width) / 2
-  let y = (windowHeight - height) / 2
-  cnv.position(x, 0)
+
+function windowResized() {
+
 }
 
-function windowResized()
-{
-  centerCanvas()
-}
 
-function exportPage()
-{
+function exportPage() {
+  const grabSelectLinks = document.querySelector('#grabSelectLinks');
 
-let cset=0 // @todo language
-let website="http://edit.tf"  // edit.tf
-let url=save_to_hash(cset, website, myPage)
+  // determine if hiding or showing grab links...
+  const isShow = grabSelectLinks.getAttribute('data-visible') === 'false';
 
-website="https://zxnet.co.uk/teletext/editor"  // zxnet
-let url2=save_to_hash(cset, website, myPage)
+  if (isShow) {
+    // @todo language
+    let cset = 0;
 
-// If the export link already exists, remove it
-let span=document.getElementById("dynamicLink")
-if (span!=null)
-{
-	span.parentNode.removeChild(span)
-}
+    // get page number
+    let pg = hex(myPage.pageNumber, 3);
 
-span=document.getElementById("dynamicLink2")
-if (span!=null)
-{
-	span.parentNode.removeChild(span)
-}
+    // edit.tf
+    let website = 'http://edit.tf';
+    let url = save_to_hash(cset, website, myPage);
 
-let pg=hex(myPage.pageNumber,3)
+    // zxnet
+    website = 'https://zxnet.co.uk/teletext/editor';
+    let url2 = save_to_hash(cset, website, myPage);
 
-let style="color: white; position: absolute; left: "+(CANVAS_WIDTH+(displayWidth-CANVAS_WIDTH)/2)+"px;"
-style+="background-color: #BB5000;"
-// Create the A tag link
-let link='<span id="dynamicLink" style="'+style+' top:150px;" >open P'+pg+'<br/>in edit.tf</span>'
-createA(url,link,'_blank')
-link='<span id="dynamicLink2" style="'+style+' top:300px;" >open P'+pg+'<br/>in zxnet</span>'
-createA(url2,link,'_blank')
+    // Download the tti page
+    let svc = myPage.getService();
+    let url3 = 'www/' + svc + '/p' + pg + '.tti';
 
-// Download the tti page
-let svc=myPage.getService()
-let url3='www/'+svc+'/p'+pg+'.tti'
-link='<span id="dynamicLink2" style="'+style+' top:450px;" > P'+pg+'.tti<br/>download</span>'
-createA(url3,link,'_blank') 
 
-// pointless stuff below here
-name="Teefax"
-  for (let i=0; i<200; i++)
-  {
-    push()
-    fill(random(255), 255, 255)
-    translate(random(width), random(height))
-    rotate(random(2*PI))
-    text(name, 0, 0)
-    pop()
+    // update grab link items text and URL...
+    const dynamicLink = document.querySelector('#dynamicLink');
+
+    if (dynamicLink) {
+      dynamicLink.href = url;
+      dynamicLink.innerHTML = 'open P' + pg + '<br/>in edit.tf';
+    }
+
+    const dynamicLink2 = document.querySelector('#dynamicLink2');
+
+    if (dynamicLink2) {
+      dynamicLink2.href = url2;
+      dynamicLink2.innerHTML = 'open P' + pg + '<br/>in zxnet';
+    }
+
+    const dynamicLink3 = document.querySelector('#dynamicLink3');
+
+    if (dynamicLink3) {
+      dynamicLink3.href = url3;
+      dynamicLink3.innerHTML = 'download <br/>P' + pg + '.tti';
+    }
+
+
+    // show links
+    grabSelectLinks.setAttribute('data-visible', 'true');
+
+  } else {
+    // hide links
+    grabSelectLinks.setAttribute('data-visible', 'false');
   }
 }
-
-
