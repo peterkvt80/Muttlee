@@ -96,13 +96,16 @@ TTXPAGE=function()
     this.subPage=0
     tickCounter=1
     this.pageNumber=p /// @todo Convert this to do all sub pages
-    
+
     this.pageNumberEntry=p.toString(16)
-    
+
     this.subPageList=[]
     this.metaData=[]
-    
-    this.addPage(this.pageNumber)
+
+    // keep page number input field synced with the current page number
+    if (inputPage && inputPage.elt) {
+      inputPage.elt.value = this.pageNumberEntry;
+    }
   }
   
   this.setService=function(S)

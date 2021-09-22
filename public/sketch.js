@@ -185,9 +185,9 @@ function setup()
 	btnkback.mousePressed(kback)
   btnkfwd=select('#kfwd')
 	btnkfwd.mousePressed(kfwd)
-	
-	inputPage=select('#pageNumber')
-  frameRate(10)
+
+  inputPage = select('#pageNumber');
+  frameRate(10);
   
   let offset=CANVAS_WIDTH+(displayWidth-CANVAS_WIDTH)/2
 
@@ -614,14 +614,17 @@ function keyPressed() // This is called before keyTyped
 {
   console.log("k=" + keyCode);
 
-  let active=document.activeElement;
-  let handled=true;
+  let handled = true;
 
-  if (active.id.length > 1) {
-    console.log("Active element=" + active.id);
+  if (document.activeElement.id) {
+    console.log("Active element=" + document.activeElement.id);
   }
 
-  if (document.activeElement.id !== 'pageNumber') {
+  if ((inputPage && inputPage.elt) && (document.activeElement === inputPage.elt)) {
+    // Don't prevent native event propagation on input element
+    handled = false;
+
+  } else {
     // todo: Kill refresh cycles while the input is active.
     switch (keyCode) {
       case LEFT_ARROW:
@@ -715,12 +718,8 @@ function keyPressed() // This is called before keyTyped
     }
   }
 
-  if (handled) {
-    return false; // Signal that the key should not be processed any further.
-
-  } else {
-    // console.log('unhandled keycode='+keyCode)
-  }
+  // Signal whether the key should be processed any further
+  return !handled;
 }
 
 /** This inserts a space on the server and any listening client,
@@ -791,17 +790,27 @@ function keyTyped()
 {
   console.log('keyTyped keycode=' + keyCode);
 
-  if (document.activeElement.id === 'pageNumber') {
-    // Input a page number
-    // console.log('input keycode=' + keyCode);
+  if ((inputPage && inputPage.elt) && (document.activeElement === inputPage.elt)) {
+    // keypress in the page number input field...
+    setTimeout(
+      function () {
+        if (inputPage.elt.value.length === 3) {
+          // trigger blur event, in order to trigger input element onchange function
+          inputPage.elt.blur();
+        }
+      },
+      0,
+    );
+
+    return true;    // Don't prevent native event propagation on input element
 
   } else {
-    // Anywhere else
+    // keypress anywhere else...
     key = mapKey(key);
     processKey(key);
-  }
 
-  return false;   // Prevent triggering any other behaviour
+    return false;   // Prevent triggering any other behaviour
+  }
 }
 
 /**
@@ -809,7 +818,7 @@ function keyTyped()
 */
 function processKey(keyPressed)
 {
-	// console.log('processKey='+keyPressed)
+  // console.log('processKey='+keyPressed)
   // @todo need to map codes to national options at this point.
   // @todo Also need to fix AlphaInGraphics when I do this
   if (editMode==EDITMODE_ESCAPE)
@@ -820,7 +829,7 @@ function processKey(keyPressed)
       // console.log("[keyPressed] keyCode="+keyCode+" key="+key)
       editTF(key)
       return
-  }    
+  }
 	if (editMode!=EDITMODE_NORMAL) // Numbers are typed into the page
 	{
 		let data=
@@ -840,7 +849,11 @@ function processKey(keyPressed)
 	{
 		if (keyPressed>='0' && keyPressed <='9')
 		{
-			document.getElementById('pageNumber').blur() // Don't want the number input to steal keystrokes
+			if (inputPage && inputPage.elt) {
+				// Don't want the number input to steal keystrokes
+				inputPage.elt.blur();
+			}
+
 			startTimer() // This also clears out the other digits (first time only)
 			forceUpdate=true
 			digit1=digit2
@@ -865,16 +878,15 @@ function processKey(keyPressed)
 					x: 0,
 					y: 0,
 					rowText: '',
-					id: gClientID					
-					}				
+					id: gClientID
+					}
 					socket.emit('load',data)
 				}
 			}
-			timimg=500		
 		}
-	}    
+	}
     // socket.emit('load')
-    
+
     //console.log('keycode='+keyPressed)
 }
 
