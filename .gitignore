@@ -29,6 +29,9 @@ node_modules
 # Optional npm cache directory
 .npm
 
+# IDE config files
+.idea
+
 # Optional REPL history
 .node_repl_history
 *.ttix
