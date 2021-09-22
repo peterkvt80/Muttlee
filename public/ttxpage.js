@@ -102,6 +102,8 @@ TTXPAGE=function()
     this.subPageList=[]
     this.metaData=[]
 
+    this.addPage(this.pageNumber)
+
     // keep page number input field synced with the current page number
     if (inputPage && inputPage.elt) {
       inputPage.elt.value = this.pageNumberEntry;
