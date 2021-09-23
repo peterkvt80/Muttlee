@@ -1,6 +1,6 @@
 {
   "name": "muttlee",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Teletext live on the web",
   "main": "teletextserver.js",
   "repository": "https://github.com/peterkvt80/Muttlee",
@@ -21,6 +21,7 @@
   "dependencies": {
     "datastore": "^1.8.2",
     "express": "^4.17.1",
+    "nunjucks": "^3.2.3",
     "request": "^2.88.2",
     "socket.io": "^2.4.1"
   },
