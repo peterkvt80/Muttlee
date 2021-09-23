@@ -5,11 +5,8 @@
   "main": "teletextserver.js",
   "repository": "https://github.com/peterkvt80/Muttlee",
   "scripts": {
-    "test": "npm run lint && npm run mocha",
     "start": "node teletextserver.js",
-    "monitor": "nodemon teletextserver.js",
-    "lint": "jshint --exclude-path=../.gitignore .",
-    "mocha": "mocha test/index.js -t 30000"
+    "monitor": "nodemon teletextserver.js"
   },
   "keywords": [
     "teletext",
