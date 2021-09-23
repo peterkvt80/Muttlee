@@ -32,6 +32,9 @@ node_modules
 # IDE config files
 .idea
 
+# Locally generated SSL certificate files
+*.pem
+
 # Optional REPL history
 .node_repl_history
 *.ttix
