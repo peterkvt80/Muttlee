@@ -1,164 +1,258 @@
-// This is helpful https://socket.io/docs/emit-cheatsheet/
-// io stream stuff
-const fs = require('fs')
-const readline = require('readline')
-const stream = require('stream')
+const fs = require('fs');
+const readline = require('readline');
+const path = require('path');
 
-require('./weather.js') // Should check if this is obsolete
-require('./service.js')
-require('./utils.js') // Prestel and other string handling
-require('./keystroke.js') // Editing data from clients
+const http = require('http');
+const https = require('https');
 
-var services=[] // List of services
+const express = require('express');
+const nunjucks = require('nunjucks');
 
-//var outstream = new stream
-//outstream.readable = true
-//outstream.writable = true
+// socket.io documentation is helpful: https://socket.io/docs/emit-cheatsheet/
+const socket = require('socket.io');
 
-// The x value is used to signal various states using magic numbers
-const SIGNAL_PAGE_NOT_FOUND = -1
-const SIGNAL_INITIAL_LOAD = 2000
 
-// SSL stuff
-//var https = require('https');
-//var privateKey = fs.readFileSync('privkey.pem', 'utf8');
-//var certificate = fs.readFileSync('fullchain.pem', 'utf8');
-//var credentials = {key: privateKey, cert: certificate};
+// import constants and config for use server-side
+const CONST = require('./constants.js');
+const CONFIG = require('./config.js');
 
-const express=require('express')
-var app = express()
-//app.use(express.static('public'))
-console.log("dirname="+__dirname)
-app.use('/', express.static(__dirname + '/public'));
 
-var server= app.listen(8080)
+// import modules
+require('./weather.js');      // Should check if this is obsolete
+require('./service.js');
+require('./utils.js');        // Prestel and other string handling
+require('./keystroke.js');    // Editing data from clients
 
-var weather=new Weather(doLoad)
-var keystroke=new KeyStroke()
 
-app.get('/weather.tti',weather.doLoadWeather)
+// list of services
+let services = [];
 
-var socket=require('socket.io')
-var io=socket(server)
-var initialPage=0x100
-var connectionList=new Object() // Associative array links user id to service: connectionList['/#NODc31jxxFTSm_SaAAAC']='d2k'
-var missingPage=0
 
-console.log("Server is running on "+process.platform)
-io.sockets.on('connection',newConnection)
+// instantiate Express app
+const app = express();
 
-function save()
-{
-  console.log("Autosave")
-  keystroke.saveEdits()
+
+// instantiate Nunjucks templating system
+const env = nunjucks.configure(
+  'html',
+  {
+    autoescape: true,
+    express: app
+  }
+);
+
+app.set('view engine', 'html');
+
+env.addFilter(
+  'featureEnabled',
+  function(features, featureName) {
+    return (features && (features[featureName] === true));
+  }
+);
+
+
+// define app routes
+app.use(
+  '/constants.js',
+  function (req, res) {
+    res.sendFile(
+      __dirname + '/constants.js',
+    );
+  }
+);
+
+app.use(
+  '/config.js',
+  function (req, res) {
+    // only generate line for config keys we have explicitly whitelisted in config.js
+    let content = {};
+
+    for (let key in CONFIG) {
+      if (CONFIG[CONST.CONFIG.FRONTEND_CONFIG_KEYS].includes(key)) {
+        content[key] = CONFIG[key];
+      }
+    }
+
+    content = 'const CONFIG = ' + JSON.stringify(content) + ';';
+
+    res.send(
+      content
+    );
+  }
+);
+
+app.use(
+  express.static(__dirname + '/public')
+);
+
+app.use(
+  '*',
+  function (req, res) {
+    res.render(
+      'index.html',
+
+      {
+        TITLE: CONFIG.TITLE,
+      },
+    );
+  }
+);
+
+
+// serve over HTTP?
+let serverHttp;
+
+if (CONFIG.TELETEXT_VIEWER_SERVE_HTTP) {
+  serverHttp = http.createServer(app).listen(
+    CONFIG.TELETEXT_VIEWER_SERVE_HTTP_PORT
+  );
 }
 
-setInterval(save, 60000)  // every minute we save away the edits
 
-function newConnection(socket)
-{
-  // Try to split the parameters from ?service=BBCNEWS&page=120    
-      
-  var queryString = {}
-  var uri=decodeURI(socket.handshake.headers.referer)
+// serve over HTTPS?
+let serverHttps;
+
+if (CONFIG.TELETEXT_VIEWER_SERVE_HTTPS) {
+  // read in key and cert files
+  const options = {
+    key: fs.readFileSync(CONFIG.TELETEXT_VIEWER_SERVE_HTTPS_KEY_PATH),
+    cert: fs.readFileSync(CONFIG.TELETEXT_VIEWER_SERVE_HTTPS_CERT_PATH),
+  };
+
+  serverHttps = https.createServer(options, app).listen(
+    CONFIG.TELETEXT_VIEWER_SERVE_HTTPS_PORT
+  );
+}
+
+
+// instantiate socket.io server
+const io = socket(
+  (CONFIG.TELETEXT_VIEWER_SERVE_HTTPS) ?
+    serverHttps :
+    serverHttp
+);
+
+console.log("Server is running on " + process.platform);
+
+io.sockets.on('connection', newConnection);
+
+
+
+// instantiate keystroke class
+var keystroke = new KeyStroke();
+
+
+// instantiate Weather module
+var weather = new Weather(doLoad);
+
+app.get(
+  '/weather.tti',
+  weather.doLoadWeather
+);
+
+
+
+var initialPage = CONST.PAGE_MIN;
+var connectionList = new Object(); // Associative array links user id to service: connectionList['/#NODc31jxxFTSm_SaAAAC']='d2k'
+var missingPage = 0;
+
+
+
+
+function save() {
+  console.log('Autosave');
+
+  keystroke.saveEdits();
+}
+
+setInterval(save, 60000);  // every minute we save away the edits
+
+
+function newConnection(socket) {
+  // Try to split the parameters from ?service=BBCNEWS&page=120
+  let queryString = {};
+
+  let uri = decodeURI(socket.handshake.headers.referer);
   uri.replace(
-    new RegExp("([^?=&]+)(=([^&]*))?", "g"),
-    function($0, $1, $2, $3) { queryString[$1] = $3 }
-  )
-  console.log('[newConnection] Service: ' + queryString['service'])     // ID: 2140
-  console.log('[newConnection] Page: ' + queryString['page']) // Name: undefined
-  
-  var p=parseInt("0x"+queryString['page'],16)
-  
-  // If there was no page supplied we default to 100.
-  if (queryString['page']===undefined)
-  {
-    p=0x100
-  }
-  var serviceString=queryString['service']
-    
-  connectionList[socket.id]=serviceString // Register that this user is linked to this service.
+    new RegExp('([^?=&]+)(=([^&]*))?', 'g'),
+    function ($0, $1, $2, $3) {
+      queryString[$1] = $3;
+    }
+  );
 
-  // var p=socket.handshake.headers.referer.slice(-3)
-  // If there is no page=nnn in the URL then default to 0x100
-  //console.log('[newConnection] typeof(p) '+typeof(p))
-  if (p>=0x100 && p<=0x8ff)
-  {
-		initialPage=p
-		// console.log('[newConnection] setpage '+initialPage.toString(16))
-		var data=
-		{
-			p: initialPage,
+  console.log('[newConnection] Service: ' + queryString['service']);     // ID: 2140
+  console.log('[newConnection] Page: ' + queryString['page']);    // Name: undefined
+
+  let p = parseInt('0x' + queryString['page'], 16);
+
+  // If there was no page supplied we default to 100.
+  if (queryString['page'] === undefined) {
+    p = CONST.PAGE_MIN;
+  }
+
+  const serviceString = queryString['service'];
+
+  connectionList[socket.id] = serviceString;     // Register that this user is linked to this service.
+
+  // If there is no page=nnn in the URL then default to CONST.PAGE_MIN
+  if ((p >= CONST.PAGE_MIN) && (p <= CONST.PAGE_MAX)) {
+    initialPage = p;
+
+    const data = {
+      p: initialPage,
       S: serviceString
-		}
-		io.sockets.emit('setpage',data)
+    };
+
+    io.sockets.emit('setpage', data);
+
+  } else {
+    initialPage = CONST.PAGE_MIN;
   }
-  else
-  {
-		initialPage=0x100
+
+  console.log('[NewConnection] ' + socket.id);
+
+  // check if request IP address is banned (in config.js)
+  const clientIp = socket.request.connection.remoteAddress;
+
+  if (CONFIG.BANNED_IP_ADDRESSES.includes(clientIp)) {
+    return;
   }
-  console.log(p)
-  console.log('[NewConnection] '+socket.id)
-  
-  var str=socket.id.toString()
-  
-  //console.log('['+str+']')
-  
-  var clientIp = socket.request.connection.remoteAddress
-  console.log(clientIp)
-  // Banned IP addresses. All of them Amazon AWS bots making annoying connections during debugging
-  if ((clientIp=="54.159.215.81") ||
-    (clientIp==='54.161.11.39') ||
-    (clientIp==='54.235.50.87')||
-    (clientIp==='54.162.45.98')||
-    (clientIp==='54.162.186.216')  
-    )  
-  {
-  // console.log("*["+clientIp+"]********************************************* blocked ip")
-    return
-  }
-  
-  // 107.20.85.165 AmazonAWS bad bot
-	
-	// Send the socket id back. If a message comes in with this socket we know where to send the setpage to.
-	socket.emit("id",socket.id)
-	
+
+  // Send the socket id back. If a message comes in with this socket we know where to send the setpage to.
+  socket.emit('id', socket.id);
+
   // Set up handlers for this socket
-  socket.on('keystroke', keyMessage)
-  function keyMessage(data)
-  {
+  socket.on('keystroke', keyMessage);
+
+  function keyMessage(data) {
     // socket.broadcast.emit('keystroke', data) // To all but sender
-    io.emit('keystroke', data) // To everyone
-    
-    console.log("Main::keyMessage"+data)  // @todo Comment this line out
+    io.emit('keystroke', data); // To everyone
+
+    console.log('Main::keyMessage' + data);  // @todo Comment this line out
+
     // Also send this keymessage to our pages
     // Or maybe to our services who can then switch the message as needed?
-    for (var i=0;i<services.length;i++)
-    {
-      services[i].keyMessage(data)
+    for (let i = 0; i < services.length; i++) {
+      services[i].keyMessage(data);
     }
     // Temporary hack. Use ] to trigger the writeback mechanism.
-    if (data.k==']' || false)
-    {
-      keystroke.saveEdits()
-    }
-    else
-    {
-      keystroke.addEvent(data)
+    if (data.k === ']') {
+      keystroke.saveEdits();
+    } else {
+      keystroke.addEvent(data);
     }
   }
-  
-  socket.on('load', doLoad)
-  socket.on('initialLoad',doInitialLoad)
-  socket.on('create',doCreate)
-  socket.on('clearPage',doClearPage)
-  
+
+  socket.on('load', doLoad);
+  socket.on('initialLoad', doInitialLoad);
+  socket.on('create', doCreate);
+  socket.on('clearPage', doClearPage);
+
   // When this connection closes we remove the connection id
   socket.on('disconnect', function () {
-        delete connectionList[socket.id]
-  })
-  
-} // NewConnection
+    delete connectionList[socket.id];
+  });
+}
 
 /** Clear the current page to blank
  */
@@ -186,49 +280,51 @@ function doCreate(data)
 function doInitialLoad(data)
 {
   console.log('[doInitialLoad]')
-	data.p=parseInt(initialPage)
-	doLoad(data)
+  data.p=parseInt(initialPage)
+  doLoad(data)
 }
 
-function doLoad(data)
-{
-  var filename
-  // if client request has data.x==SIGNAL_INITIAL_LOAD, we load the initial page. 
-  if (data.x==SIGNAL_INITIAL_LOAD)
-  {
-    data.p=initialPage
-    data.x=0
+function doLoad(data) {
+  // if client request has data.x==CONST.SIGNAL_INITIAL_LOAD, we load the initial page.
+  if (data.x === CONST.SIGNAL_INITIAL_LOAD) {
+    data.p = initialPage;
+    data.x = 0;
   }
-    
-  var serviceString=connectionList[data.id] 
-  
-  if (typeof(serviceString)==='undefined')
-  {
-    serviceString='onair'
+
+  let serviceString = connectionList[data.id];
+
+  if (typeof serviceString === 'undefined') {
+    serviceString = 'onair';
   }
-  filename='/var/www/'+serviceString+'/p'+data.p.toString(16)+'.tti'
+
+  const filename = path.join(
+    CONFIG.BASE_DIR,
+    serviceString,
+    'p' + data.p.toString(16) + '.tti'
+  );
+
   // !!! Here we want to check if the page is already in cache
-  var found=findService(serviceString)
-  if (found===false)
-  {
-    console.log("[doLoad] Adding service called "+serviceString+" buffered key count ="+keystroke.length)
-    services.push(new Service(serviceString))	// create the service
-    found=services.length-1 // The index of the service we just created
+  let found = findService(serviceString);
+
+  if (found === false) {
+    console.log('[doLoad] Adding service called ' + serviceString + ' buffered key count =' + keystroke.length);
+
+    services.push(new Service(serviceString));  // create the service
+    found = services.length - 1; // The index of the service we just created
   }
 
   // Now we have a service number. Does it contain our page?
-  var svc=services[found]
-  var page=svc.findPage(data.p)
-  console.log("[doLoad] Found Service:"+serviceString+" Page:"+page)
+  const svc = services[found];
+  const page = svc.findPage(data.p);
 
-  console.log('[doLoad] called '+filename+' data.x='+data.x+' id='+data.id)
-  //	console.log(data)
-  
+  console.log('[doLoad] Found Service:' + serviceString + ' Page:' + page);
+  console.log('[doLoad] called ' + filename + ' data.x=' + data.x + ' id=' + data.id);
+
 /////// SKIP THIS 410 STUFF. NOT USED ANY MORE
-/*  
+/*
   if (data.y==0 && data.p==0x410) // Special hack. Intercept P410. First time we will load weather
   {
-    data.x=SIGNAL_PAGE_NOT_FOUND
+    data.x = CONST.SIGNAL_PAGE_NOT_FOUND;
   }
   // The next time x=1 so we will load the page we just created.
   if (data.x<0)
@@ -243,172 +339,177 @@ function doLoad(data)
     }
   }
 */
-  //console.log("blank")
-  io.sockets.emit('blank',data) // Clear down the old data. // TODO This should emit only to socket.emit, not all units
-  var fail=false
-  var instream
-  instream = fs.createReadStream(filename,{encoding: "ascii"}) // Ascii strips bit 7 without messing up the rest of the text. latin1 does not work :-(
-  instream.on('error',function()
-    {       
-      var data2
-      console.log("[doLoad] ERROR! data.p="+data.p.toString(16))
-      // If this comes in as 404 it means that the 404 doesn't exist either. Set back to the default initial page
-      if (data.p==0x404)
-      {
-          console.log('[doLoad] 404 double error')
-          data.p=initialPage
-          data.S=undefined
-          data2=data // Hmm, do we need to do a deep copy here?
-          data2.x=0
-          connectionList[data.id]=undefined // Force this user back to the default service
-      }
-      else
-      {
-        data2=data // Could this do better with a deep copy?
-//            console.log('page that we failed to load='+data2.p)
-        data2.y=data2.p // Save the page number, we will ask the user if they want to create the page
-        data2.p=0x404 // This page must exist or we get into a deadly loop
-        data2.x=SIGNAL_PAGE_NOT_FOUND // Signal a 404 error
-        data2.S=connectionList[data.id] // How do we lose the service type? This hack shouldn't be needed
-        console.log('[doLoad] 404 single error. Service='+data2.S)
-      }
-      io.sockets.emit("setpage",data2)
-      doLoad(data2)       
-    }) // page load error
 
-    var rl = readline.createInterface({
+  io.sockets.emit('blank', data); // Clear down the old data. // TODO This should emit only to socket.emit, not all units
+
+
+  // don't crash the server if the page file does not exist!
+  if (!fs.existsSync(filename)) {
+    return false;
+  }
+
+  var instream;
+
+  instream = fs.createReadStream(filename, { encoding: 'ascii' }); // Ascii strips bit 7 without messing up the rest of the text. latin1 does not work :-(
+
+  instream.on('error', function () {
+    var data2;
+
+    console.log('[doLoad] ERROR! data.p=' + data.p.toString(16));
+
+    // If this comes in as 404 it means that the 404 doesn't exist either. Set back to the default initial page
+    if (data.p === CONST.PAGE_404) {
+      console.log('[doLoad] 404 double error');
+
+      data.p = initialPage;
+      data.S = undefined;
+      data2 = data; // Hmm, do we need to do a deep copy here?
+      data2.x = 0;
+      connectionList[data.id] = undefined; // Force this user back to the default service
+
+    } else {
+      data2 = data; // Could this do better with a deep copy?
+      data2.y = data2.p; // Save the page number, we will ask the user if they want to create the page
+      data2.p = CONST.PAGE_404; // This page must exist or we get into a deadly loop
+      data2.x = CONST.SIGNAL_PAGE_NOT_FOUND; // Signal a 404 error
+      data2.S = connectionList[data.id]; // How do we lose the service type? This hack shouldn't be needed
+
+      console.log('[doLoad] 404 single error. Service=' + JSON.stringify(data2));
+    }
+
+    io.sockets.emit('setpage', data2);
+
+    doLoad(data2);
+  });
+
+  var rl = readline.createInterface({
     input: instream,
     //    output: outstream,
     terminal: false
-    })
+  });
 
-    rl.on('line', function(line)
-    { 
-      if (line.indexOf('PN')==0)
-      {
-        // console.log('Need to implement carousels'+line)	
-        data.line=line.substring(6)
-        io.sockets.emit('subpage',data)
+  rl.on('line', function (line) {
+    if (line.indexOf('PN') === 0) {
+      // console.log('Need to implement carousels'+line)
+      data.line = line.substring(6);
+      io.sockets.emit('subpage', data);
+
+    } else if (line.indexOf('DE,') == 0) {   // Detect a description row
+      var desc = line.substring(3);
+      data.desc = desc;
+
+      // Hacky hack. Page 404 gets the failed page number in data.y
+      if (data.p === CONST.PAGE_404) {
+        data.desc += " Failed to load " + data.y.toString(16);
+        missingPage = data.y.toString(16);
       }
-      else
-      if (line.indexOf('DE,')==0) // Detect a description row
-      {
-        var desc=line.substring(3)
-        data.desc=desc
-        // Hacky hack. Page 404 gets the failed page number in data.y
-        if (data.p==0x404)
-        {
-          data.desc+=" Failed to load "+data.y.toString(16)
-          missingPage=data.y.toString(16)
+
+      io.sockets.emit('description', data);
+
+      console.log('Sending desc=' + data.desc);
+
+    } else if (line.indexOf('FL,') == 0) {    // Detect a Fastext link
+      var ch;
+      var ix = 3;
+      data.fastext = [];
+
+      for (var link = 0; link < 4; link++) {
+        var flink = '';
+        for (ch = line.charAt(ix++); ch != ',';) {
+          flink = flink + ch;
+          ch = line.charAt(ix++);
         }
-        io.sockets.emit('description',data)
-        console.log('Sending desc='+data.desc)		  
+
+        data.fastext[link] = flink;
       }
-      else		
-      if (line.indexOf('FL,')==0) // Detect a Fastext link
-      {
-        var ch
-        var ix=3
-        data.fastext=[]
-        for (var link=0;link<4;link++)
-        {
-          var flink=''
-          for (ch=line.charAt(ix++);ch!=',';)
-          {
-              flink=flink+ch
-              ch=line.charAt(ix++)				
-          }
-          // console.log('Link '+link+' = ' + flink)
-          data.fastext[link]=flink
-        }
-        // Hacky hack: 404 page signals the missing page in data.y
-        // We will offer to make the page from template eventually
-        if (data.p==0x404)
-        {
-          data.fastext[2]='1'+ missingPage.toString(16) // Flag that this page doesn't exist
-          console.log(data.fastext);            
-        }          
-        io.sockets.emit('fastext',data)	
-        return
+
+      // Hacky hack: 404 page signals the missing page in data.y
+      // We will offer to make the page from template eventually
+      if (data.p === CONST.PAGE_404) {
+        data.fastext[2] = '1' + missingPage.toString(16); // Flag that this page doesn't exist
+        console.log(data.fastext);
       }
-      else
-      if (line.indexOf('CT,')==0) // Counter timer
-      {
-        // Hack: Send the time in Fastext[0]
-        data.fastext=[]
-        data.fastext[0]=line[3]  // Need allow numbers greater than 9!
-        io.sockets.emit('timer',data)	
-        return
+
+      io.sockets.emit('fastext', data);
+
+      return;
+
+    } else if (line.indexOf('CT,') === 0) {     // Counter timer
+      // Hack: Send the time in Fastext[0]
+      data.fastext = [];
+      data.fastext[0] = line[3];  // Need allow numbers greater than 9!
+
+      io.sockets.emit('timer', data);
+
+      return;
+
+    } else if (line.indexOf('OL,') === 0) {    // Detect a teletext row
+      var p = 0;
+      var ix = 3;
+      var row = 0;
+      var ch = line.charAt(ix);
+      if (ch != ',') {
+        row = ch;
       }
-      else
-      if (line.indexOf('OL,')==0) // Detect a teletext row
-      {
-        var p=0
-        var ix=3
-        var row=0
-        var ch
-        ch=line.charAt(ix)
-        if (ch!=',')
-        {
-          row=ch
-        }
-        ix++
-        ch=line.charAt(ix)
-        if (ch!=',')
-        {
-          row=row+ch // haha. Strange maths
-          ix++
-        }
-        row=parseInt(row)
-        ix++ // Should be pointing to the first character now
-        // console.log('row='+row)
+
+      ix++;
+
+      ch = line.charAt(ix);
+      if (ch !== ',') {
+        row = row + ch; // haha. Strange maths
+        ix++;
       }
-      else
-      {
-        return // Not a row. Not interested
-      }
-      data.y=row
-      
-      // Here is a line at a time
-      var result=line.substring(ix) // snip out the row data
-      // Pad strings shorter than 40 characters
-      if (result.length<40)
-      {
-        result+="                                        " 
-        result=result.substring(0,40)
-      }
-      // @todo Different services need different permissions
-      if (data.S=='wtf' && row==22 && data.p==0x404) // Special hack for 404 page. Replace this field with the missing page number
-      {
-        var first=result.substring(0,32)
-        var second=result.substr(35)
-        result=first+missingPage.toString(16)+second
-      } // end of 404 hack
-      
-      //console.log ('Row(a)='+result)
-      result=DeEscapePrestel(result) // remove Prestel escapes
-      //console.log ('Row(b)='+result)
-      
-      data.k='?' // @todo Not sure what these values should be, if anything
-      data.x=-1 
-      // console.log ('Row='+result)
-      data.y= row // The row that we are sending out
-      data.rowText=result
-      //console.log(data.p.toString(16)+' '+data.y+' '+data.rowText)
-      io.sockets.emit('row',data)
-  }) // rl.on
-  
-  rl.on('close',
-    function()
-    {
-      console.log('[doLoad] end of file')
+
+      row = parseInt(row);
+      ix++; // Should be pointing to the first character now
+
+    } else {
+      return; // Not a row. Not interested
+    }
+
+    data.y = row;
+
+    // Here is a line at a time
+    var result = line.substring(ix); // snip out the row data
+
+    // Pad strings shorter than 40 characters
+    if (result.length < 40) {
+      result += "                                        ";
+      result = result.substring(0, 40);
+    }
+
+    // @todo Different services need different permissions
+    if (data.S === 'wtf' && row === 22 && data.p === CONST.PAGE_404) { // Special hack for 404 page. Replace this field with the missing page number
+      var first = result.substring(0, 32);
+      var second = result.substr(35);
+
+      result = first + missingPage.toString(16) + second;
+    } // end of 404 hack
+
+    //console.log ('Row(a)='+result)
+    result = DeEscapePrestel(result); // remove Prestel escapes
+    //console.log ('Row(b)='+result)
+
+    data.k = '?'; // @todo Not sure what these values should be, if anything
+    data.x = -1;
+    data.y = row; // The row that we are sending out
+    data.rowText = result;
+
+    io.sockets.emit('row', data);
+  });
+
+  rl.on(
+    'close',
+    function () {
+      console.log('[doLoad] end of file');
+
       // When the file has been read, we want to send any keystrokes that might have been added to this page
-      keystroke.replayEvents(io.sockets)
+      keystroke.replayEvents(io.sockets);
       // How are we going to send this?
     }
-  )
-} // doLoad
-  
+  );
+}
+
 /** Finds the service with the required name.
 * @return Index of service, or false
 */
@@ -431,10 +532,16 @@ function findService(name)
  */
 function createPage(data, callback)
 {
-  console.log('[createPage] Starts')
+  console.log('[createPage] Starts');
+
   // what is my page name? /var/www/<service>/p<page number>.tti
   // @todo Check for service being undefined
-  var filename='/var/www/'+data.S+'/p'+data.p.toString(16)+'.tti'
+  var filename = path.join(
+    CONFIG.BASE_DIR,
+    data.S,
+    'p' + data.p.toString(16) + '.tti'
+  );
+
   console.log('[createPage] filename='+filename)
   var template=""
   // open write file stream
@@ -461,7 +568,7 @@ function createPage(data, callback)
   wstream.write('OL,10,FSubsequent paragraphs should be cyan.  \n')
   wstream.write('OL,11,FThe last line is reserved for Fastext  \n')
   wstream.write('OL,12, To find out more about editing, press  \n')
-  wstream.write('OL,13, theFcyanGbutton.                       \n')  
+  wstream.write('OL,13, theFcyanGbutton.                       \n')
   wstream.write('OL,14,F                                       \n')
   wstream.write('OL,15,F                                       \n')
   wstream.write('OL,16,M  NOW PRESSHESCAPEIAND EDIT THIS   \n')

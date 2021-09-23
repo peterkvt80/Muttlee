@@ -1,15 +1,12 @@
 {
   "name": "muttlee",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Teletext live on the web",
   "main": "teletextserver.js",
   "repository": "https://github.com/peterkvt80/Muttlee",
   "scripts": {
-    "test": "npm run lint && npm run mocha",
     "start": "node teletextserver.js",
-    "monitor": "nodemon teletextserver.js",
-    "lint": "jshint --exclude-path=../.gitignore .",
-    "mocha": "mocha test/index.js -t 30000"
+    "monitor": "nodemon teletextserver.js"
   },
   "keywords": [
     "teletext",
@@ -21,6 +18,7 @@
   "dependencies": {
     "datastore": "^1.8.2",
     "express": "^4.17.1",
+    "nunjucks": "^3.2.3",
     "request": "^2.88.2",
     "socket.io": "^2.4.1"
   },
