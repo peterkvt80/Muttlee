@@ -44,17 +44,17 @@ TTXPAGE=function()
   this.showGrid=false
 
   // this.timer=7 // This is global. Replaced by a per page timer
-  
+
   // subPageList contains the rows. metadata contains other data like timing.
   // if subPageList is modified, then metadata must be done at the same time
   this.subPageList=[] // Subpage just contains rows.
   this.metadata=[]   // Metadata contains other things that a subpage needs, just the timer at the moment
-  
-  this.pageNumberEntry='100' // Page number as entered (used to allow partial page numbers) 
-    
+
+  this.pageNumberEntry='100' // Page number as entered (used to allow partial page numbers)
+
   this.revealMode=false
   this.holdMode=false
-  
+
   // timer
   this.setTimer=function(t)
   {
@@ -62,8 +62,8 @@ TTXPAGE=function()
     if (this.metadata[this.subPage] != undefined)
       this.metadata[this.subPage].timer=t
   }
-    
-  // edit mode 
+
+  // edit mode
   this.editSwitch=function(mode)
   {
     this.editMode=mode
@@ -77,17 +77,17 @@ TTXPAGE=function()
     //this.service=undefined // @todo Services
     this.addPage(number)
   }
-  
+
   this.toggleReveal=function ()
   {
     this.revealMode=!this.revealMode
   }
-  
+
   this.toggleHold=function ()
   {
     this.holdMode=!this.holdMode
   }
-  
+
   /** @brief Change the page number for this page and all child rows
    *  Clear the page. We should get a number of rows soon
    */
@@ -109,12 +109,12 @@ TTXPAGE=function()
       inputPage.elt.value = this.pageNumberEntry;
     }
   }
-  
+
   this.setService=function(S)
   {
     this.service=S
   }
-  
+
   this.getService=function()
   {
     let svc=String(this.service)
@@ -124,7 +124,7 @@ TTXPAGE=function()
     }
     return svc
   }
-  
+
   /** @brief Add a page to the sub page list
    */
   this.addPage=function(number)
@@ -136,23 +136,23 @@ TTXPAGE=function()
     {
       //this.rows.push(new row(number,i,"~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„~„"))
       this.rows.push(new row(number,i,"                                        "))
-    }  
+    }
     this.subPageList.push(this.rows)
     this.metadata.push(new MetaData(7))
   }
-  
+
   /**
-   * @param s Subpage number. All subsequent row/char updates go to this subpage.  
+   * @param s Subpage number. All subsequent row/char updates go to this subpage.
    */
   this.setSubPage=function(s)
   {
     s=parseInt(s)
     // console.log("[setSubPage] enters "+s)
-    if (s<0 || s>79) // 
+    if (s<0 || s>79) //
       s=0 // Single page
     else
       s=s-1 // Carousel (because carousels start at 1, but our array always starts at 0
-    
+
     ///@todo Check that s is in a subpage that exists and add it if needed.
     if (this.subPageList.length<=s)
     {
@@ -164,7 +164,7 @@ TTXPAGE=function()
 
   /** @brief Set row r to txt
    * Note that this is the page level setrow.
-   */   
+   */
   this.setRow=function(r,txt)
   {
     if (r>=0 && r<=24)
@@ -187,7 +187,7 @@ TTXPAGE=function()
       console.log('not setting row '+r+' to '+txt)
       */
   }
-   
+
   // Return the text of row r on the current subpage
   this.getRow=function(r)
   {
@@ -207,14 +207,14 @@ TTXPAGE=function()
     }
     else
     {
-      return "                                        "    
+      return "                                        "
     }
   }
-  
+
   // Helpers for navigating subpages
   this.nextSubpage=function()
   {
-    this.subPage=(this.subPage+1) % this.subPageList.length      
+    this.subPage=(this.subPage+1) % this.subPageList.length
   }
   this.prevSubpage=function()
   {
@@ -227,18 +227,18 @@ TTXPAGE=function()
       this.subPage=this.subPageList.length-1
     }
   }
-  
+
   this.addSubPage=function()
   {
     this.addPage(this.pageNumber)
     this.setSubPage(this.subPageList.length-1)
   }
-  
+
   this.removeSubPage=function()
   {
     console.log("Remove subpage not implemented. @todo")
   }
-  
+
   this.draw=function(changed)
   {
     let dblHeight
@@ -272,13 +272,13 @@ TTXPAGE=function()
       }
       //this.rows[row].draw(cpos) // Original version
       // Single pages tend to have subpage 0000. carousels start from 0001. So subtract 1 unless it is already 0.
-//      let v=this.subPageList[this.subPage>0?this.subPage-1:0] 
+//      let v=this.subPageList[this.subPage>0?this.subPage-1:0]
       if (this.subPage>=this.subPageList.length) // This shouldn't happen much but it does during start up
         this.subPage=this.subPageList.length-1
-        
+
       let v=this.subPageList[this.subPage]
       if (v==undefined)
-      {      
+      {
         console.log("Undefined :-(")
         // can we fix it?
         v=this.subPageList[0]
@@ -288,7 +288,7 @@ TTXPAGE=function()
         }
       }
       if (v!=undefined && v.length>0)
-      {      
+      {
         if (rw==0 && v.length>0) // Set the page number for the header only
         {
           v[0].setpagetext(this.pageNumberEntry)
@@ -296,13 +296,13 @@ TTXPAGE=function()
         let str=changed.rows[rw]
         if (v[rw].draw(cpos, this.revealMode, this.holdMode, this.editMode, this.subPage, str))
         {
-          rw++ // If double height, skip the next row 
+          rw++ // If double height, skip the next row
         }
-      }    
+      }
     }
     if (this.showGrid) this.grid()
   }
-  
+
   /** Draw a character grid overlay for edit quidance
    */
   this.grid=function()
@@ -317,7 +317,7 @@ TTXPAGE=function()
       line(0,gTtxH*y,gTtxW*40,gTtxH*y)
     }
   }
-  
+
   //  Draw ch at (x,y) on subpage s
   this.drawchar=function(ch,x,y,s)
   {
@@ -333,7 +333,7 @@ TTXPAGE=function()
       v[y].setchar(ch,x)
     }
   }
-  
+
   /** home
    * Move to the start of the line or the start of text
    */
@@ -341,7 +341,7 @@ TTXPAGE=function()
   {
     let col;
     let page=this.subPageList[this.subPage]
-    let row=page[this.cursor.y].txt 
+    let row=page[this.cursor.y].txt
     // Find the first printable character
     for (col=0;col<39;col++)
     {
@@ -349,13 +349,13 @@ TTXPAGE=function()
       {
         break;
       }
-    }    
+    }
     // Did we find a non blank?
     if (col<39) // Yes. We found the new position
     {
       if (this.cursor.x!=col)
-      {        
-        this.cursor.x=col    // If we aren't there already, then go there   
+      {
+        this.cursor.x=col    // If we aren't there already, then go there
       }
       else
       {
@@ -364,16 +364,16 @@ TTXPAGE=function()
     }
     else // No. Skip to the start of the line
     {
-      this.cursor.x=0      
-    }  
+      this.cursor.x=0
+    }
   }  // home
-  
+
   this.end=function()
   {
     let page=this.subPageList[this.subPage]
     let row=page[this.cursor.y].txt
     let x
-    // Find the last non blank character    
+    // Find the last non blank character
     for (x=39;x>0;x--)
     {
       if (row.charAt(x) != ' ')
@@ -406,7 +406,7 @@ TTXPAGE=function()
       this.cursor.x=39
     }
   }
-  
+
   // Insert a space at the current cursor location (TAB command)
   // WARNING: This is not handled by other clients. Will need some thinking how to do it properly
   // Maybe broadcast the entire row when we are done?
@@ -419,11 +419,11 @@ TTXPAGE=function()
       let y=this.cursor.y
       str=pg[y].txt
       str=str.substr(0,x) + ' ' + str.substr(x)
-      // might want to trim back to 40 chars?   
+      // might want to trim back to 40 chars?
       pg[y].setrow(str)
-    }    
+    }
   }
-  
+
   // Backspace. Delete current character, move remainder of line one character left
   // Pad with a space at the end. Also update the cursor position.
   // @todo Work out how this edit will get back to the server
@@ -436,11 +436,11 @@ TTXPAGE=function()
       let y=this.cursor.y
       this.cursor.left()
       str=pg[y].txt
-      str=str.substr(0,x-1) + str.substr(x,40-x) + ' ' 
+      str=str.substr(0,x-1) + str.substr(x,40-x) + ' '
       pg[y].setrow(str)
-    }    
+    }
   }
-  
+
   /**
    * @brief Clear all rows to blank spaces
    */
@@ -449,19 +449,19 @@ TTXPAGE=function()
     // console.log(" Clear all rows to blank")
     this.subPageList=[]
     this.metadata=[]
-    
+
     this.addPage(this.pageNumber)
-    
+
 //    for (let y=1;y<this.rows.length;y++)
       //this.rows[y].setrow('                                        ')
-    //this.rows[0].setrow('Pnn     CEEFAX 1 100 Sun 08 Jan 12:58/57') // @todo Add proper header control    
+    //this.rows[0].setrow('Pnn     CEEFAX 1 100 Sun 08 Jan 12:58/57') // @todo Add proper header control
   }
-  
+
   /**
    * \return true if the character at the location (data.x, data.y) is a graphics character
    * \param data : {p: page x: column y: row s: subpage S: service
    */
-  this.IsGraphics=function(data)  
+  this.IsGraphics=function(data)
   {
     if (data==undefined)
     {
@@ -477,11 +477,11 @@ TTXPAGE=function()
       console.log("[TTXPAGE::IsGraphics] subPage does not match. Need think about what to do")
       return false
     }
-    
+
     let myPage=this.subPageList[data.s]
     let row=myPage[data.y].txt
     // console.log("[TTXPAGE::IsGraphics]"+row)
-    
+
     let len=data.x
     if (len>40)
     {
@@ -504,14 +504,14 @@ TTXPAGE=function()
 
     return gfxMode
   }
-    
+
   /** \return the character at location given in data.x amd data.y */
   this.getChar=function(data)
   {
     if (data==undefined)
     {
       return 0
-    } 
+    }
     let subpage=data.s
     if (subpage!=this.subPage)
     {
@@ -519,12 +519,12 @@ TTXPAGE=function()
     }
     let myPage=this.subPageList[data.s]
     let row=myPage[data.y].txt
-    
-    let ch=row.charCodeAt(data.x) & 0x7f    
-    console.log("[getChar] row="+row+" ch="+ch)        
-    return ch        
-  }  
-  
+
+    let ch=row.charCodeAt(data.x) & 0x7f
+    console.log("[getChar] row="+row+" ch="+ch)
+    return ch
+  }
+
 } // page
 
 
@@ -553,7 +553,7 @@ function row(page,y,str)
   {
     this.txt=txt
   }
-  
+
   /** Expect a three digit page number, or partial page number */
   this.setpagetext=function(txt)
   {
@@ -561,7 +561,7 @@ function row(page,y,str)
   }
 
   /** @param cpos is the cursor column position to highlight
-   *  @param if revealMode is true overrides conceal 
+   *  @param if revealMode is true overrides conceal
    * @return True if there was a double height code in this row
    */
   this.draw=function(cpos, revealMode, holdMode, editMode, subPage, changed)
@@ -579,7 +579,7 @@ function row(page,y,str)
               txt=replace(txt,'HOLD    ',0)
           else
               txt=replace(txt,'P'+this.pagetext+'    ',0)
-          
+
           // Substitute mpp for the page number
           let ix=txt.indexOf('%%#')
           if (ix<0)
@@ -590,7 +590,7 @@ function row(page,y,str)
           {
             txt=replace(txt,this.page.toString(16),ix)
           }
-              
+
           // Substitute dd for the day 1..31 (or %d)
           ix=txt.indexOf('%d')
           if (ix<0)
@@ -602,7 +602,7 @@ function row(page,y,str)
             txt=replace(txt,nf(day(),2),ix)
           }
 
-              // Substitute DAY for the three letter abbreviated day 
+              // Substitute DAY for the three letter abbreviated day
           ix=txt.indexOf('%%a')
           if (ix<0)
           {
@@ -610,11 +610,11 @@ function row(page,y,str)
           }
           if (ix>0)
           {
-            let week = new Date().getDay() 
+            let week = new Date().getDay()
             let str="MonTueWedThuFriSatSun".substr((week-1)*3,3)
             txt=replace(txt,str,ix)
           }
-          // Substitute MTH for the three letter abbreviated month 
+          // Substitute MTH for the three letter abbreviated month
           ix=txt.indexOf('%%b')
           if (ix<0)
           {
@@ -627,31 +627,31 @@ function row(page,y,str)
           }
           // Substitute %m for two digit month
           ix=txt.indexOf('%m')
-	  if (ix>0)
-	  {
-	  	txt=replace(txt,nf(month(),2),ix)
-	  }
-	  // Substitute %y for two digit year
-	  ix=txt.indexOf('%y')
           if (ix>0)
           {
-		let y=nf(year()%100,2)
-		txt=replace(txt,y,ix)
+            txt=replace(txt,nf(month(),2),ix)
           }
-          // Substitute hh for the two digit hour 
+          // Substitute %y for two digit year
+          ix=txt.indexOf('%y')
+                if (ix>0)
+                {
+          let y=nf(year()%100,2)
+          txt=replace(txt,y,ix)
+          }
+          // Substitute hh for the two digit hour
           ix=txt.indexOf('%H')
           if (ix<0)
               ix=txt.indexOf('hh')
-          if (ix>0)		
+          if (ix>0)
               txt=replace(txt,nf(hour(),2),ix)
-              
+
           // Substitute nn for the two digit minutes
           ix=txt.indexOf('%M')
           if (ix<0)
               ix=txt.indexOf('nn')
           if (ix>0)
               txt=replace(txt,nf(minute(),2),ix)
-              
+
           // Substitute ss for the two digit seconds
           ix=txt.indexOf('%S')
           if (ix<0)
@@ -701,12 +701,12 @@ function row(page,y,str)
   let dblHeight=false
   textFont(ttxFont)
   textSize(gTtxFontSize)
-  
-  
+
+
   // If there is a double height anywhere on this row, the next row must be skipped.
   // Edge case: Any single height character in this row will copy the background (and only the background) to the row below.
-  let hasDblHeight=false 
-    
+  let hasDblHeight=false
+
   if (txt!="")
   for (let i=0;i<40;i++)
   {
@@ -714,11 +714,11 @@ function row(page,y,str)
   // if (i==0) console.log (ic+" ")
     if (ic==0x0d)
     {
-      hasDblHeight=true    
+      hasDblHeight=true
       break
     }
   }
-    
+
     for (let i=0;i<40;i++)
     {
       let ch=txt.charAt(i)
@@ -728,7 +728,7 @@ function row(page,y,str)
       switch (ic)
       {
       case  0 : ; // 0: black. Level 1 purists need not apply
-      case  1 : ; // 1:red 
+      case  1 : ; // 1:red
       case  2 : ; // 2:green
       case  3 : ; // 3:yellow
       case  4 : ; // 4:blue
@@ -747,11 +747,11 @@ function row(page,y,str)
         dblHeight=false
         textFont(ttxFont)
         textSize(gTtxFontSize)
-        break 
+        break
       case 13 : // 13:doubleheight SetAfter
         break
       case 16 : ;// 16: Farrimond gfxblack
-      case 17 : ; // 16:gfxred 
+      case 17 : ; // 16:gfxred
       case 18 : ; // 17:gfxgreen
       case 19 : ; // 18:gfxyellow
       case 20 : ; // 19:gfxblue
@@ -778,10 +778,10 @@ function row(page,y,str)
         {
           holdChar=ic
         }
-      
+
         printable=true
       } // case
-      
+
       // Mosaic hold is always printable
       if (!textmode && holdGfx)
         printable=true
@@ -799,10 +799,10 @@ function row(page,y,str)
         this.drawchar(String.fromCharCode(0xe6df),i,this.row+1,false) //edge case: a single height character on a double height row has double height background
       }
       this.drawchar(String.fromCharCode(0xe6df),i,this.row,dblHeight)
-      if (printable && (flashState || !flashMode) && !concealed) 
+      if (printable && (flashState || !flashMode) && !concealed)
       {
           fill(fgColor)          // Normal
-        if (textmode || (ch.charCodeAt()>=0x40 && ch.charCodeAt()<0x60))          
+        if (textmode || (ch.charCodeAt()>=0x40 && ch.charCodeAt()<0x60))
         {
           ch=this.mapchar(ch)
           if (changed[i]) {fill(200,100,0)} // Indicate unsaved change
@@ -810,7 +810,7 @@ function row(page,y,str)
         }
         else // mosaics
         {
-      
+
           //fill(fgColor)
           let ic2=ic
           if (holdGfx)
@@ -822,8 +822,8 @@ function row(page,y,str)
             let r=red(fgColor)
             let g=green(fgColor)
             let b=blue(fgColor)
-            fill(color(255-r,255-g,255-b))   
-            //fill ('magenta')            
+            fill(color(255-r,255-g,255-b))
+            //fill ('magenta')
           }
           if (contiguous)
           {
@@ -834,36 +834,36 @@ function row(page,y,str)
           {
             this.drawchar(String.fromCharCode(ic2+0x0e680),i,this.row,dblHeight)
           }
-        }        
+        }
       }
       // Set-After codes go here
       switch (ic)
       {
       case  0 : fgColor=color(0);textmode=true;break // 0: black. Only for level 1 rebels.
-      case  1 : fgColor=color(255,0,0);textmode=true;break // 1:red 
+      case  1 : fgColor=color(255,0,0);textmode=true;break // 1:red
       case  2 : fgColor=color(0,255,0);textmode=true;break // 2:green
       case  3 : fgColor=color(255,255,0);textmode=true;break // 3:yellow
       case  4 : fgColor=color(0,0,255);textmode=true;break // 4:blue
       case  5 : fgColor=color(255,0,255);textmode=true;break // 5:magenta
       case  6 : fgColor=color(0,255,255);textmode=true;break // 6:cyan
-      case  7 : fgColor=color(255,255,255);textmode=true;break // 7:white  
+      case  7 : fgColor=color(255,255,255);textmode=true;break // 7:white
       case 13 : // 13: double height
         dblHeight=true
         hasDblHeight=true
         textFont(ttxFontDH)
-        textSize(gTtxFontSize*2) 
-        break 
+        textSize(gTtxFontSize*2)
+        break
       case 16 : fgColor=color(0);textmode=false;break// 16: Farrimond gfxblack
-      case 17 : fgColor=color(255,0,0);textmode=false;break // 16:gfxred 
+      case 17 : fgColor=color(255,0,0);textmode=false;break // 16:gfxred
       case 18 : fgColor=color(0,255,0);textmode=false;break // 17:gfxgreen
       case 19 : fgColor=color(255,255,0);textmode=false;break // 18:gfxyellow
       case 20 : fgColor=color(0,0,255);textmode=false;break // 19:gfxblue
       case 21 : fgColor=color(255,0,255);textmode=false;break // 20:gfxmagenta
       case 22 : fgColor=color(0,255,255);textmode=false;break // 21:gfxcyan
-      case 23 : fgColor=color(255,255,255);textmode=false;break // 22:gfxwhite      
+      case 23 : fgColor=color(255,255,255);textmode=false;break // 22:gfxwhite
       case 24 : break// 24:conceal
       case 31 : holdGfx=false;break // 31 Release hold mode (set after)
-      
+
       }
     }
     if (this.row<1 || this.row>22) // Can't double height header or last row.
@@ -871,12 +871,12 @@ function row(page,y,str)
     else
       return hasDblHeight
   } // draw
-  
+
   this.drawchar=function(ch,x,y,dblH)
   {
     text(ch,x*gTtxW,(y+1+(dblH?1:0))*gTtxH)
   }
-  
+
   this.mapchar=function(ch)
   {
 // Temporary mappings for Germany
@@ -884,7 +884,7 @@ function row(page,y,str)
 switch(ch)
 {
   case '|':  return char(0x00f6) // 7/C o umlaut
-    case '}':  return char(0x00fc) // 7/D u umlaut  
+    case '}':  return char(0x00fc) // 7/D u umlaut
   }*/
     switch (ch)
     {
@@ -898,10 +898,10 @@ switch(ch)
     case '{':  return char(0xbc)   // 7/B Quarter
     case '|':  return char(0x2016) // 7/C Double pipe
     case '}':  return char(0xbe)   // 7/D Three quarters
-    case '~':  return char(0x00f7) // 7/E Divide 
+    case '~':  return char(0x00f7) // 7/E Divide
     case String.fromCharCode(0x7f):  return char(0xe65f) // 7/F Bullet (rectangle block)
     }
-  
+
     return ch
   }
 } // row
