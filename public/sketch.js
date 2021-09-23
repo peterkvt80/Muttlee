@@ -84,31 +84,31 @@ function mapKey(key)
 
 function startTimer()
 {
-	expiredState=false
-	// If there is a timeout active then clear it
-	if (timeoutVar==null) // A new keypad entry starts
-	{
-		digit1='0'
-		digit2='0'
-		digit3='0'
-	}
-	else
-	{
-		clearTimeout(timeoutVar) // Continue an existing keypad entry
-	}
-	timeoutVar=setTimeout(function() {
-		expiredState=true
-		// console.log("Expire actions get done here")
-		// todo: Restore the page number. Enable the refresh loop
-		let p=myPage.pageNumber
-		digit1=(String)((p >> 8) & 0xf)
-		digit2=(String)((p >> 4) & 0xf)
-		digit3=(String)(p & 0xf)
-		myPage.pageNumberEntry=digit1+digit2+digit3
-		// todo Put this into row 0
-		myPage.rows[0].setpagetext(digit1+digit2+digit3)
-		timeoutVar=null
-	} , 4000)
+  expiredState=false
+  // If there is a timeout active then clear it
+  if (timeoutVar==null) // A new keypad entry starts
+  {
+    digit1='0'
+    digit2='0'
+    digit3='0'
+  }
+  else
+  {
+    clearTimeout(timeoutVar) // Continue an existing keypad entry
+  }
+  timeoutVar=setTimeout(function() {
+    expiredState=true
+    // console.log("Expire actions get done here")
+    // todo: Restore the page number. Enable the refresh loop
+    let p=myPage.pageNumber
+    digit1=(String)((p >> 8) & 0xf)
+    digit2=(String)((p >> 4) & 0xf)
+    digit3=(String)(p & 0xf)
+    myPage.pageNumberEntry=digit1+digit2+digit3
+    // todo Put this into row 0
+    myPage.rows[0].setpagetext(digit1+digit2+digit3)
+    timeoutVar=null
+  } , 4000)
 }
 
 
@@ -173,21 +173,21 @@ function setup() {
   //hdr=new header(0,1,0,0)
 
   //indexButton=select('#index')
-	//indexButton.mousePressed(fastextIndex)
-		
-	
+  //indexButton.mousePressed(fastextIndex)
+
+
   btnkx=select('#khold')
-	btnkx.mousePressed(khold)
+  btnkx.mousePressed(khold)
   btnky=select('#krvl')
-	btnky.mousePressed(krvl)
+  btnky.mousePressed(krvl)
   btnkback=select('#kback')
-	btnkback.mousePressed(kback)
+  btnkback.mousePressed(kback)
   btnkfwd=select('#kfwd')
-	btnkfwd.mousePressed(kfwd)
+  btnkfwd.mousePressed(kfwd)
 
   inputPage = select('#pageNumber');
   frameRate(10);
-  
+
   let offset=CANVAS_WIDTH+(displayWidth-CANVAS_WIDTH)/2
 
 
@@ -231,33 +231,33 @@ function serviceChange()
 
 function setTimer(data)
 {
-  myPage.setTimer(data.fastext[0])  
+  myPage.setTimer(data.fastext[0])
 }
 
 function setSubPage(data)
 {
-	if (data.id!=gClientID && gClientID!=null) return;	// Not for us?
+  if (data.id!=gClientID && gClientID!=null) return;  // Not for us?
 
-	myPage.setSubPage(parseInt(data.line))
+  myPage.setSubPage(parseInt(data.line))
 }
 
 /** We MUST be sent the connection ID or we won't be able to display anything
  */
 function setID(id)
 {
-	console.log("Our connection ID is "+id)
-	gClientID=id
-	
+  console.log("Our connection ID is "+id)
+  gClientID=id
+
   // Now we can load the initial page 100
   let data=
   {
-	S: myPage.service, // The codename of the service. eg. d2k or undefined
-	p: 0x100, // Page mpp
-	s:0,	// subpage 0
-	x:SIGNAL_INITIAL_LOAD, // A secret flag to do an initial load
-	y: 0,
-	rowText: '',
-	id: gClientID
+  S: myPage.service, // The codename of the service. eg. d2k or undefined
+  p: 0x100, // Page mpp
+  s:0,  // subpage 0
+  x:SIGNAL_INITIAL_LOAD, // A secret flag to do an initial load
+  y: 0,
+  rowText: '',
+  id: gClientID
   }
   socket.emit('load',data)
 }
@@ -274,48 +274,48 @@ function setDescription(data) {
 
 function setPageNumber(data)
 {
-	if (data.id!=gClientID && gClientID!=null) return;	// Not for us?
+  if (data.id!=gClientID && gClientID!=null) return;  // Not for us?
     console.log('[setPageNumber]setting page to '+data.p.toString(16)+"Service="+data.S)
-	myPage.setPage(data.p)
-	myPage.setService(data.S)    
+  myPage.setPage(data.p)
+  myPage.setService(data.S)
 }
 
 // Handle the button UI
 function fastextR()
 {
-	fastext(1)
+  fastext(1)
 }
 function fastextG()
 {
-	fastext(2)
+  fastext(2)
 }
 function fastextY()
 {
-	fastext(3)
+  fastext(3)
 }
 function fastextC()
 {
-	fastext(4)
+  fastext(4)
 }
 
 function fastextIndex()
 {
-	fastext(6)
+  fastext(6)
 }
- 
+
 /**
  * Load the fastext link
  * @param index 0..3
  */
 function fastext(index)
 {
-	console.log('Fastext pressed: '+index)
+  console.log('Fastext pressed: '+index)
   let createPage=false // Special case. If yellow link is >0x0fff then create a page
-	switch (index)
-	{
-	case 1:page=myPage.redLink;break
-	case 2:page=myPage.greenLink;break
-	case 3:
+  switch (index)
+  {
+  case 1:page=myPage.redLink;break
+  case 2:page=myPage.greenLink;break
+  case 3:
     // Special hack for yellow:
     // If page is greater than 0x0fff then it is a request to create the page
     page=myPage.yellowLink
@@ -325,59 +325,59 @@ function fastext(index)
       createPage=true
     }
     break
-	case 4:page=myPage.cyanLink;break
-	case 6:page=myPage.indexLink;break
-	default:
-		page=myPage.redLink
-	}
-	console.log('Fastext pressed: '+index+" link to 0x"+page.toString(16)+" ("+page+")")
-	if (page>=0x100 && page<=0x8ff) // Page in range
-	{
-		myPage.setPage(page) // We now have a different page number
+  case 4:page=myPage.cyanLink;break
+  case 6:page=myPage.indexLink;break
+  default:
+    page=myPage.redLink
+  }
+  console.log('Fastext pressed: '+index+" link to 0x"+page.toString(16)+" ("+page+")")
+  if (page>=0x100 && page<=0x8ff) // Page in range
+  {
+    myPage.setPage(page) // We now have a different page number
     let data=
     {
       S: myPage.service,
       p: page, // Page mpp
-      s: 0,	// @ todo subpage	
+      s: 0,  // @ todo subpage
       x: 0,
       y: 0,
       rowText: '',
       id: gClientID
-    }	
+    }
     if (createPage) // Special case
     {
-      
-      socket.emit('create',data)	
+
+      socket.emit('create',data)
     }
     else
     {
-      socket.emit('load',data)	
+      socket.emit('load',data)
     }
-	}
+  }
 }
 
 function setFastext(data)
 {
   if (!matchpage(data)) return; // Data is not for our page?
-	if (data.id!=gClientID && gClientID!=null) return;	// Not for us?
-	
-	myPage.redLink=parseInt   ("0x"+data.fastext[0])
-	myPage.greenLink=parseInt ("0x"+data.fastext[1])
-	myPage.yellowLink=parseInt("0x"+data.fastext[2])
-	myPage.cyanLink=parseInt  ("0x"+data.fastext[3])
-	myPage.indexLink=parseInt ("0x"+data.fastext[5])
+  if (data.id!=gClientID && gClientID!=null) return;  // Not for us?
+
+  myPage.redLink=parseInt   ("0x"+data.fastext[0])
+  myPage.greenLink=parseInt ("0x"+data.fastext[1])
+  myPage.yellowLink=parseInt("0x"+data.fastext[2])
+  myPage.cyanLink=parseInt  ("0x"+data.fastext[3])
+  myPage.indexLink=parseInt ("0x"+data.fastext[5])
 }
 
 function draw()
 {
-	// No updating while we are pressing the mouse OR while typing in a page number
-	if (!forceUpdate)
-	{
-		if (blockStart!=null || !expiredState )
-			return
-	}
-	else
-		forceUpdate=false
+  // No updating while we are pressing the mouse OR while typing in a page number
+  if (!forceUpdate)
+  {
+    if (blockStart!=null || !expiredState )
+      return
+  }
+  else
+    forceUpdate=false
   // @todo We only need to update this during updates. No more than twice a second. Could save a lot of CPU
   background(0)
   noStroke()
@@ -389,12 +389,12 @@ function draw()
 // Does our page match the incoming message?
 function matchpage(data)
 {
-	//console.log ("Matching myPage.service, data.S "+myPage.service+' '+data.S)
-	if (myPage.service!=data.S) return false
-	//console.log ("Matching data.p, myPage.pageNumber"+data.p.toString(16)+' '+myPage.pageNumber.toString(16))
-	if (myPage.pageNumber!=data.p) return false
-	// if (myPage.subPage!=data.s) return false // This needs more thought now that we are implementing carousels
-	return true
+  //console.log ("Matching myPage.service, data.S "+myPage.service+' '+data.S)
+  if (myPage.service!=data.S) return false
+  //console.log ("Matching data.p, myPage.pageNumber"+data.p.toString(16)+' '+myPage.pageNumber.toString(16))
+  if (myPage.pageNumber!=data.p) return false
+  // if (myPage.subPage!=data.s) return false // This needs more thought now that we are implementing carousels
+  return true
 }
 
 /** newCharFromServer only differs from newChar in that it does not move the cursor
@@ -405,7 +405,7 @@ function newCharFromServer(data)
 }
 
 /** AlphaInGraphics
- *  \param key - Key to test 
+ *  \param key - Key to test
  * \return - true if it is a prinatable character when in graphics mode
  * Note that this is only valid for the England character set
  * When processKey translates keys, we probably don't need to alter this?
@@ -413,18 +413,18 @@ function newCharFromServer(data)
 function AlphaInGraphics(key)
 {
   return (key.charCodeAt()>=0x40 && key.charCodeAt()<0x60)
-// This code not needed now that we pre-map characters into teletext space  
+// This code not needed now that we pre-map characters into teletext space
 /*
-  if (key>='A' && key<='Z')    
+  if (key>='A' && key<='Z')
   {
     return true
-  }    
+  }
   if (key=='[') return true // left arrow
   if (key==']') return true // right arrow
   if (key=='@') return true
   if (key=='\\') return true // half
   if (key=='^') return true // up arrow
-  if (key=='_') return true // hash  
+  if (key=='_') return true // hash
   return false
   */
 }
@@ -466,14 +466,14 @@ function newChar(data, local=true) // 'keystroke'
     // Do the graphics, unless this an edit tf escape. Or an upper case letter.
     if (graphicsMode && editMode!=EDITMODE_INSERT && !alphaInGraphics) // Take the original pixel and xor our selected bit
     {
-      
+
       key=data.k.toUpperCase() // @todo. Do we need to consider subpages and services? Maybe just subpages.
       let bit=0
       advanceCursor=false
       switch (key)
       {
         // sixel modifying
-        case 'Q' : bit=0x01;break        
+        case 'Q' : bit=0x01;break
         case 'W' : bit=0x02;break
         case 'A' : bit=0x04;break
         case 'S' : bit=0x08;break
@@ -483,8 +483,8 @@ function newChar(data, local=true) // 'keystroke'
         case 'R' : bit=0x5f;break // reverse all bits
         case 'F' : bit=0xff;break // set all bits
         case 'C' : bit=0x00;break // clear all bits
-        
-        default: return key       
+
+        default: return key
       }
       if (bit==0)
       {
@@ -509,10 +509,10 @@ function newChar(data, local=true) // 'keystroke'
     advanceCursor=false
   }
   if (advanceCursor)
-  { 
+  {
     myPage.cursor.right()  // advance the cursor if it is the local user
   }
-  
+
   myPage.drawchar(key,data.x,data.y,data.s) // write the character
   //console.log(data)
   if (editMode==EDITMODE_INSERT)
@@ -527,7 +527,7 @@ function setRow(r) // 'row'
 {
   // console.log("Going to set row="+(r.rowNumber))
   if (!matchpage(r)) return;
-	if (r.id!=gClientID && gClientID!=null) return;	// Not for us?
+  if (r.id!=gClientID && gClientID!=null) return;  // Not for us?
   myPage.setRow(r.y,r.rowText)
 }
 
@@ -535,7 +535,7 @@ function setRow(r) // 'row'
 function setBlank(data) // 'blank'
 {
   if (!matchpage(data)) return;
-	if (data.id!=gClientID && gClientID!=null) return;	// Not for us?
+  if (data.id!=gClientID && gClientID!=null) return;  // Not for us?
   myPage.setBlank()
 }
 
@@ -707,7 +707,7 @@ function insertSpace()
   // Finally insert a space
   txt.k=' '
   txt.x=myPage.cursor.x,
-  socket.emit('keystroke', txt)  
+  socket.emit('keystroke', txt)
 }
 
 /** Delete the current character by shifting all characters to the right by 1
@@ -736,7 +736,7 @@ function backSpace()
   // Finally insert a space
   txt.k=' '
   txt.x=39,
-  socket.emit('keystroke', txt)  
+  socket.emit('keystroke', txt)
 }
 
 /** edit mode is entered if any non numeric code is typed
@@ -771,7 +771,7 @@ function keyTyped()
 }
 
 /**
- * 
+ *
 */
 function processKey(keyPressed)
 {
@@ -787,78 +787,78 @@ function processKey(keyPressed)
       editTF(key)
       return
   }
-	if (editMode!=EDITMODE_NORMAL) // Numbers are typed into the page
-	{
-		let data=
-		{
-			S: myPage.service, // service number
-			p: myPage.pageNumber,
-			s: myPage.subPage,
-			k: keyPressed,
-			x: myPage.cursor.x,
-			y: myPage.cursor.y,
-			id: gClientID
-		}
-		data.k=newChar(data)  // Return the key in case we are in mosaic twiddle mode. ie. don't return qwaszx.
-		socket.emit('keystroke', data)
-	}
-	else // Numbers are used for the page selection
-	{
-		if (keyPressed>='0' && keyPressed <='9')
-		{
-			if (inputPage && inputPage.elt) {
-				// Don't want the number input to steal keystrokes
-				inputPage.elt.blur();
-			}
+  if (editMode!=EDITMODE_NORMAL) // Numbers are typed into the page
+  {
+    let data=
+    {
+      S: myPage.service, // service number
+      p: myPage.pageNumber,
+      s: myPage.subPage,
+      k: keyPressed,
+      x: myPage.cursor.x,
+      y: myPage.cursor.y,
+      id: gClientID
+    }
+    data.k=newChar(data)  // Return the key in case we are in mosaic twiddle mode. ie. don't return qwaszx.
+    socket.emit('keystroke', data)
+  }
+  else // Numbers are used for the page selection
+  {
+    if (keyPressed>='0' && keyPressed <='9')
+    {
+      if (inputPage && inputPage.elt) {
+        // Don't want the number input to steal keystrokes
+        inputPage.elt.blur();
+      }
 
-			startTimer() // This also clears out the other digits (first time only)
-			forceUpdate=true
-			digit1=digit2
-			digit2=digit3
-			digit3=keyPressed
-			if (digit1!=' ')
-			{
-				//let page=Number(digit1+digit2+digit3)
-				let page=parseInt("0x"+digit1+digit2+digit3)
-				myPage.pageNumberEntry=digit1+digit2+digit3
-				if (page>=0x100)
-				{
-					// hdr.setPage(page)
-					// console.log('@todo: pass the page '+page)
-					console.log("Page number is 0x"+page.toString(16))
-					myPage.setPage(page) // We now have a different page number
-					let data=
-					{
-					S: myPage.service, // service
-					p: page, // Page mpp
-					s: myPage.subPage,	// @ todo check that subpage is correct
-					x: 0,
-					y: 0,
-					rowText: '',
-					id: gClientID
-					}
-					socket.emit('load',data)
-				}
-			}
-		}
-	}
+      startTimer() // This also clears out the other digits (first time only)
+      forceUpdate=true
+      digit1=digit2
+      digit2=digit3
+      digit3=keyPressed
+      if (digit1!=' ')
+      {
+        //let page=Number(digit1+digit2+digit3)
+        let page=parseInt("0x"+digit1+digit2+digit3)
+        myPage.pageNumberEntry=digit1+digit2+digit3
+        if (page>=0x100)
+        {
+          // hdr.setPage(page)
+          // console.log('@todo: pass the page '+page)
+          console.log("Page number is 0x"+page.toString(16))
+          myPage.setPage(page) // We now have a different page number
+          let data=
+          {
+          S: myPage.service, // service
+          p: page, // Page mpp
+          s: myPage.subPage,  // @ todo check that subpage is correct
+          x: 0,
+          y: 0,
+          rowText: '',
+          id: gClientID
+          }
+          socket.emit('load',data)
+        }
+      }
+    }
+  }
     // socket.emit('load')
 
     //console.log('keycode='+keyPressed)
 }
 
-function k0() {	processKey('0') }
-function k1() {	processKey('1') }
-function k2() {	processKey('2') }
-function k3() {	processKey('3') }
-function k4() {	processKey('4') }
-function k5() {	processKey('5') }
-function k6() {	processKey('6') }
-function k7() {	processKey('7') }
-function k8() {	processKey('8') }
-function k9() {	processKey('9') }
-// function kinfo() {	processKey('x') } // @todo
-function krvl() {	myPage.toggleReveal() }
+function k0() {  processKey('0') }
+function k1() {  processKey('1') }
+function k2() {  processKey('2') }
+function k3() {  processKey('3') }
+function k4() {  processKey('4') }
+function k5() {  processKey('5') }
+function k6() {  processKey('6') }
+function k7() {  processKey('7') }
+function k8() {  processKey('8') }
+function k9() {  processKey('9') }
+// function kinfo() {  processKey('x') } // @todo
+function krvl() {  myPage.toggleReveal() }
 function kback() {prevPage() }
 function kfwd()  {nextPage() }
 function khold()  {myPage.toggleHold() }
@@ -867,89 +867,89 @@ function khold()  {myPage.toggleHold() }
 */
 function touchStarted()
 {
-	if (touchY>CANVAS_HEIGHT)  // Only start block on a page
+  if (touchY>CANVAS_HEIGHT)  // Only start block on a page
   {
-		return
+    return
   }
   // console.log('Touch started at '+touchX+' '+touchY)
-	blockStart=createVector(touchX,touchY)
-	return false
+  blockStart=createVector(touchX,touchY)
+  return false
 }
 
 function touchEnded()
 {
   // console.log('Touch ended at '+touchX+' '+touchY);
-	let blockEnd=createVector(touchX,touchY)
-	blockEnd.sub(blockStart)
-	blockStart=null // Need this to be null in case we return!
+  let blockEnd=createVector(touchX,touchY)
+  blockEnd.sub(blockStart)
+  blockStart=null // Need this to be null in case we return!
 
-	if (touchY>CANVAS_HEIGHT) // Restrict to the actual page (need to check width too)
+  if (touchY>CANVAS_HEIGHT) // Restrict to the actual page (need to check width too)
   {
-		return
+    return
   }
-	// Block needs to be a minimum distance (& possibly velocity?
-	let mag=blockEnd.mag()
-	if (mag<40)
-		return;
-	let heading=blockEnd.heading()
-	// left
-	//console.log("block select ! Heading="+degrees(heading))
-		
-	let dir=4*heading/PI
-	// console.log("Block! dir="+dir)
-	return false	
+  // Block needs to be a minimum distance (& possibly velocity?
+  let mag=blockEnd.mag()
+  if (mag<40)
+    return;
+  let heading=blockEnd.heading()
+  // left
+  //console.log("block select ! Heading="+degrees(heading))
+
+  let dir=4*heading/PI
+  // console.log("Block! dir="+dir)
+  return false
 }
 
 function nextPage()
 {
-	let p=myPage.pageNumber
-	p++
-	if ((p & 0xf)==0xa) // Hex numbers should be skipped. Users should not select them.
+  let p=myPage.pageNumber
+  p++
+  if ((p & 0xf)==0xa) // Hex numbers should be skipped. Users should not select them.
     {
-		p+=6
+    p+=6
     }
     if (p>0x8fe)
     {
         p=0x8fe
     }
-	myPage.setPage(p) // We now have a different page number
-	let data=
-	{
-	S: myPage.service,
-	p: p, // Page mpp
-	s: 0,
-	y: 0,
-	rowText: '',
-	id: gClientID	
-	}				
-	socket.emit('load',data)
-	console.log("page="+hex(data.p))
+  myPage.setPage(p) // We now have a different page number
+  let data=
+  {
+  S: myPage.service,
+  p: p, // Page mpp
+  s: 0,
+  y: 0,
+  rowText: '',
+  id: gClientID
+  }
+  socket.emit('load',data)
+  console.log("page="+hex(data.p))
 }
 
 function prevPage()
 {
-	let p=myPage.pageNumber
-	p--
-	if ((p & 0xf)==0xf) // Hex numbers should be skipped. Users should not select them.
+  let p=myPage.pageNumber
+  p--
+  if ((p & 0xf)==0xf) // Hex numbers should be skipped. Users should not select them.
     {
-		p-=6
+    p-=6
     }
-	if (p<0x100)
+  if (p<0x100)
     {
         p=0x100
     }
-	myPage.setPage(p) // We now have a different page number
-	let data=
-	{
-	S: myPage.service,
-	p: p, // Page mpp
-	s: 0,
-	y: 0,
-	rowText: '',
-	id: gClientID	
-	}				
-	socket.emit('load',data)
-	console.log("page="+hex(data.p))
+  myPage.setPage(p) // We now have a different page number
+  let data=
+  {
+  S: myPage.service,
+  p: p, // Page mpp
+  s: 0,
+  y: 0,
+  rowText: '',
+  id: gClientID
+  }
+  socket.emit('load',data)
+  console.log("page="+hex(data.p))
 }
 
 /** Execute an editTF escape command
@@ -980,32 +980,32 @@ function editTF(key)
 
     case 'F' : chr='\x08';break // flash on (same as zxnet)
     case 'f' : chr='\x09';break // steady )same as zxnet)
-    
+
     // chr='\x0a';break // endbox
     // chr='\x0b';break // startbox
-    
+
     case 'd' : chr='\x0c';break // normal height (same as zxnet)
     case 'D' : chr='\x0d';break // double height (same as zxnet)
-    
+
     // 0x0e SO - SHIFT OUT
     // 0x0f SI - SHIFT IN
-    
-    case '*' :; // zxnet    
+
+    case '*' :; // zxnet
     case 'K' : chr='\x10';break // graphics black
-    case '!' :; // zxnet    
+    case '!' :; // zxnet
     case 'R' : chr='\x11';break // graphics red
-    case '"' :; // zxnet    
+    case '"' :; // zxnet
     case 'G' : chr='\x12';break // graphics green
     case '£' :; // zxnet
     case '#' :; // alternate character
     case 'Y' : chr='\x13';break // graphics yellow
-    case '$' :; // zxnet    
+    case '$' :; // zxnet
     case 'B' : chr='\x14';break // graphics blue
-    case '%' :; // zxnet    
+    case '%' :; // zxnet
     case 'M' : chr='\x15';break // graphics magenta
-    case '^' :; // zxnet    
+    case '^' :; // zxnet
     case 'C' : chr='\x16';break // graphics cyan
-    case '&' :; // zxnet    
+    case '&' :; // zxnet
     case 'W' : chr='\x17';break // graphics white
 
     case 'O' : chr='\x18';break // conceal
@@ -1017,9 +1017,9 @@ function editTF(key)
     case 'N' : chr='\x1d';break // 29: new background (same as zxnet)
     case 'H' : chr='\x1e';break // 30: Hold graphics mode (same as zxnet)
     case 'h' : chr='\x1f';break // 31 Release hold mode (same as zxnet)
-    
+
     case 'x' : myPage.showGrid=!myPage.showGrid;return // toggle grid display
-    case 'i' : // Insert row      
+    case 'i' : // Insert row
       editMode=EDITMODE_EDIT
       {
         let y=myPage.cursor.y
@@ -1040,7 +1040,7 @@ function editTF(key)
         sendRow(y,"                                        ")
       }
       return
-    case 'I' : // Delete row    
+    case 'I' : // Delete row
       editMode=EDITMODE_EDIT
       let y=myPage.cursor.y
       if (y<=0 || y>=24) // Can't delete header or fastext
@@ -1057,7 +1057,7 @@ function editTF(key)
       // Clear the current row
       myPage.setRow(23,"                                        ")
       sendRow(23,"                                        ")
-      
+
       return
     case 'J' : // block
         chr = '\x7f'
@@ -1074,11 +1074,11 @@ function editTF(key)
         x: myPage.cursor.x,
         y: myPage.cursor.y,
         id: gClientID
-      }      
+      }
       socket.emit('clearPage',data)
-      editMode=EDITMODE_EDIT    
+      editMode=EDITMODE_EDIT
       return
-      
+
 
     /*
     edit.tf functions not implemented
@@ -1093,13 +1093,13 @@ function editTF(key)
     'U' : // Duplicate row
     'Q' : // toggle control codes
     '-' : // Toggle conceal/reveal
-    
+
     editing with blocks
     Select blocks with <esc> arrow keys
     X: cut, C: paste, <shift< arrows: move sixels
     */
     default: // nothing matched?
-      editMode=EDITMODE_EDIT    
+      editMode=EDITMODE_EDIT
         return
     }
     // Construct object to define exactly where this key code will go
@@ -1112,7 +1112,7 @@ function editTF(key)
         y: myPage.cursor.y,
         k: chr
     }
-    socket.emit('keystroke', data)    
+    socket.emit('keystroke', data)
     newChar(data)
 }
 
