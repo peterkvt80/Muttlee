@@ -21,7 +21,14 @@
     <link rel="stylesheet" type="text/css" href="muttlee.css">
   </head>
 
-  <body>
+  <body{% if LOGO_SVG %} data-has-logo="true"{% endif %}>
+    {% if LOGO_SVG %}
+      <div id="logo">
+        {{ LOGO_SVG | safe }}
+      </div>
+    {% endif %}
+
+
     <div id="serviceSelect">
       <button class="controlsButton controlsButton--red" onclick="openTeefax();">
         <span>
@@ -115,9 +122,9 @@
 
     <div id="grabSelect">
       <button class="controlsButton controlsButton--white" onclick="exportPage();">
-          <span>
-            Grab...
-          </span>
+        <span>
+          Grab...
+        </span>
       </button>
 
       <ul id="grabSelectLinks" data-visible="false">

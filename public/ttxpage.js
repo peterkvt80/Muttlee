@@ -131,12 +131,12 @@ TTXPAGE=function()
 
     // As rows go from 0 to 31 and pages start at 100, we can use the same parameter for both
     this.rows.push(
-      new row(number, 0, "Pnn " + titleStr + " mpp DAY dd MTH   hh:nn.ss")
+      new row(number, 0, 'Pnn ' + titleStr + ' mpp DAY dd MTH   hh:nn.ss')
     );
 
     for (let i = 1; i < 26; i++) {
       this.rows.push(
-        new row(number, i, "".padStart(40))
+        new row(number, i, ''.padStart(40))
       );
     }
 

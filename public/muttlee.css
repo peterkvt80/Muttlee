@@ -327,6 +327,25 @@ button:hover {
 
 
 
+#logo {
+    position: absolute;
+    height: 51px;
+    width: 226px;
+    top: 0;
+    left: 0;
+}
+
+#logo svg {
+    width: 100%;
+}
+
+#logo svg path {
+    fill: #ffffff;
+}
+
+
+
+
 #serviceSelect button,
 #grabSelect button {
     width: 240px;
@@ -341,6 +360,10 @@ button:hover {
     top: 0;
     left: -14px;
     padding: 8px 0;
+}
+
+[data-has-logo="true"] #serviceSelect {
+    top: 96px;
 }
 
 #serviceSelect button {

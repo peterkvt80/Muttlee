@@ -5,6 +5,15 @@ const CONFIG = {
   [CONST.CONFIG.BASE_DIR]: '/var/www/',
 
   [CONST.CONFIG.LOGO_SVG_PATH]: '/var/www/private/muttlee_logo.svg',
+  [CONST.CONFIG.SHOW_CONSOLE_LOGO]: true,
+  [CONST.CONFIG.CONSOLE_LOGO_CHAR_ARRAY]: [
+    '████████████          ███     ███   ███              ',
+    '███ ██ ██ ██ ███ ██ ███████ ███████ ███ ██████ ██████',
+    '███ ██ ██ ██ ███ ██   ███     ███   ███ ███ ██ ███ ██',
+    '███ ██ ██ ██ ███ ██   ███     ███   ███ ██████ ██████',
+    '███ ██ ██ ██ ███ ██   ███     ███   ███ ███    ███   ',
+    '███ ██ ██ ██ ██████   █████   █████ ███ ██████ ██████',
+  ],
 
   [CONST.CONFIG.TITLE]: 'Teletext',
   [CONST.CONFIG.HEADER_TITLE]: 'Teefax',

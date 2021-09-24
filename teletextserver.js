@@ -16,12 +16,44 @@ const socket = require('socket.io');
 const CONST = require('./constants.js');
 const CONFIG = require('./config.js');
 
+// import package.json so we can get the current version
+const PACKAGE_JSON = require('./package.json');
+
 
 // import modules
 require('./weather.js');      // Should check if this is obsolete
 require('./service.js');
 require('./utils.js');        // Prestel and other string handling
 require('./keystroke.js');    // Editing data from clients
+
+
+// output logo in console?
+if (CONFIG[CONST.CONFIG.SHOW_CONSOLE_LOGO] === true) {
+  // determine logo char array length
+  const logoCharLength = CONFIG[CONST.CONFIG.CONSOLE_LOGO_CHAR_ARRAY].reduce(
+    (previousValue, currentValue) => {
+      return Math.max(
+        (typeof previousValue === 'string') ?
+          previousValue.length :
+          previousValue,
+        currentValue.length,
+      );
+    }
+  );
+
+  // output logo char array lines to console
+  console.log(''.padStart(logoCharLength));
+
+  for (let i in CONFIG[CONST.CONFIG.CONSOLE_LOGO_CHAR_ARRAY]) {
+    console.log(CONFIG[CONST.CONFIG.CONSOLE_LOGO_CHAR_ARRAY][i]);
+  }
+
+  // include current version under the logo
+  const versionString = 'v' + PACKAGE_JSON.version;
+  console.log(''.padStart(logoCharLength - versionString.length) + versionString);
+
+  console.log(''.padStart(logoCharLength));
+}
 
 
 // list of services
@@ -88,12 +120,18 @@ app.use(
 app.use(
   '*',
   function (req, res) {
+    let vars = {
+      TITLE: CONFIG.TITLE,
+    };
+
+    // read in logo SVG to pass into the template
+    try {
+      vars.LOGO_SVG = fs.readFileSync(CONFIG.LOGO_SVG_PATH);
+    } catch (e) { }
+
     res.render(
       'index.html',
-
-      {
-        TITLE: CONFIG.TITLE,
-      },
+      vars,
     );
   }
 );
