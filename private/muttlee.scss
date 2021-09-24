@@ -1,0 +1,440 @@
+$colour--black: #000000;
+$colour--white: #ffffff;
+$colour--red: #ff0000;
+$colour--green: #00ff00;
+$colour--blue: #0000ff;
+$colour--yellow: #ffff00;
+$colour--cyan: #00ffff;
+$colour--magenta: #ff00ff;
+
+$colour--grey: #cedce7;
+$colour--brown: #302010;
+$colour--beige: #bb5000;
+
+
+$colours--fg: (
+    'white': $colour--white,
+    'red': $colour--red,
+    'green': $colour--green,
+    'blue': $colour--blue,
+    'yellow': $colour--yellow,
+    'cyan': $colour--cyan,
+    'magenta': $colour--magenta
+);
+
+
+$font-family--teletext2: 'Teletext2', 'Arial', 'Helvetica', sans-serif;
+$font-family--teletext4: 'Teletext4', 'Arial', 'Helvetica', sans-serif;
+
+
+
+
+@font-face {
+    font-family: 'Teletext2';
+    src: url('/assets/teletext2.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'Teletext4';
+    src: url('/assets/teletext4.ttf') format('truetype');
+}
+
+
+html, body {
+    height: 100%;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    position: relative;
+    padding: 0;
+    margin: 0;
+    font-size: 200%;
+    color: $colour--white;
+    background-color: $colour--brown;
+    font-family: $font-family--teletext2;
+    overflow: hidden;
+}
+
+canvas {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0;
+}
+
+
+input {
+    padding: 0 8px;
+    font-size: 100%;
+    font-family: $font-family--teletext2;
+}
+
+
+button {
+    display: inline-block;
+    border: none;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    font-family: $font-family--teletext4;
+
+    &:focus,
+    &:hover {
+        outline: 0;
+    }
+}
+
+
+.button {
+    border-radius: 8px;
+    padding: 10px;
+    width: 130px;
+    height: 100px;
+    color: $colour--black;
+    font-weight: bold;
+    text-decoration: none;
+    font-size: 100%;
+}
+
+
+.button--keypad {
+    border: 1px solid darken($colour--grey, 10%);
+    background-color: lighten($colour--grey, 10%);
+    background-image: linear-gradient(to bottom, lighten($colour--grey, 10%), darken($colour--grey, 7%));
+    box-shadow: inset 0 -8px 0 0 darken($colour--grey, 20%), inset -2px 0 0 0 #8F8F8F, inset 3px 0 0 0 #B5B5B5, 0 6px 4px 0 #C7C7BB;
+
+    &:hover {
+        border: 1px solid darken($colour--grey, 15%);
+        background-color: lighten($colour--grey, 5%);
+        background-image: linear-gradient(to bottom, lighten($colour--grey, 5%), darken($colour--grey, 12%));
+    }
+}
+
+
+.button--red {
+    border: 1px solid darken($colour--red, 10%);
+    background-color: lighten($colour--red, 10%);
+    background-image: linear-gradient(to bottom, lighten($colour--red, 10%), darken($colour--red, 7%));
+    box-shadow: inset 0 -8px 0 0 darken($colour--red, 20%), inset -2px 0 0 0 #8F8F8F, inset 3px 0 0 0 #B5B5B5, 0 6px 4px 0 #C7C7BB;
+
+    &:hover {
+        border: 1px solid darken($colour--red, 15%);
+        background-color: lighten($colour--red, 5%);
+        background-image: linear-gradient(to bottom, lighten($colour--red, 5%), darken($colour--red, 12%));
+    }
+}
+
+.button--green {
+    border: 1px solid darken($colour--green, 10%);
+    background-color: lighten($colour--green, 10%);
+    background-image: linear-gradient(to bottom, lighten($colour--green, 10%), darken($colour--green, 7%));
+    box-shadow: inset 0 -8px 0 0 darken($colour--green, 20%), inset -2px 0 0 0 #8F8F8F, inset 3px 0 0 0 #B5B5B5, 0 6px 4px 0 #C7C7BB;
+
+    &:hover {
+        border: 1px solid darken($colour--green, 15%);
+        background-color: lighten($colour--green, 5%);
+        background-image: linear-gradient(to bottom, lighten($colour--green, 5%), darken($colour--green, 12%));
+    }
+}
+
+.button--yellow {
+    border: 1px solid darken($colour--yellow, 10%);
+    background-color: lighten($colour--yellow, 10%);
+    background-image: linear-gradient(to bottom, lighten($colour--yellow, 10%), darken($colour--yellow, 7%));
+    box-shadow: inset 0 -8px 0 0 darken($colour--yellow, 20%), inset -2px 0 0 0 #8F8F8F, inset 3px 0 0 0 #B5B5B5, 0 6px 4px 0 #C7C7BB;
+
+    &:hover {
+        border: 1px solid darken($colour--yellow, 15%);
+        background-color: lighten($colour--yellow, 5%);
+        background-image: linear-gradient(to bottom, lighten($colour--yellow, 5%), darken($colour--yellow, 12%));
+    }
+}
+
+.button--cyan {
+    border: 1px solid darken($colour--cyan, 10%);
+    background-color: lighten($colour--cyan, 10%);
+    background-image: linear-gradient(to bottom, lighten($colour--cyan, 10%), darken($colour--cyan, 7%));
+    box-shadow: inset 0 -8px 0 0 darken($colour--cyan, 20%), inset -2px 0 0 0 #8F8F8F, inset 3px 0 0 0 #B5B5B5, 0 6px 4px 0 #C7C7BB;
+
+    &:hover {
+        border: 1px solid darken($colour--cyan, 15%);
+        background-color: lighten($colour--cyan, 5%);
+        background-image: linear-gradient(to bottom, lighten($colour--cyan, 5%), darken($colour--cyan, 12%));
+    }
+}
+
+
+.input_number {
+    border: 4px solid transparent;
+    width: 140px;
+    height: 50px;
+    border-radius: 3px;
+
+    &:focus {
+        border-color: $colour--cyan;
+    }
+}
+
+.centre-div {
+    margin: auto;
+    position: absolute;
+    top: 0;
+    visibility: visible;
+}
+
+.grabButton {
+    margin: 0 auto;
+    width: 600px;
+    height: 550px;
+    position: absolute;
+    top: 0;
+}
+
+
+.controlsButton {
+    position: relative;
+    padding: initial;
+    width: auto;
+    height: auto;
+    border: none;
+    box-sizing: border-box;
+    font-size: 32px;
+    background: transparent;
+    text-shadow: -1px -1px 0 rgba(0, 0, 0, 0.3);
+    border-left: 8px solid $colour--white;
+    border-right: 8px solid $colour--white;
+
+    span {
+        display: block;
+        padding: 40px;
+        margin: -8px 0;
+        color: $colour--white;
+        border-top: 8px solid $colour--white;
+        border-bottom: 8px solid $colour--white;
+    }
+
+    &::before,
+    &::after,
+    span::before,
+    span::after {
+        content: '';
+        display: block;
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        background: $colour--white;
+    }
+
+    &::before {
+        top: -5px;
+        left: -5px;
+    }
+
+    &::after {
+        top: -5px;
+        right: -5px;
+    }
+
+    span::before {
+        bottom: -5px;
+        left: -5px;
+    }
+
+    span::after {
+        bottom: -5px;
+        right: -5px;
+    }
+}
+
+
+
+
+#logo {
+    position: absolute;
+    height: 51px;
+    width: 226px;
+    top: 0;
+    left: 0;
+
+    svg {
+        width: 100%;
+
+        path {
+            fill: $colour--white;
+        }
+    }
+}
+
+
+
+
+#serviceSelect,
+#grabSelect {
+    button {
+        width: 240px;
+        min-height: 100px;
+    }
+}
+
+
+#serviceSelect {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: 0;
+    left: -14px;
+    padding: 8px 0;
+
+    button {
+        margin: 20px 0;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+
+        &:first-child {
+            margin-top: 0;
+        }
+    }
+}
+
+[data-has-logo="true"] #serviceSelect {
+    top: 96px;
+}
+
+
+#grabSelect {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    position: absolute;
+    top: 0;
+    right: -14px;
+    padding: 8px 0;
+}
+
+
+#grabSelectLinks {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin: 22px 14px 0 0;
+    padding: 0;
+    list-style: none;
+    overflow: hidden;
+
+    transition: max-height 0.3s ease-in-out,
+        opacity 0.3s ease-in-out;
+
+    li {
+        margin: 0;
+        padding: 12px 0;
+
+        a {
+            display: inline-block;
+            padding: 7px 10px;
+            text-align: right;
+            background-color: $colour--beige;
+            color: $colour--white;
+        }
+    }
+
+    &[data-visible="false"] {
+        max-height: 0;
+        opacity: 0;
+    }
+
+    &[data-visible="true"] {
+        max-height: 100%;
+        opacity: 1;
+    }
+}
+
+
+
+
+#wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+
+
+
+#controls {
+    width: 100%;
+    margin-top: 40px;
+}
+
+
+#fastextControls {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+
+    button {
+        flex-basis: 100%;
+        margin: 0 10px;
+
+        &:first-child {
+            margin-left: 0;
+        }
+
+        &:last-child {
+            margin-right: 0;
+        }
+    }
+}
+
+
+#controlsRow {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    width: 100%;
+    margin: 40px 0;
+}
+
+
+#keypadControls {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+
+    button {
+        flex-basis: 100%;
+        margin: 0 10px;
+
+        &:first-child {
+            margin-left: 0;
+        }
+
+        &:last-child {
+            margin-right: 0;
+        }
+    }
+}
+
+
+
+
+#description {
+    width: 100%;
+    margin: 40px 0;
+    font-size: 100%;
+    text-align: left;
+    font-family: $font-family--teletext4;
+}
+
+
+
+
+/* media queries */
+@media only screen and (max-width: 1023px) {
+    #serviceSelect,
+    #grabSelect {
+        display: none;
+    }
+}

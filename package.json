@@ -1,13 +1,24 @@
 {
   "name": "muttlee",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "Teletext live on the web",
   "main": "teletextserver.js",
   "repository": "https://github.com/peterkvt80/Muttlee",
   "scripts": {
     "start": "node teletextserver.js",
-    "monitor": "nodemon teletextserver.js"
+    "monitor": "nodemon teletextserver.js",
+    "css:build": "npm run css:compile && npm run css:prefix && npm run css:minify",
+    "css:compile": "node-sass --output-style=expanded --source-map=false private/muttlee.scss -o public",
+    "css:compile-watch": "node-sass --output-style=expanded --source-map=false private/muttlee.scss -wo public",
+    "css:prefix": "postcss public/muttlee.css --use=autoprefixer --map=false --output=public/muttlee.css",
+    "css:minify": "cleancss --with-rebase --source-map --source-map-inline-sources --output public/muttlee.min.css public/muttlee.css",
+    "css:watch": "npm run css:compile && npm run css:compile-watch"
   },
+  "browserslist": [
+    "> 1%",
+    "last 4 versions",
+    "not dead"
+  ],
   "keywords": [
     "teletext",
     "muttlee",
@@ -23,10 +34,15 @@
     "request": "^2.88.2",
     "socket.io": "^2.4.1"
   },
+  "devDependencies": {
+    "autoprefixer": "latest",
+    "browserslist": "latest",
+    "node-sass": "latest",
+    "postcss": "latest",
+    "postcss-cli": "latest",
+    "clean-css-cli": "latest"
+  },
   "engines": {
     "node": ">=0.12.7"
-  },
-  "devDependencies": {
-    "child-process": "^1.0.2"
   }
 }
