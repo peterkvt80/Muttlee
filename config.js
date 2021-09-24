@@ -2,10 +2,12 @@ const CONST = require('./constants.js');
 
 
 const CONFIG = {
+  [CONST.CONFIG.BASE_DIR]: '/var/www/',
+
+  [CONST.CONFIG.LOGO_SVG_PATH]: '/var/www/private/muttlee_logo.svg',
+
   [CONST.CONFIG.TITLE]: 'Teletext',
   [CONST.CONFIG.HEADER_TITLE]: 'Teefax',
-
-  [CONST.CONFIG.BASE_DIR]: '/var/www/',
 
   // Banned IP addresses, all of them Amazon AWS bots making annoying connections during debugging
   [CONST.CONFIG.BANNED_IP_ADDRESSES]: [
