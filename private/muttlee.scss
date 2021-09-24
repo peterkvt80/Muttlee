@@ -72,6 +72,26 @@ input {
 }
 
 
+select {
+    padding: 6px 8px;
+    font-size: 100%;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: $font-family--teletext2;
+
+    &:focus,
+    &:hover {
+        outline: 0;
+    }
+}
+
+
+label {
+    font-family: $font-family--teletext2;
+}
+
+
 button {
     display: inline-block;
     border: none;
@@ -426,6 +446,21 @@ button {
     font-size: 100%;
     text-align: left;
     font-family: $font-family--teletext4;
+}
+
+
+
+
+#settings {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    box-sizing: border-box;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    padding: 10px 20px;
 }
 
 

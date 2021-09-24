@@ -1,3 +1,10 @@
+// current state values (initialize to defaults)
+let scale = CONFIG.DEFAULT_SCALE;
+
+// remember last state values
+let lastPixelDensity;
+
+
 // initialise edit mode
 let editMode = CONST.EDITMODE_NORMAL;
 
@@ -24,6 +31,7 @@ let gClientID = null; // Our unique connection id
 // DOM
 let inputPage;
 let indexButton;
+let scaleSelector;
 
 // timer for expiring incomplete keypad entries
 let expiredState = true; // True for four seconds after the last keypad number was typed OR until a valid page number is typed
@@ -32,6 +40,7 @@ let timeoutVar;
 
 // canvas
 let cnv;
+let canvasElement;
 
 // indicate changes that have not been processed by the server yet
 let changed;
@@ -124,6 +133,15 @@ function setup() {
     },
   );
 
+  // allow specific settings values to be set via querystring params
+  const searchParams = new URLSearchParams(window.location.search);
+
+  for (let [key, value] of searchParams) {
+    if (key === 'scale') {
+      scale = value;
+    }
+  }
+
   // create the p5 canvas, and move it into the #canvas DOM element
   cnv = createCanvas(CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
   cnv.parent('canvas');
@@ -183,6 +201,24 @@ function setup() {
   // set frame rate
   frameRate(10);
 
+
+  // set specific state values as a custom attribute on the body element (for CSS targeting)
+  document.body.setAttribute(CONST.ATTR_DATA_SCALE, scale.toString());
+
+  // set initial state values into their UI elements...
+  scaleSelector = document.querySelector('#scaleSelector');
+
+  if (scaleSelector) {
+    scaleSelector.value = scale;
+  }
+
+
+  // store a reference to the canvas element
+  canvasElement = document.getElementById('defaultCanvas0');
+
+  // set the initial canvas scale
+  updateScale();
+
   // indicate changes that have not been processed by the server yet
   changed = new CHARCHANGED();
 }
@@ -217,6 +253,19 @@ function serviceChange() {
     `Selected option=${item}`,
     LOG.LOG_LEVEL_VERBOSE,
   );
+}
+
+
+function scaleChange() {
+  if (scaleSelector) {
+    scale = scaleSelector.value;
+
+    // update custom attribute on body element
+    document.body.setAttribute(CONST.ATTR_DATA_SCALE, scale.toString());
+
+    // update canvas scale
+    updateScale();
+  }
 }
 
 
@@ -1282,8 +1331,28 @@ function sendRow(r, txt) {
 }
 
 
-function windowResized() {
+function updateScale() {
+  // get current viewport size
+  let windowWidth = window.innerWidth;
+  let windowHeight = window.innerHeight;
 
+  // if pixel density has changed, update canvas pixel density
+  let newPixelDensity = parseFloat(scale);
+ 
+  if (newPixelDensity !== lastPixelDensity) {
+    pixelDensity(
+      newPixelDensity
+    );
+
+    canvasElement.removeAttribute('style');
+
+    lastPixelDensity = newPixelDensity;
+  }
+}
+
+
+function windowResized() {
+  updateScale();
 }
 
 

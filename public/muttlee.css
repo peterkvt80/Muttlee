@@ -38,6 +38,23 @@ input {
   font-family: "Teletext2", "Arial", "Helvetica", sans-serif;
 }
 
+select {
+  padding: 6px 8px;
+  font-size: 100%;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: "Teletext2", "Arial", "Helvetica", sans-serif;
+}
+
+select:focus, select:hover {
+  outline: 0;
+}
+
+label {
+  font-family: "Teletext2", "Arial", "Helvetica", sans-serif;
+}
+
 button {
   display: inline-block;
   border: none;
@@ -360,6 +377,18 @@ button:focus, button:hover {
   font-size: 100%;
   text-align: left;
   font-family: "Teletext4", "Arial", "Helvetica", sans-serif;
+}
+
+#settings {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  box-sizing: border-box;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  padding: 10px 20px;
 }
 
 /* media queries */
