@@ -15,6 +15,10 @@
 
 require('./page.js');
 
+// import logger
+const LOG = require('./log.js');
+
+
 const page = new Page();
 
 KeyStroke = function () {
@@ -26,11 +30,14 @@ KeyStroke = function () {
   this.outfile = undefined;
 
   this.eventList = [];
-  this.debug = true;
 
   // Not sophisticated. Just set all the characters to space
   this.clearPage = function (data) {
-    console.log('[clearPage] Clearing page svc=' + data.S + ', page=' + data.p + ' ' + data.s)
+    LOG.fn(
+      ['keystroke', 'clearPage'],
+      `Clearing page data.S=${data.S}, data.p=${data.p}, data.s=${data.s}`,
+      LOG.LOG_LEVEL_INFO,
+    );
 
     data.k = ' ';
 
@@ -60,11 +67,18 @@ KeyStroke = function () {
     // then replace the key entry for that location
     // otherwise push the event
     var overwrite = false;
+
     for (var i = 0; i < this.eventList.length; i++) {
       if (this.sameChar(data, this.eventList[i])) {
-        this.eventList[i].k = data.k  // replace the key as this overwrites the original character
+        this.eventList[i].k = data.k;  // replace the key as this overwrites the original character
         overwrite = true;
-        console.log('Overwriting character');
+
+        LOG.fn(
+          ['keystroke', 'addEvent'],
+          `Overwriting character`,
+          LOG.LOG_LEVEL_VERBOSE,
+        );
+
         break;
       }
     }
@@ -73,19 +87,20 @@ KeyStroke = function () {
       this.eventList.push(data);
     }
 
-    if (this.debug) {
-      console.log('[keystroke::addEvent] queue length=' + this.eventList.length)
-    }
+    LOG.fn(
+      ['keystroke', 'addEvent'],
+      `queue length=${this.eventList.length}`,
+      LOG.LOG_LEVEL_INFO,
+    );
   };
 
   /**<return true if the character location is the same in both key events
    */
   this.sameChar = function (a, b) {
-    //console.log('a='+JSON.stringify(a))
-    //console.log('b='+JSON.stringify(b))
     if (a === undefined) return false;
     if (b === undefined) return false;
     if (a.x !== b.x) return false; // Column
+
     // Check each value for not matching
     if (a.p !== b.p) return false; // Page
     if (a.s !== b.s) return false; // Subpage
@@ -97,9 +112,11 @@ KeyStroke = function () {
 
   /** replayEvents to the specified client*/
   this.replayEvents = function (client) {
-    if (this.debug) {
-      console.log('[keystroke::replay]');
-    }
+    LOG.fn(
+      ['keystroke', 'replay'],
+      '',
+      LOG.LOG_LEVEL_VERBOSE,
+    );
 
     for (var i = 0; i < this.eventList.length; i++) {
       client.emit('keystroke', this.eventList[i]);
@@ -107,25 +124,39 @@ KeyStroke = function () {
   };
 
   this.matchPage = function (event) {
-    if (this.debug) {
-      console.log('[keystroke::matchPage]');
-    }
+    LOG.fn(
+      ['keystroke', 'matchPage'],
+      '',
+      LOG.LOG_LEVEL_VERBOSE,
+    );
 
     return event; // @todo
   };
 
   /*( Helper for saveEdits() */
   this.savePage = function () {
-    console.log('[keystroke::savePage] enters');
+    LOG.fn(
+      ['keystroke', 'savePage'],
+      'enter',
+      LOG.LOG_LEVEL_VERBOSE,
+    );
 
     //page.filename='/dev/shm/mypage.tti'
     page.savePage(
       'dummy',
       function () {
-        console.log('Write completed')
+        LOG.fn(
+          ['keystroke', 'savePage'],
+          'Write completed',
+          LOG.LOG_LEVEL_INFO,
+        );
       },
       function (err) {
-        console.log('Write failed' + err)
+        LOG.fn(
+          ['keystroke', 'savePage'],
+          `Write failed: ${err}`,
+          LOG.LOG_LEVEL_ERROR,
+        );
       }
     );
   };
@@ -134,9 +165,11 @@ KeyStroke = function () {
   this.saveEdits = function () {
     var tempFile = '/run/shm/work.tti'; // where the edited file gets written first
 
-    if (this.debug) {
-      console.log('[keystroke::saveEdit]');
-    }
+    LOG.fn(
+      ['keystroke', 'saveEdit'],
+      '',
+      LOG.LOG_LEVEL_INFO,
+    );
 
     // Are there any edits to save?
     if (this.eventList.length === 0) {
@@ -145,31 +178,30 @@ KeyStroke = function () {
 
     // Sort the event list by S(service name) p(page 100..8ff) s(subpage 0..99) y(row 0..24)
     this.eventList.sort(
-        function (a, b) {
-          // the main service is never defined, so set it to the proper 'onair'
-          if (a.S === undefined) a.S = 'onair';
-          if (b.S === undefined) a.S = 'onair';
-          // Service sort
-          if (a.S < b.S) return -1;
-          if (a.S > b.S) return 1;
-          // page sort
-          if (a.p < b.p) return -1;
-          if (a.p > b.p) return 1;
-          // subpage sort
-          if (a.s < b.s) return -1;
-          if (a.s > b.s) return 1;
-          // row sort
-          if (a.y < b.y) return -1;
-          if (a.y > b.y) return 1;
+      function (a, b) {
+        // the main service is never defined, so set it to the proper 'onair'
+        if (a.S === undefined) a.S = 'onair';
+        if (b.S === undefined) a.S = 'onair';
+        // Service sort
+        if (a.S < b.S) return -1;
+        if (a.S > b.S) return 1;
+        // page sort
+        if (a.p < b.p) return -1;
+        if (a.p > b.p) return 1;
+        // subpage sort
+        if (a.s < b.s) return -1;
+        if (a.s > b.s) return 1;
+        // row sort
+        if (a.y < b.y) return -1;
+        if (a.y > b.y) return 1;
 
-          return 0; // same
-        }
+        return 0; // same
+      }
     );
 
     // Now that we are sorted we can apply the edits
     // However, due to the async nature, we only do one file at a time
     if (this.eventList.length > 0) {
-      //console.log(this.event)
       var event = this.eventList[0];
 
       // Get the filename
@@ -182,13 +214,16 @@ KeyStroke = function () {
       var subPage = event.s;
       var filename = '/var/www/' + service + '/p' + pageNumber.toString(16) + '.tti'; // The filename of the original page
 
-      console.log('Filename=' + filename);
       const that = this;
 
       page.loadPage(
         filename,
         function () {
-          console.log('Loaded. Now edit...');
+          LOG.fn(
+            ['keystroke', 'saveEdits'],
+            'Loaded. Now edit...',
+            LOG.LOG_LEVEL_VERBOSE,
+          );
 
           // apply all the edits that refer to this page
           for (; ((that.eventList.length > 0) && (pageNumber === event.p) && (service === event.S)); event = that.eventList[0]) {
@@ -202,7 +237,11 @@ KeyStroke = function () {
           setTimeout(this.savePage, 500);
         },
         function (err) {
-          console.log(err);
+          LOG.fn(
+            ['keystroke', 'saveEdits'],
+            `Edit failed: ${err}`,
+            LOG.LOG_LEVEL_ERROR,
+          );
         }
       );
 
@@ -216,7 +255,11 @@ KeyStroke = function () {
       that.destFile,
       function (err) {
         if (err !== undefined) {
-          console.log('[copyback] Something meaningful here about a file copy error=' + err);
+          LOG.fn(
+            ['keystroke', 'copyback'],
+            `Failed: ${err}`,
+            LOG.LOG_LEVEL_ERROR,
+          );
         }
       }
     )
@@ -233,9 +276,9 @@ KeyStroke = function () {
         ' k:' + this.eventList[i].k +
         ' x:' + this.eventList[i].x +
         ' y:' + this.eventList[i].y
-      )
+      );
     }
-  }
+  };
 };
 
 
@@ -251,7 +294,11 @@ function setCharAt(str, index, chr) {
  * @param cb - Callback when completed, with an error message
  */
 function copyFile(source, target, cb) {
-  console.log('[copyFile] Copying ' + source + ' to ' + target);
+  LOG.fn(
+    ['keystroke', 'copyFile'],
+    `Copying ${source} to ${target}`,
+    LOG.LOG_LEVEL_INFO,
+  );
 
   var cbCalled = false;
 
@@ -266,12 +313,22 @@ function copyFile(source, target, cb) {
   });
 
   wr.on('end', function (ex) {
-    console.log('[copyfile] closing files...(end)');
+    LOG.fn(
+      ['keystroke', 'copyFile'],
+      `Closing files... (end)`,
+      LOG.LOG_LEVEL_INFO,
+    );
+
     done();
   });
 
   wr.on('close', function (ex) {
-    console.log('[copyfile] closing files...(close)');
+    LOG.fn(
+      ['keystroke', 'copyFile'],
+      `Closing files... (close)`,
+      LOG.LOG_LEVEL_INFO,
+    );
+
     done();
   });
 

@@ -16,6 +16,7 @@
   "author": "Peter Kwan",
   "license": "ISC",
   "dependencies": {
+    "colorette": "^2.0.8",
     "datastore": "^1.8.2",
     "express": "^4.17.1",
     "nunjucks": "^3.2.3",

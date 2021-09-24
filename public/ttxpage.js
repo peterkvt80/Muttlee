@@ -172,7 +172,11 @@ TTXPAGE = function() {
 
       let v = this.subPageList[this.subPage];
       if (v === undefined) {
-        console.log('oh noes. v is undefined');
+        LOG.fn(
+          ['ttxpage', 'setRow'],
+          `oh noes. v is undefined`,
+          LOG.LOG_LEVEL_ERROR,
+        );
       }
 
       v[r].setrow(txt);
@@ -188,7 +192,12 @@ TTXPAGE = function() {
 
       let v = this.subPageList[this.subPage];
       if (v === undefined) {
-        console.log('where is our subpage, dammit?');
+        LOG.fn(
+          ['ttxpage', 'setRow'],
+          `where is our subpage, dammit?`,
+          LOG.LOG_LEVEL_ERROR,
+        );
+
         return "                                       ";
       }
 
@@ -218,7 +227,12 @@ TTXPAGE = function() {
   };
 
   this.removeSubPage = function () {
-    console.log("Remove subpage not implemented. @todo");
+    // Remove subpage not implemented. @todo
+    LOG.fn(
+      ['ttxpage', 'removeSubPage'],
+      `Remove subpage not implemented.`,
+      LOG.LOG_LEVEL_INFO,
+    );
   };
 
   this.draw = function (changed) {
@@ -229,27 +243,28 @@ TTXPAGE = function() {
       return;
     }
 
-    let carouselReady = typeof this.subPage != 'undefined';
+    let carouselReady = (typeof this.subPage != 'undefined');
 
     if (carouselReady) {
-      carouselReady = typeof this.metadata[this.subPage] != 'undefined';
+      carouselReady = (typeof this.metadata[this.subPage] != 'undefined');
     }
 
-    if (!(this.holdMode || this.editMode !== CONST.EDITMODE_NORMAL) && carouselReady) // Only cycle if we are not in hold mode or edit
-    {
+    if (!(this.holdMode || this.editMode !== CONST.EDITMODE_NORMAL) && carouselReady) {     // Only cycle if we are not in hold mode or edit
       // carousel timing
-      if (tickCounter % ((1 + round(this.metadata[this.subPage].timer)) * 2) == 0) // Times 2 because the tick is 2Hz.
-      {
+      if (tickCounter % ((1 + round(this.metadata[this.subPage].timer)) * 2) == 0) {    // Times 2 because the tick is 2Hz.
         this.nextSubpage();
 
-        console.log("drawing subpage " + this.subPage);
+        LOG.fn(
+          ['ttxpage', 'draw'],
+          `Drawing subpage ${this.subPage}`,
+          LOG.LOG_LEVEL_VERBOSE,
+        );
 
         tickCounter = 1; // Prevent a cascade of page changes!
       }
     }
 
     for (let rw = 0; rw < this.rows.length; rw++) {
-      // console.log("drawing row "+rw+" of "+this.rows.length)
       let cpos = -1;
       if (this.editMode !== CONST.EDITMODE_NORMAL && rw === this.cursor.y) // If in edit mode and it is the correct row...
       {
@@ -266,7 +281,11 @@ TTXPAGE = function() {
       let v = this.subPageList[this.subPage];
 
       if (v === undefined) {
-        console.log("Undefined :-(");
+        LOG.fn(
+          ['ttxpage', 'draw'],
+          `v is undefined`,
+          LOG.LOG_LEVEL_INFO,
+        );
 
         // can we fix it?
         v = this.subPageList[0];
@@ -314,7 +333,11 @@ TTXPAGE = function() {
     let v = this.subPageList[s];
 
     if (v === undefined) {
-      console.log("Can not draw on a subpage that doesn't exist :-(");
+      LOG.fn(
+        ['ttxpage', 'drawchar'],
+        `Cannot draw on a subpage that doesn't exist :-(`,
+        LOG.LOG_LEVEL_INFO,
+      );
 
     } else {
       v[y].setchar(ch, x);
@@ -422,7 +445,6 @@ TTXPAGE = function() {
    * @brief Clear all rows to blank spaces
    */
   this.setBlank = function () {
-    // console.log(" Clear all rows to blank")
     this.subPageList = [];
     this.metadata = [];
 
@@ -447,14 +469,17 @@ TTXPAGE = function() {
       // Need to access the subpage data.s rather than the local
       // However things will get complicated.
       // Consider another client sending a keystroke.
-      console.log("[TTXPAGE::IsGraphics] subPage does not match. Need think about what to do");
+      LOG.fn(
+        ['ttxpage', 'IsGraphics'],
+        `subPage does not match. Need think about what to do`,
+        LOG.LOG_LEVEL_INFO,
+      );
 
       return false;
     }
 
     let myPage = this.subPageList[data.s];
     let row = myPage[data.y].txt;
-    // console.log("[TTXPAGE::IsGraphics]"+row)
 
     let len = data.x;
     if (len > 40) {
@@ -492,7 +517,11 @@ TTXPAGE = function() {
 
     let ch = row.charCodeAt(data.x) & 0x7f;
 
-    console.log("[getChar] row=" + row + " ch=" + ch);
+    LOG.fn(
+      ['ttxpage', 'getChar'],
+      `row=${row}, ch=${ch}`,
+      LOG.LOG_LEVEL_VERBOSE,
+    );
 
     return ch;
   };
@@ -502,6 +531,7 @@ TTXPAGE = function() {
 /** \return true if while in graphics mode it is a graphics character */
 function isMosaic(ch) {
   ch = ch.charCodeAt() & 0x7f;
+
   return (ch >= 0x20 && ch < 0x40) || ch >= 0x60;
 }
 

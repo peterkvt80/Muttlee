@@ -4,7 +4,11 @@
  *  @brief A service is a service name and a set of pages.
  */
 
+// @todo: should server-side code be importing frontend files?
 require('./public/ttxpage.js');
+
+// import logger
+const LOG = require('./log.js');
 
 
 /** Constructor
@@ -34,7 +38,11 @@ Service = function (serviceName) {
    *  @return false if the page does not exist
    */
   this.findPage = function (mpp) {
-    //console.log("[Service::findPage] looking for page "+mpp);
+    LOG.fn(
+      ['service', 'findPage'],
+      `Looking for page=${mpp}`,
+      LOG.LOG_LEVEL_VERBOSE,
+    );
 
     // Page out of range?
     if (mpp < 0x100 || mpp > 0x7ff) {
@@ -55,8 +63,17 @@ Service = function (serviceName) {
    *  If the message is for this service, send it to the pages
    */
   this.keyMessage = function (key) {
-    console.log("service::keyMessage: Got a keymessage. This=" + this.name + " data=" + key.s);
-    console.log("asasasasas " + JSON.stringify(key, null, 4));
+    LOG.fn(
+      ['service', 'keyMessage'],
+      `Got a keymessage, name=${this.name}, data=${key.s}`,
+      LOG.LOG_LEVEL_INFO,
+    );
+
+    LOG.fn(
+      ['service', 'keyMessage'],
+      `key data=${JSON.stringify(key, null, 4)}`,
+      LOG.LOG_LEVEL_VERBOSE,
+    );
   };
 
   /** Match the given name with the service name
@@ -64,5 +81,5 @@ Service = function (serviceName) {
    */
   this.matchName = function (name) {
     return this.name === name;
-  }
+  };
 };

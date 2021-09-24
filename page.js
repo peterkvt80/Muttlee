@@ -9,10 +9,11 @@ const readline = require('readline');
 
 require('./utils.js'); // Prestel and other string handling
 
+// import logger
+const LOG = require('./log.js');
+
 
 Page = function () {
-  console.log('[Page::Page] Created');
-
   // basic properties
   this.pageNumber = 0x100;
   this.subpageNumber = 0;
@@ -28,15 +29,24 @@ Page = function () {
     this.filename = filename;
     this.cb = callback;
     this.err = error;
+
     var that2 = this;
 
-    console.log('Loading filename=' + filename);
+    LOG.fn(
+      ['page', 'loadPage'],
+      `Loading filename=${filename}`,
+      LOG.LOG_LEVEL_INFO,
+    );
 
     that.ttiLines = [];  // Clear the tti array
 
     var instream = fs.createReadStream(filename, {encoding: 'ascii'}); // Ascii strips bit 7 without messing up the rest of the text. latin1 does not work :-(
     instream.on('error', function (err) {
-      console.log('[Page.loadPage] something went wrong' + err);
+      LOG.fn(
+        ['page', 'loadPage'],
+        `Error: ${err}`,
+        LOG.LOG_LEVEL_ERROR,
+      );
 
       that2.err(err);
     });
@@ -64,14 +74,18 @@ Page = function () {
     var rowIndex = 0;  // The index of the line OR where we want to splice
     var fastext = '8ff,8ff,8ff,8ff,8ff,8ff';
 
-    console.log('Page::keyMessage: Entered. row=' + key.y);
+    LOG.fn(
+      ['page', 'keyMessage'],
+      `Entered, row=${key.y}`,
+      LOG.LOG_LEVEL_VERBOSE,
+    );
 
     // Scan for the subpage of the key
     for (let i = 0; i < this.ttiLines.length; i++) {
       let line = this.ttiLines[i]; // get the next line
       let code = line.substring(0, 2); // get the two character command
       line = line.substring(3);       // get the tail from the line
-      // console.log('Command='+code)
+
       if (code === 'FL') // Fastext Link: Save the fastext link
       {
         fastext = line;
@@ -89,7 +103,11 @@ Page = function () {
       if (code === 'SC') {
         subcode++;  // Don't use the file numbering, just increment
 
-        console.log('Parser in subcode=' + subcode);
+        LOG.fn(
+          ['page', 'keyMessage'],
+          `Parser in subcode=${subcode}`,
+          LOG.LOG_LEVEL_VERBOSE,
+        );
       }
 
       if (code === 'OL') // Output Line
@@ -109,7 +127,11 @@ Page = function () {
 
         if (key.s === subcode) // if we are on the right page
         {
-          console.log('subcode matches. Decoded row=' + row + '<' + line + '>');
+          LOG.fn(
+            ['page', 'keyMessage'],
+            `Subcode matches, decoded row=${row}, line=${line}`,
+            LOG.LOG_LEVEL_VERBOSE,
+          );
 
           if (key.y >= row)  // Save the new index if it is ahead of here
           {
@@ -135,18 +157,26 @@ Page = function () {
       rowIndex = this.ttiLines.length - 1;
     }
 
-    console.log('Insert point=' + rowIndex);
+    LOG.fn(
+      ['page', 'keyMessage'],
+      `Insert point=${rowIndex}`,
+      LOG.LOG_LEVEL_VERBOSE,
+    );
 
     if (key.s > subcode)  // We didn't find the subcode? Lets add it
     {
       this.ttiLines.push('CT,8,T');
+
       var str = 'PN,' + pageNumber.toString(16);
       str += ('0' + key.s).slice(-2);
+
       this.ttiLines.push(str); // add the subcode
       this.ttiLines.push('SC,' + ('000' + key.s).slice(-4));  // add the four digit subcode
       this.ttiLines.push('PS,8000');
       this.ttiLines.push('RE,0');
+
       rowIndex = this.ttiLines.length - 1;
+
       this.ttiLines.push('FL,' + fastext);
     }
 
@@ -165,7 +195,12 @@ Page = function () {
 
   this.savePage = function (filename, cb, error) {
     // WARNING. We are saving to the stored filename!
-    console.log('Saving: ' + this.filename);
+
+    LOG.fn(
+      ['page', 'savePage'],
+      `Saving, filename=${this.filename}`,
+      LOG.LOG_LEVEL_INFO,
+    );
 
     this.callback = cb;
     // this.filename='/dev/shm/test.tti' // @todo Check the integrity
@@ -182,14 +217,18 @@ Page = function () {
       txt,
       function (err) {
         if (err) {
-          console.log('Oops writing file');
-          console.log(err);
+          LOG.fn(
+            ['page', 'savePage'],
+            `Error: ${err}`,
+            LOG.LOG_LEVEL_ERROR,
+          );
 
           error(err);
 
         } else {
           // this.callback() // Can't get this callback to work. Says NOT a function
         }
+
       }.bind(this)
     )
   }.bind(this);

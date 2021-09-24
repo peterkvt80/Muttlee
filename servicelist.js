@@ -13,7 +13,12 @@ var fs = require('fs');
 var readline = require('readline');
 
 require('./service.js'); // teletext service
+
+// @todo: should server-side code be importing frontend files?
 require('./public/page.js'); // Page to put in a service
+
+// import logger
+const LOG = require('./log.js');
 
 
 ServiceList = function (callback) {     // This callback is used to send a page
@@ -36,7 +41,11 @@ ServiceList = function (callback) {     // This callback is used to send a page
    * @return Index of service, or false;
    */
   const findService = function (services, name) {
-    console.log('[ServiceList::findService] seeking ' + name);
+    LOG.fn(
+      ['servicelist', 'findService'],
+      `seeking ${name}`,
+      LOG.LOG_LEVEL_VERBOSE,
+    );
 
     if (services.length === 0) {
       // No services
@@ -71,7 +80,11 @@ ServiceList = function (callback) {     // This callback is used to send a page
       this.services = [];
     }
 
-    console.log('[ServiceList::doLoad]doing a load, pageData=' + pageData + ' data=' + data);
+    LOG.fn(
+      ['servicelist', 'doLoad'],
+      `doing a load, pageData=${pageData}, data=${data}`,
+      LOG.LOG_LEVEL_VERBOSE,
+    );
 
     // Find the filename that we want to load
     if (data.x === 2000) {
@@ -81,14 +94,22 @@ ServiceList = function (callback) {     // This callback is used to send a page
 
     var filename = data.S + data.p + '.ttix';  // This is the actual filename that we want to load
 
-    console.log('[ServiceList::doLoad] filename=' + filename + ' Services.length=' + this.services.length);
+    LOG.fn(
+      ['servicelist', 'doLoad'],
+      `filename=${filename}, services.length=${this.services.length}`,
+      LOG.LOG_LEVEL_VERBOSE,
+    );
 
     // Which service object do we want to send it to?
 
     // Check if the page is already in cache
     var found = findService(this.services, data.S);
     if (found === false) {
-      console.log('[ServiceList::doLoad] Adding service called ' + data.S);
+      LOG.fn(
+        ['servicelist', 'doLoad'],
+        `Adding service, data.S=${data.S}`,
+        LOG.LOG_LEVEL_VERBOSE,
+      );
 
       this.services.push(new Service(data.S));  // create the service
       found = this.services.length - 1; // The index of the service we just created
@@ -98,11 +119,20 @@ ServiceList = function (callback) {     // This callback is used to send a page
     var svc = this.services[found];
     var page = svc.findPage(data.p);
 
-    console.log('[doload]setting page to ' + data.p);
+    LOG.fn(
+      ['servicelist', 'doLoad'],
+      `Setting page to ${data.p}`,
+      LOG.LOG_LEVEL_VERBOSE,
+    );
+
     targetPage.pageNumber = data.p;
 
     if (page === false) {
-      console.log('[servicelist::doLoad]Page not found ' + data.p);
+      LOG.fn(
+        ['servicelist', 'doLoad'],
+        `Page not found ${data.p}`,
+        LOG.LOG_LEVEL_VERBOSE,
+      );
 
       // What happens here? The page is loaded from disk into cache and added to the page list
       var fail = false;
@@ -120,7 +150,11 @@ ServiceList = function (callback) {     // This callback is used to send a page
       // Make a new page object
       targetPage = new TextPage(data);
 
-      console.log('[servicelist::doLoad] made a new page');
+      LOG.fn(
+        ['servicelist', 'doLoad'],
+        `Made a new page`,
+        LOG.LOG_LEVEL_VERBOSE,
+      );
 
       rl = readline.createInterface({
         input: instream,
@@ -133,8 +167,15 @@ ServiceList = function (callback) {     // This callback is used to send a page
       rl.on('line', function (line) {
         if (line.indexOf('DE,') == 0) {   // Detect a description row
           var desc = line.substring(3);
+
           //this.io.sockets.emit('description',desc); // Probably a huge mistake having this here !!!!!!! Move io back to top level/
-          console.log('[Read]Description' + desc);
+
+          LOG.fn(
+            ['servicelist', 'doLoad', 'line'],
+            `Description=${desc}`,
+            LOG.LOG_LEVEL_VERBOSE,
+          );
+
           targetPage.setDescription(desc);
 
         } else if (line.indexOf('FL,') === 0) { // Detect a Fastext link
@@ -152,11 +193,20 @@ ServiceList = function (callback) {     // This callback is used to send a page
 
             data.fastext[link] = flink;
 
-            console.log('Link ' + link + ' = ' + flink);
+            LOG.fn(
+              ['servicelist', 'doLoad', 'line'],
+              `Link ${link}=${flink}`,
+              LOG.LOG_LEVEL_VERBOSE,
+            );
           }
 
           //this.io.sockets.emit('fastext',data);
-          console.log('[Read]fastext' + data);
+
+          LOG.fn(
+            ['servicelist', 'doLoad', 'line'],
+            `fastext ${data}`,
+            LOG.LOG_LEVEL_VERBOSE,
+          );
 
           return;
 
@@ -164,12 +214,15 @@ ServiceList = function (callback) {     // This callback is used to send a page
           var p = 0;
           var ix = 3;
           var row = 0;
+
           var ch;
           ch = line.charAt(ix);
           if (ch != ',') {
             row = ch;
           }
+
           ix++;
+
           ch = line.charAt(ix);
           if (ch != ',') {
             row = row + ch; // haha. Strange maths
@@ -212,18 +265,17 @@ ServiceList = function (callback) {     // This callback is used to send a page
       }.bind(this));
 
       // Handler for the close event when this file is finished.
-      rl.on('close', () => {
-        //console.log('[readline::close]Javascript is weird');
-        //console.log('[readline::close]data= ');
-        //console.log(data);
-        //console.log('[readLine] about to send targetPage >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>');
-        //targetPage.dump();
+      rl.on('close', function () {
         callback(data, targetPage);
-        // console.log('[readLine] targetPage sent <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<');
-      }.bind(this).bind(targetPage);
+      }.bind(this).bind(targetPage));
 
     } else {
-      console.log('[doload]setting page to ' + data.p);
+      LOG.fn(
+        ['servicelist', 'doLoad'],
+        `Setting page to ${data.p}`,
+        LOG.LOG_LEVEL_VERBOSE,
+      );
+
       targetPage.pageNumber = data.p;
     }
   };
