@@ -102,7 +102,7 @@ let templateVars = {
 
 // read in logo SVG to pass into the template
 try {
-  templateVars.LOGO_SVG = fs.readFileSync(CONFIG.LOGO_SVG_PATH);
+  templateVars.LOGO_SVG = fs.readFileSync(CONFIG[CONST.CONFIG.LOGO_SVG_PATH]);
 } catch (e) { }
 
 
@@ -143,9 +143,19 @@ app.use(
 app.use(
   '*',
   function (req, res) {
+    let customTemplateVars = {
+      ...templateVars,
+    };
+
+    // read in zapper SVG's to pass into the template
+    try {
+      customTemplateVars.ZAPPER_STANDARD_SVG = fs.readFileSync(CONFIG[CONST.CONFIG.ZAPPER_STANDARD_SVG_PATH]);
+      customTemplateVars.ZAPPER_COMPACT_SVG = fs.readFileSync(CONFIG[CONST.CONFIG.ZAPPER_COMPACT_SVG_PATH]);
+    } catch (e) { }
+
     res.render(
       'index.html',
-      templateVars,
+      customTemplateVars,
     );
   }
 );
@@ -173,8 +183,8 @@ let serverHttps;
 if (CONFIG.TELETEXT_VIEWER_SERVE_HTTPS) {
   // read in key and cert files
   const options = {
-    key: fs.readFileSync(CONFIG.TELETEXT_VIEWER_SERVE_HTTPS_KEY_PATH),
-    cert: fs.readFileSync(CONFIG.TELETEXT_VIEWER_SERVE_HTTPS_CERT_PATH),
+    key: fs.readFileSync(CONFIG[CONST.CONFIG.TELETEXT_VIEWER_SERVE_HTTPS_KEY_PATH]),
+    cert: fs.readFileSync(CONFIG[CONST.CONFIG.TELETEXT_VIEWER_SERVE_HTTPS_CERT_PATH]),
   };
 
   serverHttps = https.createServer(options, app).listen(

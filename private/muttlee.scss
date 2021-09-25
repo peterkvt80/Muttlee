@@ -16,6 +16,7 @@ $colour--magenta: #ff00ff;
 $colour--grey: #777777;
 
 $colour--lightgrey: #cedce7;
+$colour--darkgrey: #333333;
 $colour--brown: #302010;
 $colour--beige: #bb5000;
 
@@ -68,6 +69,42 @@ $font-family--teletext4: 'Teletext4', 'Arial', 'Helvetica', sans-serif;
                 }
             }
         }
+
+        // add RGB phosphor glow effect behind settings labels for better visibility
+        .settingsRow {
+            &:nth-child(1) {
+                label {
+                    text-shadow: 0 0 4px $colour--black,
+                        0 0 8px $colour--black,
+                        0 0 16px $colour--black,
+                        0 0 24px $colour--red,
+                        0 0 32px $colour--red,
+                        0 0 48px $colour--red;
+                }
+            }
+
+            &:nth-child(2) {
+                label {
+                    text-shadow: 0 0 4px $colour--black,
+                        0 0 8px $colour--black,
+                        0 0 16px $colour--black,
+                        0 0 24px $colour--green,
+                        0 0 32px $colour--green,
+                        0 0 48px $colour--green;
+                }
+            }
+
+            &:nth-child(3) {
+                label {
+                    text-shadow: 0 0 4px $colour--black,
+                        0 0 8px $colour--black,
+                        0 0 16px $colour--black,
+                        0 0 24px $colour--blue,
+                        0 0 32px $colour--blue,
+                        0 0 48px $colour--blue;
+                }
+            }
+        }
     }
 
     // hide letters in logo
@@ -100,6 +137,7 @@ $font-family--teletext4: 'Teletext4', 'Arial', 'Helvetica', sans-serif;
 
 
 html, body {
+    width: 100%;
     height: 100%;
 }
 
@@ -158,6 +196,7 @@ button {
     padding: 0;
     cursor: pointer;
     font-family: $font-family--teletext4;
+    user-select: none;
 
     &:focus,
     &:hover {
@@ -507,22 +546,42 @@ button {
             &[data-visible="false"] {
                 max-height: 0;
                 opacity: 0;
+                pointer-events: none;
             }
 
             &[data-visible="true"] {
                 max-height: 100%;
                 opacity: 1;
+                pointer-events: all;
             }
         }
     }
+}
 
-    #settings {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        box-sizing: border-box;
-        width: 100%;
-        margin-bottom: #{$menu-button-spacing / 2};
+
+#settings {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-sizing: border-box;
+    width: 100%;
+    margin-bottom: #{$menu-button-spacing / 2};
+}
+
+.settingsRow {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin: 8px 0;
+
+    label {
+        margin-right: 16px;
+        font-family: $font-family--teletext4;
+    }
+
+    select {
+        width: $menu-button-width;
+        font-family: $font-family--teletext4;
     }
 }
 
@@ -607,20 +666,280 @@ button {
 
 
 
+#zapperWrapperStandard,
+#zapperWrapperCompact {
+    display: none;
+    font-size: 0;
+}
+
+#zapperWrapperCompact {
+    background: $colour--darkgrey;
+}
+
+.zapperButton {
+    cursor: pointer;
+}
+// controls modes
+[data-controls="zapper"] {
+    &[data-display="standard"],
+    &[data-display="fitscreen"] {
+        background: $colour--black;
+    }
+
+    #serviceSelect,
+    #grabSelect,
+    #controls {
+        display: none;
+    }
+
+    #wrapper {
+        flex-direction: row;
+        justify-content: space-between;
+
+        @media only screen and (max-width: 1023px) {
+            width: 100%;
+        }
+
+        @media only screen and (max-width: 1023px) and (orientation: portrait) {
+            flex-direction: column;
+        }
+
+        @media only screen and (max-width: 1023px) and (orientation: landscape) {
+            flex-direction: row;
+        }
+    }
+
+    #zapperWrapperStandard {
+        display: block;
+        margin-left: 80px;
+
+        svg {
+            width: auto;
+        }
+
+        @media only screen and (max-width: 1023px) and (orientation: portrait) {
+            display: none;
+        }
+
+        @media only screen and (max-width: 1023px) and (orientation: landscape) {
+            display: block;
+        }
+    }
+
+    #zapperWrapperCompact {
+        svg {
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            max-height: 244px;
+        }
+
+        // media queries
+        @media only screen and (max-width: 1023px) {
+            padding-top: 16px;
+            padding-bottom: 32px;
+        }
+
+        @media only screen and (max-width: 767px) and (orientation: portrait) {
+            padding-bottom: 66px;
+        }
+
+        @media only screen and (max-width: 1023px) and (orientation: portrait) {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            width: 100%;
+        }
+
+        @media only screen and (max-width: 1023px) and (orientation: landscape) {
+            display: none;
+        }
+    }
+
+    // scales
+    &[data-scale="1"] {
+        #zapperWrapperStandard {
+            margin-left: calc(40px * 1);
+
+            svg {
+                height: calc(550px * 1);
+            }
+        }
+    }
+
+    &[data-scale="1.5"] {
+        #zapperWrapperStandard {
+            margin-left: calc(40px * 1.5);
+
+            svg {
+                height: calc(550px * 1.5);
+            }
+        }
+    }
+
+    &[data-scale="2"] {
+        #zapperWrapperStandard {
+            margin-left: calc(40px * 2);
+
+            svg {
+                height: calc(550px * 2);
+            }
+        }
+    }
+
+    // display modes
+    &[data-display="fitscreen"],
+    &[data-display="fullscreen"] {
+        #zapperWrapperStandard {
+            margin-top: 40px;
+            margin-bottom: 40px;
+            margin-left: calc(40px * 2);
+            height: calc(100% - (40px * 2));
+
+            svg {
+                height: calc(100% - (40px * 2));
+            }
+
+            @media only screen and (max-width: 1279px) and (orientation: landscape) {
+                margin: 0 20px;
+            }
+        }
+    }
+}
+
+
+[data-controls="minimal"] {
+    &,
+    &[data-display="standard"],
+    &[data-display="fitscreen"] {
+        background: $colour--black;
+    }
+
+    #serviceSelect,
+    #grabSelect,
+    #controls {
+        display: none;
+    }
+
+    #wrapper {
+        flex-direction: row;
+
+        @media only screen and (max-width: 1023px) and (orientation: portrait) {
+            flex-direction: column;
+        }
+
+        @media only screen and (max-width: 1023px) and (orientation: landscape) {
+            flex-direction: row;
+        }
+    }
+}
+
+
+[data-controls="bigscreen"] {
+    &,
+    &[data-display="standard"],
+    &[data-display="fitscreen"] {
+        background: $colour--black;
+    }
+
+    #serviceSelect,
+    #controls,
+    #cast {
+        display: none;
+    }
+
+    #wrapper {
+        width: 100%;
+        flex-direction: row;
+    }
+
+    #qrWrapper {
+        width: 100%;
+    }
+}
+
+
+
+
+/* display modes */
+[data-display="standard"] {
+    background-color: $colour--brown;
+}
+
+[data-display="fitscreen"] {
+    background-color: $colour--brown;
+
+    .settingsRow--scale {
+        display: none;
+    }
+}
+
+[data-display="fullscreen"] {
+    background-color: $colour--black;
+
+    #wrapper {
+        justify-content: center;
+    }
+
+    #logo {
+        display: none;
+    }
+
+    #serviceSelect,
+    #grabSelect,
+    #controls,
+    .settingsRow--scale {
+        display: none;
+    }
+}
+
+
+
+
+// fade out UI elements in specific controls / display modes
+[data-controls="minimal"],
+[data-display="fitscreen"],
+[data-display="fullscreen"] {
+    #logo,
+    #menuButton {
+        opacity: 0.2;
+
+        transition: opacity 0.2s ease-in-out;
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+}
+
+[data-display="fullscreen"] {
+    #menuButton {
+        opacity: 0;
+    }
+}
+
+
+
+
 // modify logo and menu if they will cover the page canvas whilst open
-@media only screen and (max-width: 1224px) {
+[data-display="fitscreen"],
+[data-display="fullscreen"] {
+    @include menu-obscures-canvas;
+}
+
+@media only screen and (max-width: 1384px) {
     [data-scale="1"] {
         @include menu-obscures-canvas;
     }
 }
 
-@media only screen and (max-width: 1540px) {
+@media only screen and (max-width: 1700px) {
     [data-scale="1.5"] {
         @include menu-obscures-canvas;
     }
 }
 
-@media only screen and (max-width: 1848px) {
+@media only screen and (max-width: 2000px) {
     [data-scale="2"] {
         @include menu-obscures-canvas;
     }

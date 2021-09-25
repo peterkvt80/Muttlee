@@ -53,13 +53,42 @@
 
       <div id="menuContent">
         <div id="settings">
-          <div id="settingsScale">
+          <div class="settingsRow settingsRow--controls">
+            <label for="controlsSelector">
+              Controls
+            </label>
+            <select
+              id="controlsSelector"
+              onchange="controlsChange()"
+            >
+              <option value="standard">Standard</option>
+              <option value="zapper">Zapper</option>
+              <option value="minimal">Minimal</option>
+              <option value="bigscreen">Big Screen</option>
+            </select>
+          </div>
+
+          <div class="settingsRow settingsRow--display">
+            <label for="displaySelector">
+              Display
+            </label>
+            <select
+              id="displaySelector"
+              onchange="displayChange()"
+            >
+              <option value="standard">Standard</option>
+              <option value="fitscreen">Fit screen</option>
+              <option value="fullscreen">Fullscreen</option>
+            </select>
+          </div>
+
+          <div class="settingsRow settingsRow--scale">
             <label for="scaleSelector">
               Scale
             </label>
             <select
-                id="scaleSelector"
-                onchange="scaleChange()"
+              id="scaleSelector"
+              onchange="scaleChange()"
             >
               <option value="1">1x</option>
               <option value="1.5">1.5x</option>
@@ -180,6 +209,19 @@
 
         <!--<button class="button button--keypad" style="width:140px; height:100px;"  id="kinfo">Info</button> -->
       </div>
+
+
+      {% if ZAPPER_STANDARD_SVG %}
+        <div id="zapperWrapperStandard">
+          {{ ZAPPER_STANDARD_SVG | safe }}
+        </div>
+      {% endif %}
+
+      {% if ZAPPER_COMPACT_SVG %}
+        <div id="zapperWrapperCompact">
+          {{ ZAPPER_COMPACT_SVG | safe }}
+        </div>
+      {% endif %}
     </div>
 
 
