@@ -147,7 +147,7 @@ app.use(
       ...templateVars,
     };
 
-    // read in logo SVG to pass into the template
+    // read in zapper SVG's to pass into the template
     try {
       customTemplateVars.ZAPPER_STANDARD_SVG = fs.readFileSync(CONFIG[CONST.CONFIG.ZAPPER_STANDARD_SVG_PATH]);
       customTemplateVars.ZAPPER_COMPACT_SVG = fs.readFileSync(CONFIG[CONST.CONFIG.ZAPPER_COMPACT_SVG_PATH]);
