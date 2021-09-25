@@ -13,7 +13,9 @@ $colour--yellow: #ffff00;
 $colour--cyan: #00ffff;
 $colour--magenta: #ff00ff;
 
-$colour--grey: #cedce7;
+$colour--grey: #777777;
+
+$colour--lightgrey: #cedce7;
 $colour--brown: #302010;
 $colour--beige: #bb5000;
 
@@ -30,6 +32,58 @@ $colours--fg: (
 // font families
 $font-family--teletext2: 'Teletext2', 'Arial', 'Helvetica', sans-serif;
 $font-family--teletext4: 'Teletext4', 'Arial', 'Helvetica', sans-serif;
+
+
+// mixins
+@mixin menu-obscures-canvas {
+    #menu {
+        // add pixelated blur backdrop to menu
+        &::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            margin-right: -64px;
+            z-index: -1;
+
+            backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
+            transition: margin-right 0.5s ease-in-out;
+
+            @at-root {
+                [data-menu-open="true"] #menu::before {
+                    margin-right: 0;
+                }
+            }
+        }
+
+        // add additional blurred background to menu buttons
+        #serviceSelect,
+        #grabSelect {
+            button {
+                backdrop-filter: blur(6px) brightness(50%);
+
+                &:hover,
+                &:focus {
+                    backdrop-filter: blur(10px) brightness(25%);
+                }
+            }
+        }
+    }
+
+    // hide letters in logo
+    #logo {
+        svg {
+            .c2,
+            .c3,
+            .c4,
+            .c5,
+            .c6,
+            .c7 {
+                opacity: 0;
+            }
+        }
+    }
+}
 
 
 
@@ -125,15 +179,15 @@ button {
 
 
 .button--keypad {
-    border: 1px solid darken($colour--grey, 10%);
-    background-color: lighten($colour--grey, 10%);
-    background-image: linear-gradient(to bottom, lighten($colour--grey, 10%), darken($colour--grey, 7%));
-    box-shadow: inset 0 -8px 0 0 darken($colour--grey, 20%), inset -2px 0 0 0 #8F8F8F, inset 3px 0 0 0 #B5B5B5, 0 6px 4px 0 #C7C7BB;
+    border: 1px solid darken($colour--lightgrey, 10%);
+    background-color: lighten($colour--lightgrey, 10%);
+    background-image: linear-gradient(to bottom, lighten($colour--lightgrey, 10%), darken($colour--lightgrey, 7%));
+    box-shadow: inset 0 -8px 0 0 darken($colour--lightgrey, 20%), inset -2px 0 0 0 #8F8F8F, inset 3px 0 0 0 #B5B5B5, 0 6px 4px 0 #C7C7BB;
 
     &:hover {
-        border: 1px solid darken($colour--grey, 15%);
-        background-color: lighten($colour--grey, 5%);
-        background-image: linear-gradient(to bottom, lighten($colour--grey, 5%), darken($colour--grey, 12%));
+        border: 1px solid darken($colour--lightgrey, 15%);
+        background-color: lighten($colour--lightgrey, 5%);
+        background-image: linear-gradient(to bottom, lighten($colour--lightgrey, 5%), darken($colour--lightgrey, 12%));
     }
 }
 
@@ -299,9 +353,11 @@ button {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    position: absolute;
+    position: fixed;
     top: 0;
     right: 0;
+    bottom: 0;
+    z-index: 1000;
 
     #menuButton {
         width: 64px;
@@ -316,9 +372,9 @@ button {
         flex-direction: column;
         align-items: flex-end;
         margin-right: -500px;
-        padding: $menu-padding $menu-padding 0 0;
+        padding: $menu-padding $menu-padding $menu-padding #{$menu-padding * 2};
 
-        transition: margin-right 0.3s ease-in-out;
+        transition: margin-right 0.5s ease-in-out;
 
         @at-root {
             [data-menu-open="true"] & {
@@ -394,10 +450,6 @@ button {
     }
 
     #serviceSelect {
-        //position: absolute;
-        //top: 0;
-        //right: -14px;
-
         button {
             margin: #{$menu-button-spacing / 2} 0;
             border-top-right-radius: 0;
@@ -416,9 +468,6 @@ button {
     #grabSelect {
         align-items: flex-end;
         position: relative;
-        //position: absolute;
-        //top: 0;
-        //right: -14px;
 
         #grabSelectLinks {
             display: flex;
@@ -427,11 +476,9 @@ button {
             position: absolute;
             top: 0;
             right: #{$menu-button-width + ($menu-button-spacing / 2)};
-            //margin: 22px 14px 0 0;
             margin: 0;
             padding: 0;
             list-style: none;
-            //overflow: hidden;
 
             transition: max-height 0.3s ease-in-out,
                 opacity 0.3s ease-in-out;
@@ -474,11 +521,8 @@ button {
         flex-direction: row;
         justify-content: space-between;
         box-sizing: border-box;
-        //position: absolute;
-        //left: 0;
-        //bottom: 0;
         width: 100%;
-        //padding: 10px 20px;
+        margin-bottom: #{$menu-button-spacing / 2};
     }
 }
 
@@ -563,12 +607,21 @@ button {
 
 
 
-/* media queries */
-@media only screen and (max-width: 1023px) {
-    #menu {
-        #serviceSelect,
-        #grabSelect {
-            display: none;
-        }
+// modify logo and menu if they will cover the page canvas whilst open
+@media only screen and (max-width: 1224px) {
+    [data-scale="1"] {
+        @include menu-obscures-canvas;
+    }
+}
+
+@media only screen and (max-width: 1540px) {
+    [data-scale="1.5"] {
+        @include menu-obscures-canvas;
+    }
+}
+
+@media only screen and (max-width: 1848px) {
+    [data-scale="2"] {
+        @include menu-obscures-canvas;
     }
 }
