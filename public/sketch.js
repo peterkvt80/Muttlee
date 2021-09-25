@@ -1,4 +1,6 @@
 // current state values (initialize to defaults)
+let controls = CONFIG.DEFAULT_CONTROLS;
+let display = CONFIG.DEFAULT_DISPLAY;
 let scale = CONFIG.DEFAULT_SCALE;
 let menuOpen = CONFIG.DEFAULT_MENU_OPEN;
 
@@ -30,7 +32,7 @@ let gClientID = null; // Our unique connection id
 let inputPage;
 let indexButton;
 let menuButton;
-let scaleSelector;
+let scaleSelector, controlsSelector, displaySelector;
 let serviceSelector;
 
 // timer for expiring incomplete keypad entries
@@ -139,8 +141,19 @@ function setup() {
   for (let [key, value] of searchParams) {
     if (key === 'scale') {
       scale = value;
+
+    } else if (key === 'controls') {
+      controls = value;
+
+    } else if (key === 'display') {
+      display = value;
     }
   }
+
+  if (controls === CONST.CONTROLS_BIGSCREEN) {
+    display = CONST.DISPLAY_FITSCREEN;
+  }
+
 
   // create the p5 canvas, and move it into the #canvas DOM element
   cnv = createCanvas(CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
@@ -204,6 +217,8 @@ function setup() {
 
   // set specific initial state values as a custom attribute on the body element (for CSS targeting)
   document.body.setAttribute(CONST.ATTR_DATA_SCALE, scale);
+  document.body.setAttribute(CONST.ATTR_DATA_CONTROLS, controls);
+  document.body.setAttribute(CONST.ATTR_DATA_DISPLAY, display);
   document.body.setAttribute(CONST.ATTR_MENU_OPEN, menuOpen);
 
   // set initial state values into their UI elements...
@@ -211,6 +226,18 @@ function setup() {
 
   if (scaleSelector) {
     scaleSelector.value = scale;
+  }
+
+  controlsSelector = document.querySelector('#controlsSelector');
+
+  if (controlsSelector) {
+    controlsSelector.value = controls;
+  }
+
+  displaySelector = document.querySelector('#displaySelector');
+
+  if (displaySelector) {
+    displaySelector.value = display;
   }
 
 
@@ -255,6 +282,34 @@ function serviceChange() {
     `Selected option=${item}`,
     LOG.LOG_LEVEL_VERBOSE,
   );
+}
+
+
+function controlsChange() {
+  if (controlsSelector) {
+    controls = controlsSelector.value;
+
+    // update custom attribute on body element
+    document.body.setAttribute(CONST.ATTR_DATA_CONTROLS, controls);
+  }
+}
+
+
+function displayChange() {
+  if (displaySelector) {
+    display = displaySelector.value;
+
+    // update custom attribute on body element
+    document.body.setAttribute(CONST.ATTR_DATA_DISPLAY, display);
+
+    // update canvas scale
+    updateScale();
+
+    window.setTimeout(
+      updateScale,
+      0,
+    );
+  }
 }
 
 
@@ -967,9 +1022,10 @@ function khold() {
 
 /* Block editing. Touch marks the first corner of an area
 */
-function touchStarted() {
-  // only start block if touch event is within the page canvas
+function touchStarted(event) {
+  // only start block if touch event is within the page canvas, and is not on an overlaid non-canvas elment
   if (
+    (event.target !== canvasElement) ||
     (touchX > (CONFIG.CANVAS_WIDTH * currentPixelDensity)) ||
     (touchY > (CONFIG.CANVAS_HEIGHT * currentPixelDensity))
   ) {
@@ -987,10 +1043,11 @@ function touchEnded() {
   blockEnd.sub(blockStart);
   blockStart = null; // Need this to be null in case we return!
 
-  // only start block if touch event is within the page canvas
+  // only start block if touch event is within the page canvas, and is not on an overlaid non-canvas elment
   if (
-      (touchX > (CONFIG.CANVAS_WIDTH * currentPixelDensity)) ||
-      (touchY > (CONFIG.CANVAS_HEIGHT * currentPixelDensity))
+    (event.target !== canvasElement) ||
+    (touchX > (CONFIG.CANVAS_WIDTH * currentPixelDensity)) ||
+    (touchY > (CONFIG.CANVAS_HEIGHT * currentPixelDensity))
   ) {
     // touch event not within canvas
     return;
@@ -1341,8 +1398,29 @@ function sendRow(r, txt) {
 
 
 function updateScale() {
+  // get current viewport size
+  const viewportInner = document.body.getBoundingClientRect();
+
+  const windowWidth = viewportInner.width;
+  const windowHeight = viewportInner.height;
+
   // if pixel density has changed, update canvas pixel density
-  let newPixelDensity = parseFloat(scale);
+  let newPixelDensity;
+
+  if (display === CONST.DISPLAY_STANDARD) {
+    newPixelDensity = parseFloat(scale);
+
+  } else if ([CONST.DISPLAY_FITSCREEN, CONST.DISPLAY_FULLSCREEN].includes(display)) {
+    // round to 2 decimal places
+    newPixelDensity = (
+      Math.round(
+        Math.min(
+          (windowHeight / CONFIG.CANVAS_HEIGHT),
+          (windowWidth / CONFIG.CANVAS_WIDTH),
+        ) * 100
+      ) / 100
+    );
+  }
 
   if (newPixelDensity !== currentPixelDensity) {
     pixelDensity(
