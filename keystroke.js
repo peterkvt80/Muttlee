@@ -212,7 +212,12 @@ KeyStroke = function () {
 
       var pageNumber = event.p;
       var subPage = event.s;
-      var filename = '/var/www/' + service + '/p' + pageNumber.toString(16) + '.tti'; // The filename of the original page
+
+      const filename = path.join(
+        CONFIG.BASE_DIR,
+        service,
+        'p' + pageNumber.toString(16) + '.tti'    // The filename of the original page
+      );
 
       const that = this;
 

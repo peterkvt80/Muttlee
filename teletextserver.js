@@ -95,6 +95,17 @@ env.addFilter(
 );
 
 
+// define shared template variables
+let templateVars = {
+  TITLE: CONFIG.TITLE,
+};
+
+// read in logo SVG to pass into the template
+try {
+  templateVars.LOGO_SVG = fs.readFileSync(CONFIG.LOGO_SVG_PATH);
+} catch (e) { }
+
+
 // define app routes
 app.use(
   '/constants.js',
@@ -132,18 +143,9 @@ app.use(
 app.use(
   '*',
   function (req, res) {
-    let vars = {
-      TITLE: CONFIG.TITLE,
-    };
-
-    // read in logo SVG to pass into the template
-    try {
-      vars.LOGO_SVG = fs.readFileSync(CONFIG.LOGO_SVG_PATH);
-    } catch (e) { }
-
     res.render(
       'index.html',
-      vars,
+      templateVars,
     );
   }
 );
