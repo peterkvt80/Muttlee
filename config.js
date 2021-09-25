@@ -2,10 +2,24 @@ const CONST = require('./constants.js');
 
 
 const CONFIG = {
-  [CONST.CONFIG.TITLE]: 'Teletext',
-  [CONST.CONFIG.HEADER_TITLE]: 'Teefax',
+  [CONST.CONFIG.LOG_LEVEL_TELETEXT_SERVER]: CONST.LOG_LEVEL_VERBOSE,
+  [CONST.CONFIG.LOG_LEVEL_TELETEXT_VIEWER]: CONST.LOG_LEVEL_VERBOSE,
 
   [CONST.CONFIG.BASE_DIR]: '/var/www/',
+
+  [CONST.CONFIG.LOGO_SVG_PATH]: '/var/www/private/muttlee_logo.svg',
+  [CONST.CONFIG.SHOW_CONSOLE_LOGO]: true,
+  [CONST.CONFIG.CONSOLE_LOGO_CHAR_ARRAY]: [
+    '████████████          ███     ███   ███              ',
+    '███ ██ ██ ██ ███ ██ ███████ ███████ ███ ██████ ██████',
+    '███ ██ ██ ██ ███ ██   ███     ███   ███ ███ ██ ███ ██',
+    '███ ██ ██ ██ ███ ██   ███     ███   ███ ██████ ██████',
+    '███ ██ ██ ██ ███ ██   ███     ███   ███ ███    ███   ',
+    '███ ██ ██ ██ ██████   █████   █████ ███ ██████ ██████',
+  ],
+
+  [CONST.CONFIG.TITLE]: 'Muttlee',
+  [CONST.CONFIG.HEADER_TITLE]: 'Teefax',
 
   // Banned IP addresses, all of them Amazon AWS bots making annoying connections during debugging
   [CONST.CONFIG.BANNED_IP_ADDRESSES]: [
@@ -48,6 +62,8 @@ const CONFIG = {
 
   // explicitly whitelist config values that are available in the frontend
   [CONST.CONFIG.FRONTEND_CONFIG_KEYS]: [
+    CONST.CONFIG.LOG_LEVEL_TELETEXT_VIEWER,
+
     CONST.CONFIG.TITLE,
     CONST.CONFIG.HEADER_TITLE,
 

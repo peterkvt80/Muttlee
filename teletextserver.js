@@ -16,6 +16,50 @@ const socket = require('socket.io');
 const CONST = require('./constants.js');
 const CONFIG = require('./config.js');
 
+// import package.json so we can get the current version
+const PACKAGE_JSON = require('./package.json');
+
+
+// import logger
+const LOG = require('./log.js');
+
+
+// output logo in console?
+if (CONFIG[CONST.CONFIG.SHOW_CONSOLE_LOGO] === true) {
+  // determine logo char array length
+  const logoCharLength = CONFIG[CONST.CONFIG.CONSOLE_LOGO_CHAR_ARRAY].reduce(
+    (previousValue, currentValue) => {
+      return Math.max(
+        (typeof previousValue === 'string') ?
+          previousValue.length :
+          previousValue,
+        currentValue.length,
+      );
+    }
+  );
+
+  // output logo char array lines to console
+  console.log(''.padStart(logoCharLength));
+
+  for (let i in CONFIG[CONST.CONFIG.CONSOLE_LOGO_CHAR_ARRAY]) {
+    console.log(CONFIG[CONST.CONFIG.CONSOLE_LOGO_CHAR_ARRAY][i]);
+  }
+
+  // include current version under the logo
+  const versionString = 'v' + PACKAGE_JSON.version;
+  console.log(''.padStart(logoCharLength - versionString.length) + versionString);
+
+  console.log(''.padStart(logoCharLength));
+}
+
+
+// output basic server information
+LOG.fn(
+  null,
+  `Server is running on ${process.platform}`,
+  LOG.LOG_LEVEL_MANDATORY,
+);
+
 
 // import modules
 require('./weather.js');      // Should check if this is obsolete
@@ -88,12 +132,18 @@ app.use(
 app.use(
   '*',
   function (req, res) {
+    let vars = {
+      TITLE: CONFIG.TITLE,
+    };
+
+    // read in logo SVG to pass into the template
+    try {
+      vars.LOGO_SVG = fs.readFileSync(CONFIG.LOGO_SVG_PATH);
+    } catch (e) { }
+
     res.render(
       'index.html',
-
-      {
-        TITLE: CONFIG.TITLE,
-      },
+      vars,
     );
   }
 );
@@ -105,6 +155,12 @@ let serverHttp;
 if (CONFIG.TELETEXT_VIEWER_SERVE_HTTP) {
   serverHttp = http.createServer(app).listen(
     CONFIG.TELETEXT_VIEWER_SERVE_HTTP_PORT
+  );
+
+  LOG.fn(
+    null,
+    `Serving on port ${CONFIG.TELETEXT_VIEWER_SERVE_HTTP_PORT}`,
+    LOG.LOG_LEVEL_MANDATORY,
   );
 }
 
@@ -122,7 +178,15 @@ if (CONFIG.TELETEXT_VIEWER_SERVE_HTTPS) {
   serverHttps = https.createServer(options, app).listen(
     CONFIG.TELETEXT_VIEWER_SERVE_HTTPS_PORT
   );
+
+  LOG.fn(
+    null,
+    `Serving on port ${CONFIG.TELETEXT_VIEWER_SERVE_HTTPS_PORT}`,
+    LOG.LOG_LEVEL_MANDATORY,
+  );
 }
+
+LOG.blank();
 
 
 // instantiate socket.io server
@@ -132,10 +196,7 @@ const io = socket(
     serverHttp
 );
 
-console.log("Server is running on " + process.platform);
-
 io.sockets.on('connection', newConnection);
-
 
 
 // instantiate keystroke class
@@ -160,7 +221,11 @@ var missingPage = 0;
 
 
 function save() {
-  console.log('Autosave');
+  LOG.fn(
+    ['teletextserver', 'save'],
+    `Autosave`,
+    LOG.LOG_LEVEL_VERBOSE,
+  );
 
   keystroke.saveEdits();
 }
@@ -180,8 +245,14 @@ function newConnection(socket) {
     }
   );
 
-  console.log('[newConnection] Service: ' + queryString['service']);     // ID: 2140
-  console.log('[newConnection] Page: ' + queryString['page']);    // Name: undefined
+  LOG.fn(
+    ['teletextserver', 'newConnection'],
+    [
+      `Service: ${queryString['service']}`,
+      `Page: ${queryString['page']}`
+    ],
+    LOG.LOG_LEVEL_VERBOSE,
+  );
 
   let p = parseInt('0x' + queryString['page'], 16);
 
@@ -209,7 +280,11 @@ function newConnection(socket) {
     initialPage = CONST.PAGE_MIN;
   }
 
-  console.log('[NewConnection] ' + socket.id);
+  LOG.fn(
+    ['teletextserver', 'newConnection'],
+    `socket.id=${socket.id}`,
+    LOG.LOG_LEVEL_INFO,
+  );
 
   // check if request IP address is banned (in config.js)
   const clientIp = socket.request.connection.remoteAddress;
@@ -227,8 +302,6 @@ function newConnection(socket) {
   function keyMessage(data) {
     // socket.broadcast.emit('keystroke', data) // To all but sender
     io.emit('keystroke', data); // To everyone
-
-    console.log('Main::keyMessage' + data);  // @todo Comment this line out
 
     // Also send this keymessage to our pages
     // Or maybe to our services who can then switch the message as needed?
@@ -256,32 +329,48 @@ function newConnection(socket) {
 
 /** Clear the current page to blank
  */
-function doClearPage(data)
-{
-  console.log('[doClearPage] Clearing page ') // +data.p.toString(16))
-  console.log("Main::keyMessage S,p,s= "+data.S+", "+data.p+", ",data.s)
-  keystroke.clearPage(data) // Clear the page
-  io.sockets.emit('blank',data) // Clear down the old data on te clients
+function doClearPage(data) {
+  LOG.fn(
+    ['teletextserver', 'doClearPage'],
+    [
+      `Clearing page=${data.p.toString(16)}`,
+      `keyMessage S=${data.S}, p=${data.p}, s=${data.s}`,
+    ],
+    LOG.LOG_LEVEL_VERBOSE,
+  );
 
+  keystroke.clearPage(data); // Clear the page
+
+  io.sockets.emit('blank', data); // Clear down the old data on te clients
 }
 
 /** Create the page and load it
  */
-function doCreate(data)
-{
-  console.log('[doCreate] Creating page '+data.p.toString(16))
+function doCreate(data) {
+  LOG.fn(
+    ['teletextserver', 'doCreate'],
+    `Creating page=${data.p.toString(16)}`,
+    LOG.LOG_LEVEL_VERBOSE,
+  );
+
   // Create a page from template
-  createPage(data, function()
-  {
-    doLoad(data)
-  })
+  createPage(
+    data,
+    function () {
+      doLoad(data)
+    }
+  );
 }
 
-function doInitialLoad(data)
-{
-  console.log('[doInitialLoad]')
-  data.p=parseInt(initialPage)
-  doLoad(data)
+function doInitialLoad(data) {
+  LOG.fn(
+    ['teletextserver', 'doInitialLoad'],
+    '',
+    LOG.LOG_LEVEL_VERBOSE,
+  );
+
+  data.p = parseInt(initialPage);
+  doLoad(data);
 }
 
 function doLoad(data) {
@@ -307,7 +396,11 @@ function doLoad(data) {
   let found = findService(serviceString);
 
   if (found === false) {
-    console.log('[doLoad] Adding service called ' + serviceString + ' buffered key count =' + keystroke.length);
+    LOG.fn(
+      ['teletextserver', 'doLoad'],
+      `Adding service=${serviceString}, buffered key count=${keystroke.length}`,
+      LOG.LOG_LEVEL_VERBOSE,
+    );
 
     services.push(new Service(serviceString));  // create the service
     found = services.length - 1; // The index of the service we just created
@@ -317,28 +410,31 @@ function doLoad(data) {
   const svc = services[found];
   const page = svc.findPage(data.p);
 
-  console.log('[doLoad] Found Service:' + serviceString + ' Page:' + page);
-  console.log('[doLoad] called ' + filename + ' data.x=' + data.x + ' id=' + data.id);
+  LOG.fn(
+    ['teletextserver', 'doLoad'],
+    `Found serviceString=${serviceString}, page=${page}, filename=${filename}, data.x=${data.x}, data.id=${data.id}`,
+    LOG.LOG_LEVEL_VERBOSE,
+  );
 
-/////// SKIP THIS 410 STUFF. NOT USED ANY MORE
-/*
-  if (data.y==0 && data.p==0x410) // Special hack. Intercept P410. First time we will load weather
-  {
-    data.x = CONST.SIGNAL_PAGE_NOT_FOUND;
-  }
-  // The next time x=1 so we will load the page we just created.
-  if (data.x<0)
-  {
-    filename='/var/www/'+serviceString+'/p404.tti' // this must exist or we get into a deadly loop
-    data.S=serviceString
-    // filename='http://localhost:8080/weather.tti'
-    if (data.p==0x410)
+  /////// SKIP THIS 410 STUFF. NOT USED ANY MORE
+  /*
+    if (data.y==0 && data.p==0x410) // Special hack. Intercept P410. First time we will load weather
     {
-      weather.doLoadWeather(0,0)
-      return
+      data.x = CONST.SIGNAL_PAGE_NOT_FOUND;
     }
-  }
-*/
+    // The next time x=1 so we will load the page we just created.
+    if (data.x<0)
+    {
+      filename='/var/www/'+serviceString+'/p404.tti' // this must exist or we get into a deadly loop
+      data.S=serviceString
+      // filename='http://localhost:8080/weather.tti'
+      if (data.p==0x410)
+      {
+        weather.doLoadWeather(0,0)
+        return
+      }
+    }
+  */
 
   io.sockets.emit('blank', data); // Clear down the old data. // TODO This should emit only to socket.emit, not all units
 
@@ -353,13 +449,21 @@ function doLoad(data) {
   instream = fs.createReadStream(filename, { encoding: 'ascii' }); // Ascii strips bit 7 without messing up the rest of the text. latin1 does not work :-(
 
   instream.on('error', function () {
-    var data2;
+    let data2;
 
-    console.log('[doLoad] ERROR! data.p=' + data.p.toString(16));
+    LOG.fn(
+      ['teletextserver', 'doLoad'],
+      `ERROR! data.p=${data.p.toString(16)}`,
+      LOG.LOG_LEVEL_ERROR,
+    );
 
     // If this comes in as 404 it means that the 404 doesn't exist either. Set back to the default initial page
     if (data.p === CONST.PAGE_404) {
-      console.log('[doLoad] 404 double error');
+      LOG.fn(
+        ['teletextserver', 'doLoad'],
+        `404 double error`,
+        LOG.LOG_LEVEL_INFO,
+      );
 
       data.p = initialPage;
       data.S = undefined;
@@ -374,7 +478,11 @@ function doLoad(data) {
       data2.x = CONST.SIGNAL_PAGE_NOT_FOUND; // Signal a 404 error
       data2.S = connectionList[data.id]; // How do we lose the service type? This hack shouldn't be needed
 
-      console.log('[doLoad] 404 single error. Service=' + JSON.stringify(data2));
+      LOG.fn(
+        ['teletextserver', 'doLoad'],
+        `404 single error, service=${JSON.stringify(data2)}`,
+        LOG.LOG_LEVEL_INFO,
+      );
     }
 
     io.sockets.emit('setpage', data2);
@@ -390,13 +498,12 @@ function doLoad(data) {
 
   rl.on('line', function (line) {
     if (line.indexOf('PN') === 0) {
-      // console.log('Need to implement carousels'+line)
+      // Need to implement carousels    @todo
       data.line = line.substring(6);
       io.sockets.emit('subpage', data);
 
-    } else if (line.indexOf('DE,') == 0) {   // Detect a description row
-      var desc = line.substring(3);
-      data.desc = desc;
+    } else if (line.indexOf('DE,') === 0) {   // Detect a description row
+      data.desc = line.substring(3);
 
       // Hacky hack. Page 404 gets the failed page number in data.y
       if (data.p === CONST.PAGE_404) {
@@ -406,16 +513,20 @@ function doLoad(data) {
 
       io.sockets.emit('description', data);
 
-      console.log('Sending desc=' + data.desc);
+      LOG.fn(
+        ['teletextserver', 'doLoad'],
+        `Sending desc=${data.desc}`,
+        LOG.LOG_LEVEL_VERBOSE,
+      );
 
-    } else if (line.indexOf('FL,') == 0) {    // Detect a Fastext link
+    } else if (line.indexOf('FL,') === 0) {    // Detect a Fastext link
       var ch;
       var ix = 3;
       data.fastext = [];
 
-      for (var link = 0; link < 4; link++) {
-        var flink = '';
-        for (ch = line.charAt(ix++); ch != ',';) {
+      for (let link = 0; link < 4; link++) {
+        let flink = '';
+        for (ch = line.charAt(ix++); ch !== ',';) {
           flink = flink + ch;
           ch = line.charAt(ix++);
         }
@@ -427,7 +538,6 @@ function doLoad(data) {
       // We will offer to make the page from template eventually
       if (data.p === CONST.PAGE_404) {
         data.fastext[2] = '1' + missingPage.toString(16); // Flag that this page doesn't exist
-        console.log(data.fastext);
       }
 
       io.sockets.emit('fastext', data);
@@ -447,8 +557,9 @@ function doLoad(data) {
       var p = 0;
       var ix = 3;
       var row = 0;
+
       var ch = line.charAt(ix);
-      if (ch != ',') {
+      if (ch !== ',') {
         row = ch;
       }
 
@@ -486,9 +597,7 @@ function doLoad(data) {
       result = first + missingPage.toString(16) + second;
     } // end of 404 hack
 
-    //console.log ('Row(a)='+result)
     result = DeEscapePrestel(result); // remove Prestel escapes
-    //console.log ('Row(b)='+result)
 
     data.k = '?'; // @todo Not sure what these values should be, if anything
     data.x = -1;
@@ -501,7 +610,11 @@ function doLoad(data) {
   rl.on(
     'close',
     function () {
-      console.log('[doLoad] end of file');
+      LOG.fn(
+        ['teletextserver', 'doLoad'],
+        `end of file`,
+        LOG.LOG_LEVEL_VERBOSE,
+      );
 
       // When the file has been read, we want to send any keystrokes that might have been added to this page
       keystroke.replayEvents(io.sockets);
@@ -513,76 +626,85 @@ function doLoad(data) {
 /** Finds the service with the required name.
 * @return Index of service, or false
 */
-function findService(name)
-{
-  if (services.length===0)
-  {
-    return false // No services
+function findService(name) {
+  if (services.length === 0) {
+    return false; // No services
   }
-  for (var i=0;i<services.length;i++)
-  {
-    if (services[i].matchName(name))
-    return i
+
+  for (var i = 0; i < services.length; i++) {
+    if (services[i].matchName(name)) {
+      return i;
+    }
   }
-  return false // Not found
+
+  return false; // Not found
 }
 
 
 /** Create a page from template number data.p
  */
-function createPage(data, callback)
-{
-  console.log('[createPage] Starts');
+function createPage(data, callback) {
+  LOG.fn(
+    ['teletextserver', 'createPage'],
+    `Starts`,
+    LOG.LOG_LEVEL_VERBOSE,
+  );
 
   // what is my page name? /var/www/<service>/p<page number>.tti
   // @todo Check for service being undefined
-  var filename = path.join(
+  const filename = path.join(
     CONFIG.BASE_DIR,
     data.S,
     'p' + data.p.toString(16) + '.tti'
   );
 
-  console.log('[createPage] filename='+filename)
-  var template=""
+  LOG.fn(
+    ['teletextserver', 'createPage'],
+    `filename=${filename}`,
+    LOG.LOG_LEVEL_VERBOSE,
+  );
+
   // open write file stream
-  var wstream = fs.createWriteStream(filename)
+  var wstream = fs.createWriteStream(filename);
+
   // write the template
-  wstream.write('DE,Topic: Created by user\n')
-  wstream.write('DS,muttlee\n')
-  wstream.write('SP,'+filename+'\n')
-  wstream.write('CT,8,T\n')
-  wstream.write('PN,'+data.p.toString(16)+'00\n') // @todo How can we add subpages?
-  wstream.write('SC,0000\n')
-  wstream.write('PS,8000\n') // To do languages
-  wstream.write('RE,0\n')
-  wstream.write('OL,0,XXXXXXXXWT-FAX mpp DAY dd MTH C hh:nn.ss\n')
-  wstream.write('OL,1,Q73#35R7ss35S7sskT]C| Wiki |FFacts at  |\n')
-  wstream.write('OL,2,Q55555R5 5 5S5=$jT]C| Tel  |Fyour      |\n')
-  wstream.write('OL,3,Qussq5Rupqp5SuqpzT]C| Fax  |Ffingertips|\n')
-  wstream.write('OL,4,MTemplate                               \n')
-  wstream.write('OL,5,Q                                       \n')
-  wstream.write('OL,6, ```````````````````````````````````````\n')
-  wstream.write('OL,7,CTemplateGhighlights other entries in   \n')
-  wstream.write('OL,8,CyellowGwith the first paragraph white. \n')
-  wstream.write('OL,9,F                                       \n')
-  wstream.write('OL,10,FSubsequent paragraphs should be cyan.  \n')
-  wstream.write('OL,11,FThe last line is reserved for Fastext  \n')
-  wstream.write('OL,12, To find out more about editing, press  \n')
-  wstream.write('OL,13, theFcyanGbutton.                       \n')
-  wstream.write('OL,14,F                                       \n')
-  wstream.write('OL,15,F                                       \n')
-  wstream.write('OL,16,M  NOW PRESSHESCAPEIAND EDIT THIS   \n')
-  wstream.write('OL,17,F                                       \n')
-  wstream.write('OL,18,F                                       \n')
-  wstream.write('OL,19,F                                       \n')
-  wstream.write('OL,20,F                                       \n')
-  wstream.write('OL,21,F  PRO TIP: To clear the screen, press  \n')
-  wstream.write('OL,22,F           Escape then Z               \n')
-  wstream.write('OL,23,F                                       \n')
-  wstream.write('OL,24,A Next   B....       C....      FHelp   \n')
+  wstream.write('DE,Topic: Created by user\n');
+  wstream.write('DS,muttlee\n');
+  wstream.write('SP,' + filename + '\n');
+  wstream.write('CT,8,T\n');
+  wstream.write('PN,' + data.p.toString(16) + '00\n'); // @todo How can we add subpages?
+  wstream.write('SC,0000\n');
+  wstream.write('PS,8000\n'); // To do languages
+  wstream.write('RE,0\n');
+  wstream.write('OL,0,XXXXXXXXWT-FAX mpp DAY dd MTH C hh:nn.ss\n');
+  wstream.write('OL,1,Q73#35R7ss35S7sskT]C| Wiki |FFacts at  |\n');
+  wstream.write('OL,2,Q55555R5 5 5S5=$jT]C| Tel  |Fyour      |\n');
+  wstream.write('OL,3,Qussq5Rupqp5SuqpzT]C| Fax  |Ffingertips|\n');
+  wstream.write('OL,4,MTemplate                               \n');
+  wstream.write('OL,5,Q                                       \n');
+  wstream.write('OL,6, ```````````````````````````````````````\n');
+  wstream.write('OL,7,CTemplateGhighlights other entries in   \n');
+  wstream.write('OL,8,CyellowGwith the first paragraph white. \n');
+  wstream.write('OL,9,F                                       \n');
+  wstream.write('OL,10,FSubsequent paragraphs should be cyan.  \n');
+  wstream.write('OL,11,FThe last line is reserved for Fastext  \n');
+  wstream.write('OL,12, To find out more about editing, press  \n');
+  wstream.write('OL,13, theFcyanGbutton.                       \n');
+  wstream.write('OL,14,F                                       \n');
+  wstream.write('OL,15,F                                       \n');
+  wstream.write('OL,16,M  NOW PRESSHESCAPEIAND EDIT THIS   \n');
+  wstream.write('OL,17,F                                       \n');
+  wstream.write('OL,18,F                                       \n');
+  wstream.write('OL,19,F                                       \n');
+  wstream.write('OL,20,F                                       \n');
+  wstream.write('OL,21,F  PRO TIP: To clear the screen, press  \n');
+  wstream.write('OL,22,F           Escape then Z               \n');
+  wstream.write('OL,23,F                                       \n');
+  wstream.write('OL,24,A Next   B....       C....      FHelp   \n');
   // Write hex then read as decimal, so we don't increment to any hex pages.
-  wstream.write('FL,'+(parseInt(data.p.toString(16))+1)+',8ff,8ff,700,8ff,8ff  \n')
-  wstream.end()
+  wstream.write('FL,' + (parseInt(data.p.toString(16)) + 1) + ',8ff,8ff,700,8ff,8ff  \n');
+  wstream.end();
+
   // signal completion
-  wstream.on('finish',callback)
+  wstream.on('finish', callback);
 }

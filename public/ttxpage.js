@@ -5,25 +5,24 @@
 // Timer for flashing cursor and text
 let flashState = false;
 let tickCounter = 0; // For timing carousels (in steps of half a second)
+
 setInterval(toggle, 500);
 
-function toggle()
-{
+
+function toggle() {
   tickCounter++;
   flashState = !flashState;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Not much of a class
-function MetaData(displayTiming)
-{
+function MetaData(displayTiming) {
   this.timer = displayTiming;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-TTXPAGE=function()
-{
+TTXPAGE = function() {
   // Basic page properties
   this.pageNumber = CONST.PAGE_MIN;
   this.subPage = 0; // This is the integer to index the current sub page
@@ -53,20 +52,18 @@ TTXPAGE=function()
   this.holdMode = false;
 
   // timer
-  this.setTimer=function(t)
-  {
+  this.setTimer = function (t) {
     // this.timer=t
     if (this.metadata[this.subPage] !== undefined) {
       this.metadata[this.subPage].timer = t;
     }
-  }
+  };
 
   // edit mode
-  this.editSwitch=function(mode)
-  {
+  this.editSwitch = function (mode) {
     this.editMode = mode;
-    this.cursor.hide =(mode === CONST.EDITMODE_NORMAL);
-  }
+    this.cursor.hide = (mode === CONST.EDITMODE_NORMAL);
+  };
 
   // @todo check range
   this.init = function (number) {
@@ -78,11 +75,11 @@ TTXPAGE=function()
   };
 
   this.toggleReveal = function () {
-    this.revealMode = !this.revealMode
+    this.revealMode = !this.revealMode;
   };
 
   this.toggleHold = function () {
-    this.holdMode = !this.holdMode
+    this.holdMode = !this.holdMode;
   };
 
   /** @brief Change the page number for this page and all child rows
@@ -106,19 +103,18 @@ TTXPAGE=function()
     }
   };
 
-  this.setService=function(S)
-  {
-    this.service=S
-  }
+  this.setService = function (S) {
+    this.service = S;
+  };
 
-  this.getService=function()
-  {
-    let svc=String(this.service)
-    if (svc=='undefined')
-    {
-      svc='onair'
+  this.getService = function () {
+    let svc = String(this.service);
+
+    if (svc === 'undefined') {
+      svc = 'onair';
     }
-    return svc
+
+    return svc;
   };
 
   /** @brief Add a page to the sub page list
@@ -131,12 +127,12 @@ TTXPAGE=function()
 
     // As rows go from 0 to 31 and pages start at 100, we can use the same parameter for both
     this.rows.push(
-      new row(number, 0, "Pnn " + titleStr + " mpp DAY dd MTH   hh:nn.ss")
+      new Row(number, 0, 'Pnn ' + titleStr + ' mpp DAY dd MTH   hh:nn.ss')
     );
 
     for (let i = 1; i < 26; i++) {
       this.rows.push(
-        new row(number, i, "".padStart(40))
+        new Row(number, i, ''.padStart(40))
       );
     }
 
@@ -151,95 +147,92 @@ TTXPAGE=function()
   {
     s = parseInt(s);
 
-    // console.log("[setSubPage] enters "+s)
-    if (s<0 || s>79) //
-      s=0 // Single page
-    else
-      s=s-1 // Carousel (because carousels start at 1, but our array always starts at 0
-
-    ///@todo Check that s is in a subpage that exists and add it if needed.
-    if (this.subPageList.length<=s)
-    {
-      this.addPage(this.pageNumber)
-      // console.log("[setSubPage] Need to add a new subpage: "+s)
+    if (s < 0 || s > 79) {
+      s = 0; // Single page
+    } else {
+      s = s - 1; // Carousel (because carousels start at 1, but our array always starts at 0
     }
-    this.subPage=s
-  }
+
+    // @todo Check that s is in a subpage that exists and add it if needed.
+    if (this.subPageList.length <= s) {
+      this.addPage(this.pageNumber);
+    }
+
+    this.subPage = s;
+  };
 
   /** @brief Set row r to txt
    * Note that this is the page level setrow.
    */
-  this.setRow=function(r,txt)
-  {
-    if (r>=0 && r<=24)
-    {
-      if (this.subPage<0)
-      {
-        this.subPage=0
+  this.setRow = function (r, txt) {
+    if (r >= 0 && r <= 24) {
+      if (this.subPage < 0) {
+        this.subPage = 0;
       }
-      let v=this.subPageList[this.subPage]
-      if (v==undefined)
-      {
-        console.log('oh noes. v is undefined')
-      }
-      v[r].setrow(txt)
-    }
-    else
-      return
-    /*
-      // Might want to find out why this happens. Doesn't seem to matter
-      console.log('not setting row '+r+' to '+txt)
-      */
-  }
 
-  // Return the text of row r on the current subpage
-  this.getRow=function(r)
-  {
-    if (r>=0 && r<=24)
-    {
-      if (this.subPage<0)
-      {
-        this.subPage=0
+      let v = this.subPageList[this.subPage];
+      if (v === undefined) {
+        LOG.fn(
+          ['ttxpage', 'setRow'],
+          `oh noes. v is undefined`,
+          LOG.LOG_LEVEL_ERROR,
+        );
       }
-      let v=this.subPageList[this.subPage]
-      if (v==undefined)
-      {
-        console.log('where is our subpage, dammit?')
-        return "                                       "
-      }
-      return v[r].txt
-    }
-    else
-    {
-      return "                                        "
-    }
-  }
 
-  // Helpers for navigating subpages
-  this.nextSubpage=function()
-  {
-    this.subPage=(this.subPage+1) % this.subPageList.length
-  }
-  this.prevSubpage=function()
-  {
-    if (this.subPage>0)
-    {
-      this.subPage--
-    }
-    else
-    {
-      this.subPage=this.subPageList.length-1
+      v[r].setrow(txt);
     }
   };
 
-  this.addSubPage=function()
-  {
+  // Return the text of row r on the current subpage
+  this.getRow = function (r) {
+    if (r >= 0 && r <= 24) {
+      if (this.subPage < 0) {
+        this.subPage = 0;
+      }
+
+      let v = this.subPageList[this.subPage];
+      if (v === undefined) {
+        LOG.fn(
+          ['ttxpage', 'setRow'],
+          `where is our subpage, dammit?`,
+          LOG.LOG_LEVEL_ERROR,
+        );
+
+        return "                                       ";
+      }
+
+      return v[r].txt;
+
+    } else {
+      return "                                        ";
+    }
+  };
+
+  // Helpers for navigating subpages
+  this.nextSubpage = function () {
+    this.subPage = (this.subPage + 1) % this.subPageList.length;
+  };
+
+  this.prevSubpage = function () {
+    if (this.subPage > 0) {
+      this.subPage--;
+    } else {
+      this.subPage = this.subPageList.length - 1;
+    }
+  };
+
+  this.addSubPage = function () {
     this.addPage(this.pageNumber);
     this.setSubPage(this.subPageList.length - 1);
   };
 
   this.removeSubPage = function () {
-    console.log("Remove subpage not implemented. @todo");
+    // Remove subpage not implemented. @todo
+    LOG.fn(
+      ['ttxpage', 'removeSubPage'],
+      `Remove subpage not implemented.`,
+      LOG.LOG_LEVEL_INFO,
+    );
   };
 
   this.draw = function (changed) {
@@ -250,27 +243,28 @@ TTXPAGE=function()
       return;
     }
 
-    let carouselReady = typeof this.subPage != 'undefined';
+    let carouselReady = (typeof this.subPage != 'undefined');
 
     if (carouselReady) {
-      carouselReady = typeof this.metadata[this.subPage] != 'undefined';
+      carouselReady = (typeof this.metadata[this.subPage] != 'undefined');
     }
 
-    if (!(this.holdMode || this.editMode !== CONST.EDITMODE_NORMAL) && carouselReady) // Only cycle if we are not in hold mode or edit
-    {
+    if (!(this.holdMode || this.editMode !== CONST.EDITMODE_NORMAL) && carouselReady) {     // Only cycle if we are not in hold mode or edit
       // carousel timing
-      if (tickCounter % ((1 + round(this.metadata[this.subPage].timer)) * 2) == 0) // Times 2 because the tick is 2Hz.
-      {
+      if (tickCounter % ((1 + round(this.metadata[this.subPage].timer)) * 2) == 0) {    // Times 2 because the tick is 2Hz.
         this.nextSubpage();
 
-        console.log("drawing subpage " + this.subPage);
+        LOG.fn(
+          ['ttxpage', 'draw'],
+          `Drawing subpage ${this.subPage}`,
+          LOG.LOG_LEVEL_VERBOSE,
+        );
 
         tickCounter = 1; // Prevent a cascade of page changes!
       }
     }
 
     for (let rw = 0; rw < this.rows.length; rw++) {
-      // console.log("drawing row "+rw+" of "+this.rows.length)
       let cpos = -1;
       if (this.editMode !== CONST.EDITMODE_NORMAL && rw === this.cursor.y) // If in edit mode and it is the correct row...
       {
@@ -279,7 +273,7 @@ TTXPAGE=function()
 
       //this.rows[row].draw(cpos) // Original version
       // Single pages tend to have subpage 0000. carousels start from 0001. So subtract 1 unless it is already 0.
-//      let v=this.subPageList[this.subPage>0?this.subPage-1:0]
+      //      let v=this.subPageList[this.subPage>0?this.subPage-1:0]
       if (this.subPage >= this.subPageList.length) { // This shouldn't happen much but it does during start up
         this.subPage = this.subPageList.length - 1;
       }
@@ -287,18 +281,23 @@ TTXPAGE=function()
       let v = this.subPageList[this.subPage];
 
       if (v === undefined) {
-        console.log("Undefined :-(");
+        LOG.fn(
+          ['ttxpage', 'draw'],
+          `v is undefined`,
+          LOG.LOG_LEVEL_INFO,
+        );
+
         // can we fix it?
         v = this.subPageList[0];
 
-        if (v != undefined) // Move to a subpage that exists
+        if (v !== undefined) // Move to a subpage that exists
         {
           this.subPage = 0;
         }
       }
 
-      if (v != undefined && v.length > 0) {
-        if (rw == 0 && v.length > 0) // Set the page number for the header only
+      if (v !== undefined && v.length > 0) {
+        if (rw === 0 && v.length > 0) // Set the page number for the header only
         {
           v[0].setpagetext(this.pageNumberEntry);
         }
@@ -316,251 +315,237 @@ TTXPAGE=function()
     }
   };
 
-  /** Draw a character grid overlay for edit quidance
+  /** Draw a character grid overlay for edit guidance
    */
-  this.grid=function()
-  {
-    stroke(128)
-    for (let x=0;x<=40;x++)
-    {
-      line(gTtxW*x,0,gTtxW*x,gTtxH*25)
+  this.grid = function () {
+    stroke(128);
+    for (let x = 0; x <= 40; x++) {
+      line(gTtxW * x, 0, gTtxW * x, gTtxH * 25);
     }
-    for (let y=0;y<=25;y++)
-    {
-      line(0,gTtxH*y,gTtxW*40,gTtxH*y)
+    for (let y = 0; y <= 25; y++) {
+      line(0, gTtxH * y, gTtxW * 40, gTtxH * y);
     }
-  }
+  };
 
   //  Draw ch at (x,y) on subpage s
-  this.drawchar=function(ch,x,y,s)
-  {
-    //console.log('Attempting to draw row '+y)
+  this.drawchar = function (ch, x, y, s) {
     // Select the subpage to update
-    let v=this.subPageList[s]
-    if (v==undefined)
-    {
-      console.log("Can not draw on a subpage that doesn't exist :-(")
+    let v = this.subPageList[s];
+
+    if (v === undefined) {
+      LOG.fn(
+        ['ttxpage', 'drawchar'],
+        `Cannot draw on a subpage that doesn't exist :-(`,
+        LOG.LOG_LEVEL_INFO,
+      );
+
+    } else {
+      v[y].setchar(ch, x);
     }
-    else
-    {
-      v[y].setchar(ch,x)
-    }
-  }
+  };
 
   /** home
    * Move to the start of the line or the start of text
    */
-  this.home=function()
-  {
+  this.home = function () {
     let col;
-    let page=this.subPageList[this.subPage]
-    let row=page[this.cursor.y].txt
-    // Find the first printable character
-    for (col=0;col<39;col++)
-    {
-      if (row.charAt(col)>' ')
-      {
-        break;
-      }
-    }
-    // Did we find a non blank?
-    if (col<39) // Yes. We found the new position
-    {
-      if (this.cursor.x!=col)
-      {
-        this.cursor.x=col    // If we aren't there already, then go there
-      }
-      else
-      {
-        this.cursor.x=0    // otherwise go back to the start of the row
-      }
-    }
-    else // No. Skip to the start of the line
-    {
-      this.cursor.x=0
-    }
-  }  // home
+    let page = this.subPageList[this.subPage];
+    let row = page[this.cursor.y].txt;
 
-  this.end=function()
-  {
-    let page=this.subPageList[this.subPage]
-    let row=page[this.cursor.y].txt
-    let x
-    // Find the last non blank character
-    for (x=39;x>0;x--)
-    {
-      if (row.charAt(x) != ' ')
-      {
+    // Find the first printable character
+    for (col = 0; col < 39; col++) {
+      if (row.charAt(col) > ' ') {
         break;
       }
     }
+
+    // Did we find a non blank?
+    if (col < 39) // Yes. We found the new position
+    {
+      if (this.cursor.x !== col) {
+        this.cursor.x = col;    // If we aren't there already, then go there
+      } else {
+        this.cursor.x = 0;    // otherwise go back to the start of the row
+      }
+
+    } else {    // No. Skip to the start of the line
+      this.cursor.x = 0;
+    }
+  };
+
+  this.end = function () {
+    let page = this.subPageList[this.subPage];
+    let row = page[this.cursor.y].txt;
+    let x;
+
+    // Find the last non blank character
+    for (x = 39; x > 0; x--) {
+      if (row.charAt(x) !== ' ') {
+        break;
+      }
+    }
+
     // Did we find a non blank character?
-    if (x>0)
-    {
+    if (x > 0) {
       // Is it before the right hand side?
-      if (x<38)
-      {
-        if (this.cursor.x==x+1) // Already there?
-        {
-          this.cursor.x=39
+      if (x < 38) {
+        if (this.cursor.x === x + 1) {    // Already there?
+          this.cursor.x = 39;
+        } else {
+          this.cursor.x = x + 1; // Advance to the blank space
         }
-        else
-        {
-          this.cursor.x=x+1 // Advance to the blank space
-        }
+
+      } else {
+        this.cursor.x = 39; // Clip, because we can't advance
       }
-      else
-      {
-        this.cursor.x=39 // Clip, because we can't advance
-      }
+
+    } else {    // Another edge case, If the line is entirely blank, move to the right edge
+      this.cursor.x = 39;
     }
-    else // Another edge case, If the line is entirely blank, move to the right edge
-    {
-      this.cursor.x=39
-    }
-  }
+  };
 
   // Insert a space at the current cursor location (TAB command)
   // WARNING: This is not handled by other clients. Will need some thinking how to do it properly
   // Maybe broadcast the entire row when we are done?
-  this.insertSpace=function()
-  {
-    let pg=this.subPageList[this.subPage]
-    if (pg!=undefined)
-    {
-      let x=this.cursor.x
-      let y=this.cursor.y
-      str=pg[y].txt
-      str=str.substr(0,x) + ' ' + str.substr(x)
+  this.insertSpace = function () {
+    let pg = this.subPageList[this.subPage];
+
+    if (pg !== undefined) {
+      let x = this.cursor.x;
+      let y = this.cursor.y;
+
+      let str = pg[y].txt;
+      str = str.substr(0, x) + ' ' + str.substr(x);
+
       // might want to trim back to 40 chars?
-      pg[y].setrow(str)
+      pg[y].setrow(str);
     }
-  }
+  };
 
   // Backspace. Delete current character, move remainder of line one character left
   // Pad with a space at the end. Also update the cursor position.
   // @todo Work out how this edit will get back to the server
-  this.backSpace=function()
-  {
-    let pg=this.subPageList[this.subPage]
-    if (pg!=undefined)
-    {
-      let x=this.cursor.x
-      let y=this.cursor.y
-      this.cursor.left()
-      str=pg[y].txt
-      str=str.substr(0,x-1) + str.substr(x,40-x) + ' '
-      pg[y].setrow(str)
+  this.backSpace = function () {
+    let pg = this.subPageList[this.subPage];
+
+    if (pg !== undefined) {
+      let x = this.cursor.x;
+      let y = this.cursor.y;
+
+      this.cursor.left();
+
+      let str = pg[y].txt;
+      str = str.substr(0, x - 1) + str.substr(x, 40 - x) + ' ';
+
+      pg[y].setrow(str);
     }
-  }
+  };
 
   /**
    * @brief Clear all rows to blank spaces
    */
-  this.setBlank=function()
-  {
-    // console.log(" Clear all rows to blank")
-    this.subPageList=[]
-    this.metadata=[]
+  this.setBlank = function () {
+    this.subPageList = [];
+    this.metadata = [];
 
-    this.addPage(this.pageNumber)
+    this.addPage(this.pageNumber);
 
 //    for (let y=1;y<this.rows.length;y++)
-      //this.rows[y].setrow('                                        ')
+    //this.rows[y].setrow('                                        ')
     //this.rows[0].setrow('Pnn     CEEFAX 1 100 Sun 08 Jan 12:58/57') // @todo Add proper header control
-  }
+  };
 
   /**
    * \return true if the character at the location (data.x, data.y) is a graphics character
    * \param data : {p: page x: column y: row s: subpage S: service
    */
-  this.IsGraphics=function(data)
-  {
-    if (data==undefined)
-    {
-      return false
+  this.IsGraphics = function (data) {
+    if (data === undefined) {
+      return false;
     }
 
-    let subpage=data.s
-    if (subpage!=this.subPage)
-    {
+    let subpage = data.s;
+    if (subpage !== this.subPage) {
       // Need to access the subpage data.s rather than the local
       // However things will get complicated.
       // Consider another client sending a keystroke.
-      console.log("[TTXPAGE::IsGraphics] subPage does not match. Need think about what to do")
-      return false
+      LOG.fn(
+        ['ttxpage', 'IsGraphics'],
+        `subPage does not match. Need think about what to do`,
+        LOG.LOG_LEVEL_INFO,
+      );
+
+      return false;
     }
 
-    let myPage=this.subPageList[data.s]
-    let row=myPage[data.y].txt
-    // console.log("[TTXPAGE::IsGraphics]"+row)
+    let myPage = this.subPageList[data.s];
+    let row = myPage[data.y].txt;
 
-    let len=data.x
-    if (len>40)
-    {
-      len=40
+    let len = data.x;
+    if (len > 40) {
+      len = 40;
     }
-    let gfxMode=false
-    for (let i=0;i<len;i++)
-    {
-      let ch=row.charCodeAt(i) & 0x7f
-      if (ch<0x08)
-      {
-        gfxMode=false
+
+    let gfxMode = false;
+
+    for (let i = 0; i < len; i++) {
+      let ch = row.charCodeAt(i) & 0x7f;
+      if (ch < 0x08) {
+        gfxMode = false;
       }
-      if (ch>=0x10 && ch<0x18)
-      {
-        gfxMode=true
+      if (ch >= 0x10 && ch < 0x18) {
+        gfxMode = true;
       }
     }
-    // console.log("[TTXPAGE::IsGraphics] gfxMode="+gfxMode)
 
-    return gfxMode
-  }
+    return gfxMode;
+  };
 
   /** \return the character at location given in data.x amd data.y */
-  this.getChar=function(data)
-  {
-    if (data==undefined)
-    {
-      return 0
+  this.getChar = function (data) {
+    if (data === undefined) {
+      return 0;
     }
-    let subpage=data.s
-    if (subpage!=this.subPage)
-    {
-      return false // @todo
+
+    let subpage = data.s;
+    if (subpage !== this.subPage) {
+      return false; // @todo
     }
-    let myPage=this.subPageList[data.s]
-    let row=myPage[data.y].txt
 
-    let ch=row.charCodeAt(data.x) & 0x7f
-    console.log("[getChar] row="+row+" ch="+ch)
-    return ch
-  }
+    let myPage = this.subPageList[data.s];
+    let row = myPage[data.y].txt;
 
-} // page
+    let ch = row.charCodeAt(data.x) & 0x7f;
+
+    LOG.fn(
+      ['ttxpage', 'getChar'],
+      `row=${row}, ch=${ch}`,
+      LOG.LOG_LEVEL_VERBOSE,
+    );
+
+    return ch;
+  };
+};
 
 
 /** \return true if while in graphics mode it is a graphics character */
-function isMosaic(ch)
-{
-  ch=ch.charCodeAt() & 0x7f
-  return (ch>=0x20 && ch<0x40) || ch>=0x60
+function isMosaic(ch) {
+  ch = ch.charCodeAt() & 0x7f;
+
+  return (ch >= 0x20 && ch < 0x40) || ch >= 0x60;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-function row(page,y,str)
-{
-  this.page=page
-  this.row=y
-  this.txt=str
-  this.pagetext='xxx'
-  // console.log('Setting row to '+this.page+' '+this.row+' '+this.txt)
-  this.setchar=function(ch,n)
-  {
-    this.txt=setCharAt(this.txt,n,ch)
-  }
+function Row(page, y, str) {
+  this.page = page;
+  this.row = y;
+  this.txt = str;
+  this.pagetext = 'xxx';
+
+  this.setchar = function (ch, n) {
+    this.txt = setCharAt(this.txt, n, ch);
+  };
 
   this.setrow = function (txt) {
     this.txt = txt;
@@ -982,46 +967,54 @@ function row(page,y,str)
     }
   };
 
-  this.drawchar=function(ch,x,y,dblH)
-  {
-    text(ch,x*gTtxW,(y+1+(dblH?1:0))*gTtxH)
-  }
+  this.drawchar = function (ch, x, y, dblH) {
+    text(ch, x * gTtxW, (y + 1 + (dblH ? 1 : 0)) * gTtxH);
+  };
 
-  this.mapchar=function(ch)
-  {
-// Temporary mappings for Germany
-/*
-switch(ch)
-{
-  case '|':  return char(0x00f6) // 7/C o umlaut
-    case '}':  return char(0x00fc) // 7/D u umlaut
-  }*/
-    switch (ch)
+  this.mapchar = function (ch) {
+    // Temporary mappings for Germany
+    /*
+    switch(ch)
     {
-    case '#': return '£'
-    case '[': return char(0x2190) // 5/B Left arrow.
-    case '\\': return char(0xbd)   // 5/C Half
-    case ']':   return char(0x2192) // 5/D Right arrow.
-    case '^':  return char(0x2191) // 5/E Up arrow.
-    case '_':  return char(0x0023) // 5/F Underscore is hash sign
-    case '`' : return String.fromCharCode(0x2014) // 6/0 Centre dash. The full width dash e731
-    case '{':  return char(0xbc)   // 7/B Quarter
-    case '|':  return char(0x2016) // 7/C Double pipe
-    case '}':  return char(0xbe)   // 7/D Three quarters
-    case '~':  return char(0x00f7) // 7/E Divide
-    case String.fromCharCode(0x7f):  return char(0xe65f) // 7/F Bullet (rectangle block)
+      case '|':  return char(0x00f6) // 7/C o umlaut
+        case '}':  return char(0x00fc) // 7/D u umlaut
+      }*/
+    switch (ch) {
+      case '#':
+        return '£';
+      case '[':
+        return char(0x2190); // 5/B Left arrow.
+      case '\\':
+        return char(0xbd);   // 5/C Half
+      case ']':
+        return char(0x2192); // 5/D Right arrow.
+      case '^':
+        return char(0x2191); // 5/E Up arrow.
+      case '_':
+        return char(0x0023); // 5/F Underscore is hash sign
+      case '`' :
+        return String.fromCharCode(0x2014); // 6/0 Centre dash. The full width dash e731
+      case '{':
+        return char(0xbc);   // 7/B Quarter
+      case '|':
+        return char(0x2016); // 7/C Double pipe
+      case '}':
+        return char(0xbe);   // 7/D Three quarters
+      case '~':
+        return char(0x00f7); // 7/E Divide
+      case String.fromCharCode(0x7f):
+        return char(0xe65f); // 7/F Bullet (rectangle block)
     }
 
-    return ch
+    return ch;
   }
-} // row
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-function setCharAt(str,index,chr)
-{
-  if(index > str.length-1) return str
-  return str.substr(0,index) + chr + str.substr(index+1)
+function setCharAt(str, index, chr) {
+  if (index > str.length - 1) return str;
+  return str.substr(0, index) + chr + str.substr(index + 1);
 }
 
 /// @brief replace the characters in str at index with those in str2
@@ -1034,4 +1027,3 @@ function replace(str,str2,index)
 
   return str.substr(0, index) + str2 + str.substr(index + len);
 }
-
