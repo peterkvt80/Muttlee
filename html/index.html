@@ -30,36 +30,98 @@
     {% endif %}
 
 
-    <div id="serviceSelect">
-      <button class="controlsButton controlsButton--red" onclick="openTeefax();">
-        <span>
-          Teefax
-        </span>
+    <div id="menu">
+      <button id="menuButton" onclick="toggleMenu();">
+        <svg class="menuIcon" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 31.75 31.75">
+          <path d="M0 0h6.35v6.35H0Z" class="c c1-1"/>
+          <path d="M6.35 0h6.35v6.35H6.35Z" class="c c1-2"/>
+          <path d="M12.7 0h6.35v6.35H12.7z" class="c c1-3"/>
+          <path d="M19.05 0h6.35v6.35h-6.35z" class="c c1-4"/>
+          <path d="M25.4 0h6.35v6.35H25.4z" class="c c1-5"/>
+          <path d="M0 19.05h6.35V12.7H0Z" class="c c2-1"/>
+          <path d="M6.35 19.05h6.35V12.7H6.35Z" class="c c2-2"/>
+          <path d="M12.7 19.05h6.35V12.7H12.7z" class="c c2-3"/>
+          <path d="M19.05 19.05h6.35V12.7h-6.35z" class="c c2-4"/>
+          <path d="M25.4 19.05h6.35V12.7H25.4z" class="c c2-5"/>
+          <path d="M0 31.75h6.35V25.4H0Z" class="c c3-1"/>
+          <path d="M6.35 31.75h6.35V25.4H6.35Z" class="c c3-2"/>
+          <path d="M12.7 31.75h6.35V25.4H12.7z" class="c c3-3"/>
+          <path d="M19.05 31.75h6.35V25.4h-6.35z" class="c c3-4"/>
+          <path d="M25.4 31.75h6.35V25.4H25.4z" class="c c3-5"/>
+        </svg>
       </button>
 
-      <button class="controlsButton controlsButton--green" onclick="openD2K();">
-        <span>
-          Digitiser
-        </span>
-      </button>
+      <div id="menuContent">
+        <div id="settings">
+          <div id="settingsScale">
+            <label for="scaleSelector">
+              Scale
+            </label>
+            <select
+                id="scaleSelector"
+                onchange="scaleChange()"
+            >
+              <option value="1">1x</option>
+              <option value="1.5">1.5x</option>
+              <option value="2">2x</option>
+            </select>
+          </div>
+        </div>
 
-      <button class="controlsButton controlsButton--yellow" onclick="openReadback();">
-        <span>
-          Archive
-        </span>
-      </button>
+        <div id="grabSelect">
+          <button class="controlsButton controlsButton--white" onclick="exportPage();">
+            <span>
+              Grab...
+            </span>
+          </button>
 
-      <button class="controlsButton controlsButton--cyan" onclick="openWTF();">
-        <span>
-          Wiki
-        </span>
-      </button>
+          <ul id="grabSelectLinks" data-visible="false">
+            <li>
+              <a id="dynamicLink" href="#" target="_blank"></a>
+            </li>
 
-      <button class="controlsButton controlsButton--magenta" onclick="cheatSheet();">
-        <span>
-          Cheat sheet
-        </span>
-      </button>
+            <li>
+              <a id="dynamicLink2" href="#" target="_blank"></a>
+            </li>
+
+            <li>
+              <a id="dynamicLink3" href="#" target="_blank"></a>
+            </li>
+          </ul>
+        </div>
+
+        <div id="serviceSelect">
+          <button class="controlsButton controlsButton--red" onclick="openTeefax();">
+            <span>
+              Teefax
+            </span>
+          </button>
+
+          <button class="controlsButton controlsButton--green" onclick="openD2K();">
+            <span>
+              Digitiser
+            </span>
+          </button>
+
+          <button class="controlsButton controlsButton--yellow" onclick="openReadback();">
+            <span>
+              Archive
+            </span>
+          </button>
+
+          <button class="controlsButton controlsButton--cyan" onclick="openWTF();">
+            <span>
+              Wiki
+            </span>
+          </button>
+
+          <button class="controlsButton controlsButton--magenta" onclick="cheatSheet();">
+            <span>
+              Cheat sheet
+            </span>
+          </button>
+        </div>
+      </div>
     </div>
 
 
@@ -117,46 +179,6 @@
         </p>
 
         <!--<button class="button button--keypad" style="width:140px; height:100px;"  id="kinfo">Info</button> -->
-      </div>
-    </div>
-
-
-    <div id="grabSelect">
-      <button class="controlsButton controlsButton--white" onclick="exportPage();">
-        <span>
-          Grab...
-        </span>
-      </button>
-
-      <ul id="grabSelectLinks" data-visible="false">
-        <li>
-          <a id="dynamicLink" href="#" target="_blank"></a>
-        </li>
-
-        <li>
-          <a id="dynamicLink2" href="#" target="_blank"></a>
-        </li>
-
-        <li>
-          <a id="dynamicLink3" href="#" target="_blank"></a>
-        </li>
-      </ul>
-    </div>
-
-
-    <div id="settings">
-      <div id="settingsScale">
-        <label for="scaleSelector">
-          Scale
-        </label>
-        <select
-          id="scaleSelector"
-          onchange="scaleChange()"
-        >
-          <option value="1">1x</option>
-          <option value="1.5">1.5x</option>
-          <option value="2">2x</option>
-        </select>
       </div>
     </div>
 

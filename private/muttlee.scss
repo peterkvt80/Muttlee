@@ -1,3 +1,9 @@
+// sizes
+$menu-padding: 16px;
+$menu-button-width: 240px;
+$menu-button-spacing: 40px;
+
+// colours
 $colour--black: #000000;
 $colour--white: #ffffff;
 $colour--red: #ff0000;
@@ -11,7 +17,6 @@ $colour--grey: #cedce7;
 $colour--brown: #302010;
 $colour--beige: #bb5000;
 
-
 $colours--fg: (
     'white': $colour--white,
     'red': $colour--red,
@@ -22,7 +27,7 @@ $colours--fg: (
     'magenta': $colour--magenta
 );
 
-
+// font families
 $font-family--teletext2: 'Teletext2', 'Arial', 'Helvetica', sans-serif;
 $font-family--teletext4: 'Teletext4', 'Arial', 'Helvetica', sans-serif;
 
@@ -54,7 +59,7 @@ body {
     color: $colour--white;
     background-color: $colour--brown;
     font-family: $font-family--teletext2;
-    overflow: hidden;
+    overflow-x: hidden;
 }
 
 canvas {
@@ -290,83 +295,190 @@ button {
 
 
 
-#serviceSelect,
-#grabSelect {
-    button {
-        width: 240px;
-        min-height: 100px;
-    }
-}
-
-
-#serviceSelect {
-    display: flex;
-    flex-direction: column;
-    position: absolute;
-    top: 0;
-    left: -14px;
-    padding: 8px 0;
-
-    button {
-        margin: 20px 0;
-        border-top-right-radius: 0;
-        border-bottom-right-radius: 0;
-
-        &:first-child {
-            margin-top: 0;
-        }
-    }
-}
-
-[data-has-logo="true"] #serviceSelect {
-    top: 96px;
-}
-
-
-#grabSelect {
+#menu {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
     position: absolute;
     top: 0;
-    right: -14px;
-    padding: 8px 0;
-}
+    right: 0;
 
+    #menuButton {
+        width: 64px;
+        height: 64px;
+        padding: $menu-padding;
+        background: none;
+        border: 0;
+    }
 
-#grabSelectLinks {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    margin: 22px 14px 0 0;
-    padding: 0;
-    list-style: none;
-    overflow: hidden;
+    #menuContent {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        margin-right: -500px;
+        padding: $menu-padding $menu-padding 0 0;
 
-    transition: max-height 0.3s ease-in-out,
-        opacity 0.3s ease-in-out;
+        transition: margin-right 0.3s ease-in-out;
 
-    li {
-        margin: 0;
-        padding: 12px 0;
-
-        a {
-            display: inline-block;
-            padding: 7px 10px;
-            text-align: right;
-            background-color: $colour--beige;
-            color: $colour--white;
+        @at-root {
+            [data-menu-open="true"] & {
+                margin-right: 0;
+            }
         }
     }
 
-    &[data-visible="false"] {
-        max-height: 0;
-        opacity: 0;
+    .menuIcon {
+        width: 100%;
+        height: 100%;
+
+        .c {
+            fill: $colour--white;
+            stroke: $colour--white;
+            stroke-width: 1px;
+            transform: translate(0, 0);
+
+            transition: transform 0.2s linear;
+        }
+
+        @at-root {
+            [data-menu-open="true"] {
+                #menu .menuIcon {
+                    .c1-2 {
+                        transform: translate(0, 6.3px);
+                    }
+                    .c1-3 {
+                        transform: translate(0, 12.6px);
+                    }
+                    .c1-4 {
+                        transform: translate(0, 6.3px);
+                    }
+
+                    .c2-1 {
+                        transform: translate(12.6px, 0);
+                    }
+                    .c2-2 {
+                        transform: translate(6.3px, 0);
+                    }
+                    .c2-4 {
+                        transform: translate(-6.3px, 0);
+                    }
+                    .c2-5 {
+                        transform: translate(-12.6px, 0);
+                    }
+
+                    .c3-2 {
+                        transform: translate(0, -6.3px);
+                    }
+                    .c3-3 {
+                        transform: translate(0, -12.6px);
+                    }
+                    .c3-4 {
+                        transform: translate(0, -6.3px);
+                    }
+                }
+            }
+        }
     }
 
-    &[data-visible="true"] {
-        max-height: 100%;
-        opacity: 1;
+    #serviceSelect,
+    #grabSelect {
+        display: flex;
+        flex-direction: column;
+        margin-top: #{$menu-button-spacing / 2};
+        padding: 8px 0;
+
+        button {
+            width: $menu-button-width;
+            min-height: 100px;
+        }
+    }
+
+    #serviceSelect {
+        //position: absolute;
+        //top: 0;
+        //right: -14px;
+
+        button {
+            margin: #{$menu-button-spacing / 2} 0;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+
+            &:first-child {
+                margin-top: 0;
+            }
+
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+
+    #grabSelect {
+        align-items: flex-end;
+        position: relative;
+        //position: absolute;
+        //top: 0;
+        //right: -14px;
+
+        #grabSelectLinks {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            position: absolute;
+            top: 0;
+            right: #{$menu-button-width + ($menu-button-spacing / 2)};
+            //margin: 22px 14px 0 0;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            //overflow: hidden;
+
+            transition: max-height 0.3s ease-in-out,
+                opacity 0.3s ease-in-out;
+
+            li {
+                margin: 0;
+                padding: 12px 0;
+
+                &:first-child {
+                    padding-top: 0;
+                }
+
+                &:last-child {
+                    padding-bottom: 0;
+                }
+
+                a {
+                    display: inline-block;
+                    padding: 7px 10px;
+                    text-align: right;
+                    background-color: $colour--beige;
+                    color: $colour--white;
+                }
+            }
+
+            &[data-visible="false"] {
+                max-height: 0;
+                opacity: 0;
+            }
+
+            &[data-visible="true"] {
+                max-height: 100%;
+                opacity: 1;
+            }
+        }
+    }
+
+    #settings {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        box-sizing: border-box;
+        //position: absolute;
+        //left: 0;
+        //bottom: 0;
+        width: 100%;
+        //padding: 10px 20px;
     }
 }
 
@@ -451,25 +563,12 @@ button {
 
 
 
-#settings {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    box-sizing: border-box;
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    padding: 10px 20px;
-}
-
-
-
-
 /* media queries */
 @media only screen and (max-width: 1023px) {
-    #serviceSelect,
-    #grabSelect {
-        display: none;
+    #menu {
+        #serviceSelect,
+        #grabSelect {
+            display: none;
+        }
     }
 }

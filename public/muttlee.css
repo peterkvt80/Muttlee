@@ -22,7 +22,7 @@ body {
   color: #ffffff;
   background-color: #302010;
   font-family: "Teletext2", "Arial", "Helvetica", sans-serif;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 canvas {
@@ -240,62 +240,149 @@ button:focus, button:hover {
   fill: #ffffff;
 }
 
-#serviceSelect button,
-#grabSelect button {
+#menu {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+#menu #menuButton {
+  width: 64px;
+  height: 64px;
+  padding: 16px;
+  background: none;
+  border: 0;
+}
+
+#menu #menuContent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-right: -500px;
+  padding: 16px 16px 0 0;
+  transition: margin-right 0.3s ease-in-out;
+}
+
+[data-menu-open="true"] #menu #menuContent {
+  margin-right: 0;
+}
+
+#menu .menuIcon {
+  width: 100%;
+  height: 100%;
+}
+
+#menu .menuIcon .c {
+  fill: #ffffff;
+  stroke: #ffffff;
+  stroke-width: 1px;
+  transform: translate(0, 0);
+  transition: transform 0.2s linear;
+}
+
+[data-menu-open="true"] #menu .menuIcon .c1-2 {
+  transform: translate(0, 6.3px);
+}
+
+[data-menu-open="true"] #menu .menuIcon .c1-3 {
+  transform: translate(0, 12.6px);
+}
+
+[data-menu-open="true"] #menu .menuIcon .c1-4 {
+  transform: translate(0, 6.3px);
+}
+
+[data-menu-open="true"] #menu .menuIcon .c2-1 {
+  transform: translate(12.6px, 0);
+}
+
+[data-menu-open="true"] #menu .menuIcon .c2-2 {
+  transform: translate(6.3px, 0);
+}
+
+[data-menu-open="true"] #menu .menuIcon .c2-4 {
+  transform: translate(-6.3px, 0);
+}
+
+[data-menu-open="true"] #menu .menuIcon .c2-5 {
+  transform: translate(-12.6px, 0);
+}
+
+[data-menu-open="true"] #menu .menuIcon .c3-2 {
+  transform: translate(0, -6.3px);
+}
+
+[data-menu-open="true"] #menu .menuIcon .c3-3 {
+  transform: translate(0, -12.6px);
+}
+
+[data-menu-open="true"] #menu .menuIcon .c3-4 {
+  transform: translate(0, -6.3px);
+}
+
+#menu #serviceSelect,
+#menu #grabSelect {
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+  padding: 8px 0;
+}
+
+#menu #serviceSelect button,
+#menu #grabSelect button {
   width: 240px;
   min-height: 100px;
 }
 
-#serviceSelect {
-  display: flex;
-  flex-direction: column;
-  position: absolute;
-  top: 0;
-  left: -14px;
-  padding: 8px 0;
-}
-
-#serviceSelect button {
+#menu #serviceSelect button {
   margin: 20px 0;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 }
 
-#serviceSelect button:first-child {
+#menu #serviceSelect button:first-child {
   margin-top: 0;
 }
 
-[data-has-logo="true"] #serviceSelect {
-  top: 96px;
+#menu #serviceSelect button:last-child {
+  margin-bottom: 0;
 }
 
-#grabSelect {
+#menu #grabSelect {
+  align-items: flex-end;
+  position: relative;
+}
+
+#menu #grabSelect #grabSelectLinks {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   position: absolute;
   top: 0;
-  right: -14px;
-  padding: 8px 0;
-}
-
-#grabSelectLinks {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  margin: 22px 14px 0 0;
+  right: 260px;
+  margin: 0;
   padding: 0;
   list-style: none;
-  overflow: hidden;
   transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
 }
 
-#grabSelectLinks li {
+#menu #grabSelect #grabSelectLinks li {
   margin: 0;
   padding: 12px 0;
 }
 
-#grabSelectLinks li a {
+#menu #grabSelect #grabSelectLinks li:first-child {
+  padding-top: 0;
+}
+
+#menu #grabSelect #grabSelectLinks li:last-child {
+  padding-bottom: 0;
+}
+
+#menu #grabSelect #grabSelectLinks li a {
   display: inline-block;
   padding: 7px 10px;
   text-align: right;
@@ -303,14 +390,22 @@ button:focus, button:hover {
   color: #ffffff;
 }
 
-#grabSelectLinks[data-visible="false"] {
+#menu #grabSelect #grabSelectLinks[data-visible="false"] {
   max-height: 0;
   opacity: 0;
 }
 
-#grabSelectLinks[data-visible="true"] {
+#menu #grabSelect #grabSelectLinks[data-visible="true"] {
   max-height: 100%;
   opacity: 1;
+}
+
+#menu #settings {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 #wrapper {
@@ -379,22 +474,10 @@ button:focus, button:hover {
   font-family: "Teletext4", "Arial", "Helvetica", sans-serif;
 }
 
-#settings {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  box-sizing: border-box;
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  padding: 10px 20px;
-}
-
 /* media queries */
 @media only screen and (max-width: 1023px) {
-  #serviceSelect,
-  #grabSelect {
+  #menu #serviceSelect,
+  #menu #grabSelect {
     display: none;
   }
 }

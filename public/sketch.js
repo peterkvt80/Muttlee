@@ -1,17 +1,15 @@
 // current state values (initialize to defaults)
 let scale = CONFIG.DEFAULT_SCALE;
+let menuOpen = CONFIG.DEFAULT_MENU_OPEN;
 
-// remember last state values
-let lastPixelDensity;
-
+// remember current state values
+let currentPixelDensity;
 
 // initialise edit mode
 let editMode = CONST.EDITMODE_NORMAL;
 
-
 // teletext
 let myPage, ttxFont;
-let serviceSelector;
 
 // metrics
 let gTtxW, gTtxH;
@@ -31,7 +29,9 @@ let gClientID = null; // Our unique connection id
 // DOM
 let inputPage;
 let indexButton;
+let menuButton;
 let scaleSelector;
+let serviceSelector;
 
 // timer for expiring incomplete keypad entries
 let expiredState = true; // True for four seconds after the last keypad number was typed OR until a valid page number is typed
@@ -202,8 +202,9 @@ function setup() {
   frameRate(10);
 
 
-  // set specific state values as a custom attribute on the body element (for CSS targeting)
-  document.body.setAttribute(CONST.ATTR_DATA_SCALE, scale.toString());
+  // set specific initial state values as a custom attribute on the body element (for CSS targeting)
+  document.body.setAttribute(CONST.ATTR_DATA_SCALE, scale);
+  document.body.setAttribute(CONST.ATTR_MENU_OPEN, menuOpen);
 
   // set initial state values into their UI elements...
   scaleSelector = document.querySelector('#scaleSelector');
@@ -213,7 +214,8 @@ function setup() {
   }
 
 
-  // store a reference to the canvas element
+  // store a reference to the DOM elements
+  menuButton = document.querySelector('#menuButton');
   canvasElement = document.getElementById('defaultCanvas0');
 
   // set the initial canvas scale
@@ -275,7 +277,7 @@ function setTimer(data) {
 
 
 function setSubPage(data) {
-  if (data.id != gClientID && gClientID != null) {
+  if (data.id !== gClientID && gClientID !== null) {
     // Not for us?
     return;
   }
@@ -390,12 +392,10 @@ function fastext(index) {
 
     case 4:
       page = myPage.cyanLink;
-
       break;
 
     case 6:
       page = myPage.indexLink;
-
       break;
 
     default:
@@ -429,8 +429,7 @@ function fastext(index) {
   }
 }
 
-function setFastext(data)
-{
+function setFastext(data) {
   if (!matchpage(data)) {
     return; // Data is not for our page?
   }
@@ -969,7 +968,12 @@ function khold() {
 /* Block editing. Touch marks the first corner of an area
 */
 function touchStarted() {
-  if (touchY > CONFIG.CANVAS_HEIGHT) {    // Only start block on a page
+  // only start block if touch event is within the page canvas
+  if (
+    (touchX > (CONFIG.CANVAS_WIDTH * currentPixelDensity)) ||
+    (touchY > (CONFIG.CANVAS_HEIGHT * currentPixelDensity))
+  ) {
+    // touch event not within canvas
     return;
   }
 
@@ -983,8 +987,13 @@ function touchEnded() {
   blockEnd.sub(blockStart);
   blockStart = null; // Need this to be null in case we return!
 
-  if (touchY > CONFIG.CANVAS_HEIGHT) {    // Restrict to the actual page (need to check width too)
-    return
+  // only start block if touch event is within the page canvas
+  if (
+      (touchX > (CONFIG.CANVAS_WIDTH * currentPixelDensity)) ||
+      (touchY > (CONFIG.CANVAS_HEIGHT * currentPixelDensity))
+  ) {
+    // touch event not within canvas
+    return;
   }
 
   // Block needs to be a minimum distance (& possibly velocity?
@@ -1332,27 +1341,32 @@ function sendRow(r, txt) {
 
 
 function updateScale() {
-  // get current viewport size
-  let windowWidth = window.innerWidth;
-  let windowHeight = window.innerHeight;
-
   // if pixel density has changed, update canvas pixel density
   let newPixelDensity = parseFloat(scale);
- 
-  if (newPixelDensity !== lastPixelDensity) {
+
+  if (newPixelDensity !== currentPixelDensity) {
     pixelDensity(
       newPixelDensity
     );
 
     canvasElement.removeAttribute('style');
 
-    lastPixelDensity = newPixelDensity;
+    currentPixelDensity = newPixelDensity;
   }
 }
 
 
 function windowResized() {
   updateScale();
+}
+
+
+function toggleMenu() {
+  // toggle menu state
+  menuOpen = !menuOpen;
+
+  // update custom attribute on body element
+  document.body.setAttribute(CONST.ATTR_MENU_OPEN, menuOpen);
 }
 
 
