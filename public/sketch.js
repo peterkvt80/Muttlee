@@ -944,6 +944,23 @@ function processKey(keyPressed)
     socket.emit('keystroke', data);
 
   } else {
+    // uiop are red/green/yellow/cyan Fastext buttons.
+    if (keyPressed =='u') { // press the red button
+      fastext(1);
+      return;
+    }
+    if (keyPressed =='i') { // press the green button
+      fastext(2);
+      return;
+    }
+    if (keyPressed =='o') { // press the yellow button
+      fastext(3);
+      return;
+    }
+    if (keyPressed =='p') { // press the cyan button
+      fastext(4);
+      return;
+    }
     // Numbers are used for the page selection
     if (keyPressed >= '0' && keyPressed <= '9') {
       if (inputPage && inputPage.elt) {
