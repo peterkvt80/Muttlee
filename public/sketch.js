@@ -741,6 +741,7 @@ function keyPressed() // This is called before keyTyped
 
       case ESCAPE:
         // @todo A more sophisticated access scheme
+        // Services that are editable
         if (
           [
             'wtf',
@@ -749,24 +750,22 @@ function keyPressed() // This is called before keyTyped
             'channel19'
           ].includes(myPage.service)
         ) {
-          break;
+          switch (editMode) {
+            case CONST.EDITMODE_NORMAL:
+              editMode = CONST.EDITMODE_EDIT;
+              break;
+
+            case CONST.EDITMODE_EDIT:
+              editMode = CONST.EDITMODE_ESCAPE;
+              break;
+
+            case CONST.EDITMODE_ESCAPE:
+              editMode = CONST.EDITMODE_NORMAL;
+              break;
+          }
+          myPage.editSwitch(editMode);
         }
 
-        switch (editMode) {
-          case CONST.EDITMODE_NORMAL:
-            editMode = CONST.EDITMODE_EDIT;
-            break;
-
-          case CONST.EDITMODE_EDIT:
-            editMode = CONST.EDITMODE_ESCAPE;
-            break;
-
-          case CONST.EDITMODE_ESCAPE:
-            editMode = CONST.EDITMODE_NORMAL;
-            break;
-        }
-
-        myPage.editSwitch(editMode);
         break;
 
       case TAB: // Insert a space
