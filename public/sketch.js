@@ -944,6 +944,7 @@ function processKey(keyPressed)
     socket.emit('keystroke', data);
 
   } else {
+    // navigation from the keyboard (same as vbit-iv)
     // uiop are red/green/yellow/cyan Fastext buttons.
     if (keyPressed =='u') { // press the red button
       fastext(1);
@@ -960,6 +961,14 @@ function processKey(keyPressed)
     if (keyPressed =='p') { // press the cyan button
       fastext(4);
       return;
+    }
+    if (keyPressed =='h') { // hold
+      khold();
+      //return;
+    }
+    if (keyPressed =='r') { // reveal
+      krvl();
+      //return;
     }
     // Numbers are used for the page selection
     if (keyPressed >= '0' && keyPressed <= '9') {
