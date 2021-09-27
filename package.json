@@ -35,9 +35,12 @@
     "socket.io": "^2.4.1"
   },
   "devDependencies": {
+    "@taiyosen/easy-svn": "^1.0.8",
     "autoprefixer": "latest",
     "browserslist": "latest",
     "clean-css-cli": "latest",
+    "command-line-args": "^5.2.0",
+    "command-line-usage": "^6.1.1",
     "node-sass": "latest",
     "postcss": "latest",
     "postcss-cli": "latest"
