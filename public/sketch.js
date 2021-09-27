@@ -99,7 +99,7 @@ function startTimer() {
     function () {
       expiredState = true;
 
-      // todo: Restore the page number. Enable the refresh loop
+      // @todo: Restore the page number. Enable the refresh loop
       let p = myPage.pageNumber;
       digit1 = (String)((p >> 8) & 0xf);
       digit2 = (String)((p >> 4) & 0xf);
@@ -107,7 +107,7 @@ function startTimer() {
 
       myPage.pageNumberEntry = digit1 + digit2 + digit3;
 
-      // todo Put this into row 0
+      // @todo: Put this into row 0
       myPage.rows[0].setpagetext(digit1 + digit2 + digit3);
 
       timeoutVar = null;
@@ -125,6 +125,8 @@ function preload() {
 
 
 function setup() {
+  let page;
+
   // allow specific settings values to be set via querystring params
   const searchParams = new URLSearchParams(window.location.search);
 
@@ -140,6 +142,9 @@ function setup() {
 
     } else if (key === 'display') {
       display = value;
+
+    } else if (key === 'page') {
+      page = value;
     }
   }
 
@@ -203,7 +208,10 @@ function setup() {
 
   myPage = new TTXPAGE();
   myPage.init(
-    CONST.PAGE_MIN,
+    page ?
+      parseInt(page, 16) :
+      CONST.PAGE_MIN,
+
     service,
   );
 
@@ -387,11 +395,11 @@ function setID(id) {
 
   gClientID = id;
 
-  // Now we can load the initial page 100
+  // Now we can load the initial page
   let data = {
     S: myPage.service, // The codename of the service. eg. d2k or undefined
-    p: CONST.PAGE_MIN, // Page mpp
-    s: 0,  // subpage 0
+    p: myPage.pageNumber, // Page mpp
+    s: myPage.subPage,
     x: CONST.SIGNAL_INITIAL_LOAD, // A secret flag to do an initial load
     y: 0,
     rowText: '',
@@ -975,32 +983,32 @@ function processKey(keyPressed)
   } else {
     // navigation from the keyboard (same as vbit-iv)
     // uiop are red/green/yellow/cyan Fastext buttons.
-    if (keyPressed =='u') {
+    if (keyPressed === 'u') {
       // press the red button
       fastext(1);
       return;
 
-    } else if (keyPressed =='i') {
+    } else if (keyPressed === 'i') {
       // press the green button
       fastext(2);
       return;
 
-    } else if (keyPressed =='o') {
+    } else if (keyPressed === 'o') {
       // press the yellow button
       fastext(3);
       return;
 
-    } else if (keyPressed =='p') {
+    } else if (keyPressed === 'p') {
       // press the cyan button
       fastext(4);
       return;
 
-    } else if (keyPressed =='h') {
+    } else if (keyPressed === 'h') {
       // hold
       khold();
       return;
 
-    } else if (keyPressed =='r') {
+    } else if (keyPressed === 'r') {
       // reveal
       krvl();
       return;

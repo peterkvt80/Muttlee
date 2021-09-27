@@ -250,7 +250,7 @@ app.get(
   weather.doLoadWeather
 );
 
-var initialPage = CONST.PAGE_MIN;
+var initialPage;
 
 // Associative array links user id to service: connectionList['/#NODc31jxxFTSm_SaAAAC']=CONST.SERVICE_DIGITISER
 var connectionList = new Object();
@@ -282,11 +282,14 @@ function newConnection(socket) {
   }
 
   // determine parameters from socket URL
-  const url = new URL(socket.handshake.url, 'http://example.com');
-  const searchParams = new URLSearchParams(url.search);
+  const viewerUrl = new URL(socket.handshake.headers.referer);
+  const viewerSearchParams = new URLSearchParams(viewerUrl.search);
 
-  const service = searchParams.get('service');
-  const page = searchParams.get('page');
+  const socketUrl = new URL(socket.handshake.url, 'http://example.com');
+  const socketSearchParams = new URLSearchParams(socketUrl.search);
+
+  const service = socketSearchParams.get('service');
+  const page = viewerSearchParams.get('page');
 
   LOG.fn(
     ['teletextserver', 'newConnection'],
@@ -359,7 +362,7 @@ function newConnection(socket) {
   socket.on('disconnect', function () {
     delete connectionList[socket.id];
   });
-};
+}
 
 /** Clear the current page to blank
  */

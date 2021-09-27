@@ -85,16 +85,25 @@ TTXPAGE = function() {
    *  Clear the page. We should get a number of rows soon
    */
   this.setPage = function (p) {
-    this.subPage = 0;
     tickCounter = 1;
+
+    this.subPage = 0;
     this.pageNumber = p; /// @todo Convert this to do all sub pages
-
     this.pageNumberEntry = p.toString(16);
-
     this.subPageList = [];
-    this.metaData = [];
 
     this.addPage(this.pageNumber);
+
+    // update the URL with the current page (without reloading the page)
+    if (history.pushState) {
+      const loc = window.location;
+      let searchParams = new URLSearchParams(loc.search);
+      searchParams.set('page', this.pageNumberEntry);
+
+      const newUrl = `${loc.protocol}//${loc.host}${loc.pathname}?${searchParams.toString()}`;
+
+      window.history.pushState({ path: newUrl }, '', newUrl);
+    }
 
     // keep page number input field synced with the current page number
     if (inputPage && inputPage.elt) {
@@ -142,8 +151,7 @@ TTXPAGE = function() {
   /**
    * @param s Subpage number. All subsequent row/char updates go to this subpage.
    */
-  this.setSubPage=function(s)
-  {
+  this.setSubPage = function(s) {
     s = parseInt(s);
 
     if (s < 0 || s > 79) {
