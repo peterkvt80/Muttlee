@@ -229,6 +229,7 @@ const io = socket(
       res.writeHead(200, {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST',
+        'Referrer-Policy': 'no-referrer-when-downgrade',
       });
       res.end();
     },
