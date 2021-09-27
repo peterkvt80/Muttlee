@@ -299,6 +299,7 @@ function openService(serviceId) {
   // set service param of URL
   const params = new URLSearchParams(location.search);
   params.set('service', serviceId);
+  params.delete('page');      // don't carry current page number over when changing service
 
   const newUrl = location.pathname + '?' + params;
 
