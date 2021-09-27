@@ -66,10 +66,9 @@ TTXPAGE = function() {
   };
 
   // @todo check range
-  this.init = function (number) {
+  this.init = function (number, service) {
     this.pageNumber = number;
-
-    //this.service=undefined // @todo Services
+    this.service = service;
 
     this.addPage(number);
   };
@@ -110,8 +109,8 @@ TTXPAGE = function() {
   this.getService = function () {
     let svc = String(this.service);
 
-    if (svc === 'undefined') {
-      svc = 'onair';
+    if (svc === undefined) {
+      svc = CONST.SERVICE_TEEFAX;
     }
 
     return svc;
@@ -236,17 +235,15 @@ TTXPAGE = function() {
   };
 
   this.draw = function (changed) {
-    let dblHeight;
-
     // Sometimes the carousel isn't ready
     if (typeof this.subPage === 'undefined') {
       return;
     }
 
-    let carouselReady = (typeof this.subPage != 'undefined');
+    let carouselReady = (typeof this.subPage !== 'undefined');
 
     if (carouselReady) {
-      carouselReady = (typeof this.metadata[this.subPage] != 'undefined');
+      carouselReady = (typeof this.metadata[this.subPage] !== 'undefined');
     }
 
     if (!(this.holdMode || this.editMode !== CONST.EDITMODE_NORMAL) && carouselReady) {     // Only cycle if we are not in hold mode or edit
@@ -266,8 +263,8 @@ TTXPAGE = function() {
 
     for (let rw = 0; rw < this.rows.length; rw++) {
       let cpos = -1;
-      if (this.editMode !== CONST.EDITMODE_NORMAL && rw === this.cursor.y) // If in edit mode and it is the correct row...
-      {
+      if (this.editMode !== CONST.EDITMODE_NORMAL && rw === this.cursor.y) {
+        // If in edit mode and it is the correct row...
         cpos = this.cursor.x;
       }
 
@@ -290,15 +287,15 @@ TTXPAGE = function() {
         // can we fix it?
         v = this.subPageList[0];
 
-        if (v !== undefined) // Move to a subpage that exists
-        {
+        if (v !== undefined) {
+          // Move to a subpage that exists
           this.subPage = 0;
         }
       }
 
       if (v !== undefined && v.length > 0) {
-        if (rw === 0 && v.length > 0) // Set the page number for the header only
-        {
+        if (rw === 0 && v.length > 0) {
+          // Set the page number for the header only
           v[0].setpagetext(this.pageNumberEntry);
         }
 
@@ -565,7 +562,7 @@ function Row(page, y, str) {
 
     // Special treatment for row 0
     if (this.row === 0) {
-      if (cpos < 0 && editMode === CONST.EDITMODE_NORMAL) {
+      if ((cpos < 0) && (editMode === CONST.EDITMODE_NORMAL)) {
         // This is the header row and we are NOT editing
         let leftSpacing = 4;
 
@@ -574,17 +571,17 @@ function Row(page, y, str) {
         const newTitle = CONFIG.HEADER_TITLE.toUpperCase();
 
         if (originalTitle !== newTitle) {
+          leftSpacing = leftSpacing - (newTitle.length - originalTitle.length);
+
           if (txt.indexOf(originalTitle) !== -1) {
             if (newTitle.length > originalTitle.length) {
-              leftSpacing = leftSpacing - (newTitle.length - originalTitle.length);
-
               originalTitle = ''.padStart(newTitle.length - originalTitle.length, 'X') + originalTitle;
             }
 
             txt = txt.replace(originalTitle, newTitle);
           }
 
-          if (txt.indexOf(originalTitle.toLowerCase()) !== -1) {
+          if (txt.indexOf(originalTitle.toLowerCase() + ' ') !== -1) {
             txt = txt.replace(originalTitle.toLowerCase(), CONFIG.HEADER_TITLE.toLowerCase());
           }
         }
@@ -837,7 +834,8 @@ function Row(page, y, str) {
       }
 
       if (this.row < 23) {
-        this.drawchar(String.fromCharCode(0xe6df), i, this.row + 1, false) //edge case: a single height character on a double height row has double height background
+        // edge case: a single height character on a double height row has double height background
+        this.drawchar(String.fromCharCode(0xe6df), i, this.row + 1, false);
       }
 
       this.drawchar(String.fromCharCode(0xe6df), i, this.row, dblHeight);

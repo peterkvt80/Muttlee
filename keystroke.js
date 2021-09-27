@@ -179,9 +179,9 @@ KeyStroke = function () {
     // Sort the event list by S(service name) p(page 100..8ff) s(subpage 0..99) y(row 0..24)
     this.eventList.sort(
       function (a, b) {
-        // the main service is never defined, so set it to the proper 'onair'
-        if (a.S === undefined) a.S = 'onair';
-        if (b.S === undefined) a.S = 'onair';
+        // the main service is never defined, so set it to the proper CONST.SERVICE_TEEFAX
+        if (a.S === undefined) a.S = CONST.SERVICE_TEEFAX;
+        if (b.S === undefined) a.S = CONST.SERVICE_TEEFAX;
         // Service sort
         if (a.S < b.S) return -1;
         if (a.S > b.S) return 1;
@@ -207,16 +207,16 @@ KeyStroke = function () {
       // Get the filename
       service = event.S;
       if (service === undefined) {
-        service = 'onair';
+        service = CONST.SERVICE_TEEFAX;
       }
 
       var pageNumber = event.p;
       var subPage = event.s;
 
       const filename = path.join(
-        CONFIG.BASE_DIR,
+        CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],
         service,
-        'p' + pageNumber.toString(16) + '.tti'    // The filename of the original page
+        `p${pageNumber.toString(16)}${CONST.PAGE_EXT_TTI}`    // The filename of the original page
       );
 
       const that = this;

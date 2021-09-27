@@ -40,7 +40,10 @@ config.*.js
 
 # Optional REPL history
 .node_repl_history
+
+# Pages
 *.ttix
 *.tti
+!private/p404.tti
 BBCNEWS/BBC100.ttix.BAK
 *.bak

@@ -5,6 +5,7 @@ const path = require('path');
 const http = require('http');
 const https = require('https');
 
+const parseUrl = require('parseurl');
 const express = require('express');
 const nunjucks = require('nunjucks');
 
@@ -56,7 +57,10 @@ if (CONFIG[CONST.CONFIG.SHOW_CONSOLE_LOGO] === true) {
 // output basic server information
 LOG.fn(
   null,
-  `Server is running on ${process.platform}`,
+  [
+    `Server is running on ${process.platform}`,
+    `Serving service page files from ${CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR]}`,
+  ],
   LOG.LOG_LEVEL_MANDATORY,
 );
 
@@ -97,7 +101,8 @@ env.addFilter(
 
 // define shared template variables
 let templateVars = {
-  TITLE: CONFIG.TITLE,
+  TITLE: CONFIG[CONST.CONFIG.TITLE],
+  SERVICES_AVAILABLE: CONFIG[CONST.CONFIG.SERVICES_AVAILABLE],
 };
 
 // read in logo SVG to pass into the template
@@ -132,6 +137,18 @@ app.use(
 
     res.send(
       content
+    );
+  }
+);
+
+app.use(
+  '/pages',
+  function (req, res) {
+    res.sendFile(
+      path.join(
+        CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],
+        parseUrl(req).path,
+      )
     );
   }
 );
@@ -205,7 +222,17 @@ LOG.blank();
 const io = socket(
   (CONFIG.TELETEXT_VIEWER_SERVE_HTTPS) ?
     serverHttps :
-    serverHttp
+    serverHttp,
+
+  {
+    handlePreflightRequest: (req, res) => {
+      res.writeHead(200, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST',
+      });
+      res.end();
+    },
+  },
 );
 
 io.sockets.on('connection', newConnection);
@@ -223,10 +250,11 @@ app.get(
   weather.doLoadWeather
 );
 
-
-
 var initialPage = CONST.PAGE_MIN;
-var connectionList = new Object(); // Associative array links user id to service: connectionList['/#NODc31jxxFTSm_SaAAAC']='d2k'
+
+// Associative array links user id to service: connectionList['/#NODc31jxxFTSm_SaAAAC']=CONST.SERVICE_DIGITISER
+var connectionList = new Object();
+
 var missingPage = 0;
 
 
@@ -246,36 +274,37 @@ setInterval(save, 60000);  // every minute we save away the edits
 
 
 function newConnection(socket) {
-  // Try to split the parameters from ?service=BBCNEWS&page=120
-  let queryString = {};
+  // check if request IP address is banned (in config.js)
+  const clientIp = socket.request.connection.remoteAddress;
 
-  let uri = decodeURI(socket.handshake.headers.referer);
-  uri.replace(
-    new RegExp('([^?=&]+)(=([^&]*))?', 'g'),
-    function ($0, $1, $2, $3) {
-      queryString[$1] = $3;
-    }
-  );
+  if (CONFIG.BANNED_IP_ADDRESSES.includes(clientIp)) {
+    return;
+  }
+
+  // determine parameters from socket URL
+  const url = new URL(socket.handshake.url, 'http://example.com');
+  const searchParams = new URLSearchParams(url.search);
+
+  const service = searchParams.get('service');
+  const page = searchParams.get('page');
 
   LOG.fn(
     ['teletextserver', 'newConnection'],
-    [
-      `Service: ${queryString['service']}`,
-      `Page: ${queryString['page']}`
-    ],
+    `service=${service}, page=${page}`,
     LOG.LOG_LEVEL_VERBOSE,
   );
 
-  let p = parseInt('0x' + queryString['page'], 16);
+  // set default page number if none supplied
+  let p;
 
-  // If there was no page supplied we default to 100.
-  if (queryString['page'] === undefined) {
+  if (page === undefined) {
     p = CONST.PAGE_MIN;
+
+  } else {
+    p = parseInt(`0x${page}`, 16);
   }
 
-  const serviceString = queryString['service'];
-
-  connectionList[socket.id] = serviceString;     // Register that this user is linked to this service.
+  connectionList[socket.id] = service;     // Register that this user is linked to this service.
 
   // If there is no page=nnn in the URL then default to CONST.PAGE_MIN
   if ((p >= CONST.PAGE_MIN) && (p <= CONST.PAGE_MAX)) {
@@ -283,7 +312,7 @@ function newConnection(socket) {
 
     const data = {
       p: initialPage,
-      S: serviceString
+      S: service
     };
 
     io.sockets.emit('setpage', data);
@@ -297,13 +326,6 @@ function newConnection(socket) {
     `socket.id=${socket.id}`,
     LOG.LOG_LEVEL_INFO,
   );
-
-  // check if request IP address is banned (in config.js)
-  const clientIp = socket.request.connection.remoteAddress;
-
-  if (CONFIG.BANNED_IP_ADDRESSES.includes(clientIp)) {
-    return;
-  }
 
   // Send the socket id back. If a message comes in with this socket we know where to send the setpage to.
   socket.emit('id', socket.id);
@@ -337,7 +359,7 @@ function newConnection(socket) {
   socket.on('disconnect', function () {
     delete connectionList[socket.id];
   });
-}
+};
 
 /** Clear the current page to blank
  */
@@ -386,125 +408,130 @@ function doInitialLoad(data) {
 }
 
 function doLoad(data) {
+  // @todo: This should emit only to socket.emit, not all units
+  // clear the existing page
+  io.sockets.emit('blank', data);
+
   // if client request has data.x==CONST.SIGNAL_INITIAL_LOAD, we load the initial page.
   if (data.x === CONST.SIGNAL_INITIAL_LOAD) {
     data.p = initialPage;
     data.x = 0;
   }
 
-  let serviceString = connectionList[data.id];
+  let service = connectionList[data.id];
 
-  if (typeof serviceString === 'undefined') {
-    serviceString = 'onair';
+  if (service === undefined) {
+    service = CONST.SERVICE_TEEFAX;
   }
 
-  const filename = path.join(
-    CONFIG.BASE_DIR,
-    serviceString,
-    'p' + data.p.toString(16) + '.tti'
-  );
+
+  // determine what to serve...
+  let filename;
+
+  if (data.p === CONST.PAGE_404) {
+    // serve custom 404 page, or leave existing blanked page?
+    if (!fs.existsSync(CONFIG[CONST.CONFIG.PAGE_404_PATH])) {
+      // custom 404 page does not exist, leave existing blanked page
+      return false;
+
+    } else {
+      // custom 404 page exists, serve it
+      filename = CONFIG[CONST.CONFIG.PAGE_404_PATH];
+    }
+
+  } else {
+    filename = path.join(
+      CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],
+      service,
+      `p${data.p.toString(16)}.tti`,
+    );
+  }
+
 
   // !!! Here we want to check if the page is already in cache
-  let found = findService(serviceString);
+  let found = findService(service);
 
   if (found === false) {
     LOG.fn(
       ['teletextserver', 'doLoad'],
-      `Adding service=${serviceString}, buffered key count=${keystroke.length}`,
+      `Adding service=${service}, buffered key count=${keystroke.length}`,
       LOG.LOG_LEVEL_VERBOSE,
     );
 
-    services.push(new Service(serviceString));  // create the service
-    found = services.length - 1; // The index of the service we just created
+    // create the service
+    services.push(
+      new Service(service)
+    );
+
+    // the index of the service we just created
+    found = services.length - 1;
   }
 
   // Now we have a service number. Does it contain our page?
   const svc = services[found];
-  const page = svc.findPage(data.p);
+  const page = svc.findPage(data.p);      // @todo: this will always be false, since we're not doing svc.addPage()
 
-  LOG.fn(
-    ['teletextserver', 'doLoad'],
-    `Found serviceString=${serviceString}, page=${page}, filename=${filename}, data.x=${data.x}, data.id=${data.id}`,
-    LOG.LOG_LEVEL_VERBOSE,
-  );
+  // determine if page file exists...
+  let is404 = false;
 
-  /////// SKIP THIS 410 STUFF. NOT USED ANY MORE
-  /*
-    if (data.y==0 && data.p==0x410) // Special hack. Intercept P410. First time we will load weather
-    {
-      data.x = CONST.SIGNAL_PAGE_NOT_FOUND;
-    }
-    // The next time x=1 so we will load the page we just created.
-    if (data.x<0)
-    {
-      filename='/var/www/'+serviceString+'/p404.tti' // this must exist or we get into a deadly loop
-      data.S=serviceString
-      // filename='http://localhost:8080/weather.tti'
-      if (data.p==0x410)
-      {
-        weather.doLoadWeather(0,0)
-        return
-      }
-    }
-  */
-
-  io.sockets.emit('blank', data); // Clear down the old data. // TODO This should emit only to socket.emit, not all units
-
-
-  // don't crash the server if the page file does not exist!
   if (!fs.existsSync(filename)) {
-    return false;
-  }
-
-  var instream;
-
-  instream = fs.createReadStream(filename, { encoding: 'ascii' }); // Ascii strips bit 7 without messing up the rest of the text. latin1 does not work :-(
-
-  instream.on('error', function () {
-    let data2;
-
     LOG.fn(
       ['teletextserver', 'doLoad'],
-      `ERROR! data.p=${data.p.toString(16)}`,
+      `Error: Page TTI file not found. service=${service}, page=${page}, filename=${filename}, data.x=${data.x}, data.id=${data.id}`,
       LOG.LOG_LEVEL_ERROR,
     );
 
-    // If this comes in as 404 it means that the 404 doesn't exist either. Set back to the default initial page
-    if (data.p === CONST.PAGE_404) {
-      LOG.fn(
-        ['teletextserver', 'doLoad'],
-        `404 double error`,
-        LOG.LOG_LEVEL_INFO,
-      );
+    is404 = true;
 
-      data.p = initialPage;
-      data.S = undefined;
-      data2 = data; // Hmm, do we need to do a deep copy here?
-      data2.x = 0;
-      connectionList[data.id] = undefined; // Force this user back to the default service
+  } else {
+    LOG.fn(
+      ['teletextserver', 'doLoad'],
+      `Found service=${service}, page=${page}, filename=${filename}, data.x=${data.x}, data.id=${data.id}`,
+      LOG.LOG_LEVEL_VERBOSE,
+    );
+  }
 
-    } else {
-      data2 = data; // Could this do better with a deep copy?
-      data2.y = data2.p; // Save the page number, we will ask the user if they want to create the page
-      data2.p = CONST.PAGE_404; // This page must exist or we get into a deadly loop
-      data2.x = CONST.SIGNAL_PAGE_NOT_FOUND; // Signal a 404 error
-      data2.S = connectionList[data.id]; // How do we lose the service type? This hack shouldn't be needed
 
-      LOG.fn(
-        ['teletextserver', 'doLoad'],
-        `404 single error, service=${JSON.stringify(data2)}`,
-        LOG.LOG_LEVEL_INFO,
-      );
-    }
+  const pageNotFound = function () {
+    const data2 = {
+      ...data,
+
+      ...{
+        y: data.p,                          // Save the page number, we will ask the user if they want to create the page
+        p: CONST.PAGE_404,
+        x: CONST.SIGNAL_PAGE_NOT_FOUND,     // Signal a 404 error
+        S: connectionList[data.id],         // How do we lose the service type? This hack shouldn't be needed
+      },
+    };
 
     io.sockets.emit('setpage', data2);
 
     doLoad(data2);
-  });
+  };
 
-  var rl = readline.createInterface({
+
+  // if page file is not available, immediately serve 404 page
+  if (is404) {
+    pageNotFound();
+
+    return;
+  }
+
+
+  // attempt to read page file contents...
+  const instream = fs.createReadStream(
+    filename,
+    {
+      // ascii strips bit 7 without messing up the rest of the text. latin1 does not work :-(
+      encoding: CONST.ENCODING_ASCII,
+    },
+  );
+
+  instream.on('error', pageNotFound);
+
+
+  const rl = readline.createInterface({
     input: instream,
-    //    output: outstream,
     terminal: false
   });
 
@@ -519,8 +546,9 @@ function doLoad(data) {
 
       // Hacky hack. Page 404 gets the failed page number in data.y
       if (data.p === CONST.PAGE_404) {
-        data.desc += " Failed to load " + data.y.toString(16);
         missingPage = data.y.toString(16);
+
+        data.desc += ` - page ${missingPage}`;
       }
 
       io.sockets.emit('description', data);
@@ -549,7 +577,7 @@ function doLoad(data) {
       // Hacky hack: 404 page signals the missing page in data.y
       // We will offer to make the page from template eventually
       if (data.p === CONST.PAGE_404) {
-        data.fastext[2] = '1' + missingPage.toString(16); // Flag that this page doesn't exist
+        data.fastext[2] = `1${missingPage}`;  // Flag that this page doesn't exist
       }
 
       io.sockets.emit('fastext', data);
@@ -601,13 +629,18 @@ function doLoad(data) {
       result = result.substring(0, 40);
     }
 
+    // Special hack for 404 page. Replace this field with the missing page number
     // @todo Different services need different permissions
-    if (data.S === 'wtf' && row === 22 && data.p === CONST.PAGE_404) { // Special hack for 404 page. Replace this field with the missing page number
-      var first = result.substring(0, 32);
-      var second = result.substr(35);
+    if (
+      (data.S === CONST.SERVICE_WIKI) &&
+      (data.p === CONST.PAGE_404) &&
+      (row === 22)
+    ) {
+      const first = result.substring(0, 32);
+      const second = result.substr(35);
 
-      result = first + missingPage.toString(16) + second;
-    } // end of 404 hack
+      result = first + missingPage + second;
+    }
 
     result = DeEscapePrestel(result); // remove Prestel escapes
 
@@ -665,9 +698,9 @@ function createPage(data, callback) {
   // what is my page name? /var/www/<service>/p<page number>.tti
   // @todo Check for service being undefined
   const filename = path.join(
-    CONFIG.BASE_DIR,
+    CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],
     data.S,
-    'p' + data.p.toString(16) + '.tti'
+    `p${data.p.toString(16)}${CONST.PAGE_EXT_TTI}`
   );
 
   LOG.fn(

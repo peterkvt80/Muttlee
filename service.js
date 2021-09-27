@@ -4,9 +4,6 @@
  *  @brief A service is a service name and a set of pages.
  */
 
-// @todo: should server-side code be importing frontend files?
-require('./public/ttxpage.js');
-
 // import logger
 const LOG = require('./log.js');
 

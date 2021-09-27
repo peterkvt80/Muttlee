@@ -33,27 +33,39 @@ canvas {
   left: 0;
 }
 
-input {
+.input {
   padding: 0 8px;
   font-size: 100%;
   font-family: "Teletext2", "Arial", "Helvetica", sans-serif;
+  border: 4px solid transparent;
+  border-radius: 3px;
 }
 
-select {
-  padding: 6px 8px;
+.input:focus {
+  border-color: #00ffff;
+}
+
+.input--page-number {
+  width: 100px;
+  height: 50px;
+}
+
+.select {
+  padding: 4px 12px;
   font-size: 100%;
   border: none;
   border-radius: 3px;
   cursor: pointer;
-  font-family: "Teletext2", "Arial", "Helvetica", sans-serif;
+  font-family: "Teletext4", "Arial", "Helvetica", sans-serif;
 }
 
-select:focus, select:hover {
+.select:focus, .select:hover {
   outline: 0;
 }
 
 label {
-  font-family: "Teletext2", "Arial", "Helvetica", sans-serif;
+  font-family: "Teletext4", "Arial", "Helvetica", sans-serif;
+  font-weight: 700;
 }
 
 button {
@@ -79,7 +91,7 @@ button:focus, button:hover {
   width: 130px;
   height: 100px;
   color: #000000;
-  font-weight: bold;
+  font-weight: 700;
   text-decoration: none;
   font-size: 100%;
 }
@@ -147,17 +159,6 @@ button:focus, button:hover {
   border: 1px solid #00b3b3;
   background-color: #1affff;
   background-image: linear-gradient(to bottom, #1affff, #00c2c2);
-}
-
-.input_number {
-  border: 4px solid transparent;
-  width: 140px;
-  height: 50px;
-  border-radius: 3px;
-}
-
-.input_number:focus {
-  border-color: #00ffff;
 }
 
 .centre-div {
@@ -435,6 +436,11 @@ button:focus, button:hover {
   font-family: "Teletext4", "Arial", "Helvetica", sans-serif;
 }
 
+#serviceSelect {
+  display: flex;
+  flex-direction: column;
+}
+
 #wrapper {
   position: relative;
   display: flex;
@@ -469,9 +475,14 @@ button:focus, button:hover {
 #controlsRow {
   display: flex;
   flex-direction: row;
-  justify-content: flex-end;
+  justify-content: space-between;
   width: 100%;
   margin: 40px 0;
+}
+
+#controlsRow .select--service {
+  box-sizing: content-box;
+  height: 50px;
 }
 
 #keypadControls {
@@ -796,6 +807,11 @@ button:focus, button:hover {
   text-shadow: 0 0 4px #000000, 0 0 8px #000000, 0 0 16px #000000, 0 0 24px #0000ff, 0 0 32px #0000ff, 0 0 48px #0000ff;
 }
 
+[data-display="fitscreen"] #menu .settingsRow:nth-child(4) label,
+[data-display="fullscreen"] #menu .settingsRow:nth-child(4) label {
+  text-shadow: 0 0 4px #000000, 0 0 8px #000000, 0 0 16px #000000, 0 0 24px #ff00ff, 0 0 32px #ff00ff, 0 0 48px #ff00ff;
+}
+
 [data-display="fitscreen"] #logo svg .c2,
 [data-display="fitscreen"] #logo svg .c3,
 [data-display="fitscreen"] #logo svg .c4,
@@ -846,6 +862,9 @@ button:focus, button:hover {
   [data-scale="1"] #menu .settingsRow:nth-child(3) label {
     text-shadow: 0 0 4px #000000, 0 0 8px #000000, 0 0 16px #000000, 0 0 24px #0000ff, 0 0 32px #0000ff, 0 0 48px #0000ff;
   }
+  [data-scale="1"] #menu .settingsRow:nth-child(4) label {
+    text-shadow: 0 0 4px #000000, 0 0 8px #000000, 0 0 16px #000000, 0 0 24px #ff00ff, 0 0 32px #ff00ff, 0 0 48px #ff00ff;
+  }
   [data-scale="1"] #logo svg .c2,
   [data-scale="1"] #logo svg .c3,
   [data-scale="1"] #logo svg .c4,
@@ -891,6 +910,9 @@ button:focus, button:hover {
   [data-scale="1.5"] #menu .settingsRow:nth-child(3) label {
     text-shadow: 0 0 4px #000000, 0 0 8px #000000, 0 0 16px #000000, 0 0 24px #0000ff, 0 0 32px #0000ff, 0 0 48px #0000ff;
   }
+  [data-scale="1.5"] #menu .settingsRow:nth-child(4) label {
+    text-shadow: 0 0 4px #000000, 0 0 8px #000000, 0 0 16px #000000, 0 0 24px #ff00ff, 0 0 32px #ff00ff, 0 0 48px #ff00ff;
+  }
   [data-scale="1.5"] #logo svg .c2,
   [data-scale="1.5"] #logo svg .c3,
   [data-scale="1.5"] #logo svg .c4,
@@ -935,6 +957,9 @@ button:focus, button:hover {
   }
   [data-scale="2"] #menu .settingsRow:nth-child(3) label {
     text-shadow: 0 0 4px #000000, 0 0 8px #000000, 0 0 16px #000000, 0 0 24px #0000ff, 0 0 32px #0000ff, 0 0 48px #0000ff;
+  }
+  [data-scale="2"] #menu .settingsRow:nth-child(4) label {
+    text-shadow: 0 0 4px #000000, 0 0 8px #000000, 0 0 16px #000000, 0 0 24px #ff00ff, 0 0 32px #ff00ff, 0 0 48px #ff00ff;
   }
   [data-scale="2"] #logo svg .c2,
   [data-scale="2"] #logo svg .c3,

@@ -1,8 +1,9 @@
 // current state values (initialize to defaults)
-let controls = CONFIG.DEFAULT_CONTROLS;
-let display = CONFIG.DEFAULT_DISPLAY;
-let scale = CONFIG.DEFAULT_SCALE;
-let menuOpen = CONFIG.DEFAULT_MENU_OPEN;
+let service = CONFIG[CONST.CONFIG.DEFAULT_SERVICE];
+let controls = CONFIG[CONST.CONFIG.DEFAULT_CONTROLS];
+let display = CONFIG[CONST.CONFIG.DEFAULT_DISPLAY];
+let scale = CONFIG[CONST.CONFIG.DEFAULT_SCALE];
+let menuOpen = CONFIG[CONST.CONFIG.DEFAULT_MENU_OPEN];
 
 // remember current state values
 let currentPixelDensity;
@@ -22,8 +23,6 @@ let digit1 = '1';
 let digit2 = '0';
 let digit3 = '0';
 
-let hdr;
-
 // comms
 let socket;
 let gClientID = null; // Our unique connection id
@@ -32,8 +31,7 @@ let gClientID = null; // Our unique connection id
 let inputPage;
 let indexButton;
 let menuButton;
-let scaleSelector, controlsSelector, displaySelector;
-let serviceSelector;
+let serviceSelector, serviceSelector2, scaleSelector, controlsSelector, displaySelector;
 
 // timer for expiring incomplete keypad entries
 let expiredState = true; // True for four seconds after the last keypad number was typed OR until a valid page number is typed
@@ -127,19 +125,14 @@ function preload() {
 
 
 function setup() {
-  // connect via socket.io to server
-  socket = io.connect(
-    CONFIG.TELETEXT_SERVER_URL + ':' + CONFIG.TELETEXT_SERVER_PORT,
-    {
-      rejectUnauthorized: CONFIG.TELETEXT_VIEWER_HTTPS_REJECT_UNAUTHORIZED,
-    },
-  );
-
   // allow specific settings values to be set via querystring params
   const searchParams = new URLSearchParams(window.location.search);
 
   for (let [key, value] of searchParams) {
-    if (key === 'scale') {
+    if (key === 'service') {
+      service = value;
+
+    } else if (key === 'scale') {
       scale = value;
 
     } else if (key === 'controls') {
@@ -154,9 +147,28 @@ function setup() {
     display = CONST.DISPLAY_FITSCREEN;
   }
 
+  const serviceData = CONFIG.SERVICES_AVAILABLE[service];
+
+  // if viewer is being served over http and requests a https service, prefix its URL with 'https'
+  let serviceUrl = serviceData.url + ':' + serviceData.port;
+  if ((window.location.protocol === 'http:') && (serviceData.port === 443)) {
+    serviceUrl = 'https:' + serviceUrl;
+  }
+
+  // connect via socket.io to server
+  socket = io.connect(
+    `${serviceUrl}/?service=${service}`,
+    {
+      rejectUnauthorized: CONFIG[CONST.CONFIG.TELETEXT_VIEWER_HTTPS_REJECT_UNAUTHORIZED],
+    },
+  );
+
 
   // create the p5 canvas, and move it into the #canvas DOM element
-  cnv = createCanvas(CONFIG.CANVAS_WIDTH, CONFIG.CANVAS_HEIGHT);
+  cnv = createCanvas(
+    CONFIG[CONST.CONFIG.CANVAS_WIDTH],
+    CONFIG[CONST.CONFIG.CANVAS_HEIGHT]
+  );
   cnv.parent('canvas');
 
   // observe mouse press events on p5 canvas
@@ -190,7 +202,10 @@ function setup() {
   gTtxH = gTtxFontSize;
 
   myPage = new TTXPAGE();
-  myPage.init(CONST.PAGE_MIN);
+  myPage.init(
+    CONST.PAGE_MIN,
+    service,
+  );
 
   // message events
   socket.on('keystroke', newCharFromServer);
@@ -202,7 +217,6 @@ function setup() {
   socket.on('subpage', setSubPage); // Subpage number for carousels (Expect two digits 00..99) [99 is higher than actual spec]
   socket.on('timer', setTimer); // Subpage timing. Currently this is just an overall value. Need to implement for animations
   socket.on('id', setID); // id is a socket id that identifies this client. Use this when requesting a page load
-  //hdr=new header(0,1,0,0)
 
   //indexButton=select('#index')
   //indexButton.mousePressed(fastextIndex)
@@ -216,34 +230,43 @@ function setup() {
 
 
   // set specific initial state values as a custom attribute on the body element (for CSS targeting)
+  document.body.setAttribute(CONST.ATTR_DATA_SERVICE, service);
   document.body.setAttribute(CONST.ATTR_DATA_SCALE, scale);
   document.body.setAttribute(CONST.ATTR_DATA_CONTROLS, controls);
   document.body.setAttribute(CONST.ATTR_DATA_DISPLAY, display);
   document.body.setAttribute(CONST.ATTR_MENU_OPEN, menuOpen);
 
-  // set initial state values into their UI elements...
+  // store a reference to the DOM elements
+  menuButton = document.querySelector('#menuButton');
+  canvasElement = document.getElementById('defaultCanvas0');
+
+  serviceSelector = document.querySelector('#serviceSelector');
+  serviceSelector2 = document.querySelector('#serviceSelector2');
   scaleSelector = document.querySelector('#scaleSelector');
+  controlsSelector = document.querySelector('#controlsSelector');
+  displaySelector = document.querySelector('#displaySelector');
+
+
+  // set initial state values into their UI elements...
+  if (serviceSelector) {
+    serviceSelector.value = service;
+  }
+  if (serviceSelector2) {
+    serviceSelector2.value = service;
+  }
 
   if (scaleSelector) {
     scaleSelector.value = scale;
   }
 
-  controlsSelector = document.querySelector('#controlsSelector');
-
   if (controlsSelector) {
     controlsSelector.value = controls;
   }
-
-  displaySelector = document.querySelector('#displaySelector');
 
   if (displaySelector) {
     displaySelector.value = display;
   }
 
-
-  // store a reference to the DOM elements
-  menuButton = document.querySelector('#menuButton');
-  canvasElement = document.getElementById('defaultCanvas0');
 
   // set the initial canvas scale
   updateScale();
@@ -253,41 +276,54 @@ function setup() {
 }
 
 
-openTeefax = function () {
-  window.open('?service=');
-};
-
-openD2K = function () {
-  window.open('?service=d2k');
-};
-
-openReadback = function () {
-  window.open('?service=readback');
-};
-
-openWTF = function () {
-  window.open('?service=wtf');
-};
-
-cheatSheet = function () {
+function cheatSheet() {
   window.open('/assets/WikiTelFax.pdf');
-};
+}
 
 
-function serviceChange() {
-  let item = serviceSelector.value();
-
+function openService(serviceId) {
   LOG.fn(
-    ['sketch', 'serviceChange'],
-    `Selected option=${item}`,
+    ['sketch', 'openService'],
+    `Opening service=${serviceId}`,
     LOG.LOG_LEVEL_VERBOSE,
   );
+
+  // set service param of URL
+  const params = new URLSearchParams(location.search);
+  params.set('service', serviceId);
+
+  const newUrl = location.pathname + '?' + params;
+
+  // open in same, or new window?
+  if (CONFIG[CONST.CONFIG.OPEN_SERVICE_IN_NEW_WINDOW] === true) {
+    window.open(newUrl);
+
+  } else {
+    window.location.href = newUrl;
+  }
+}
+
+
+function serviceChange(event) {
+  if (event.target) {
+    openService(
+      event.target.value
+    );
+  }
 }
 
 
 function controlsChange() {
   if (controlsSelector) {
     controls = controlsSelector.value;
+
+    // ensure both service selectors are synced with current service value
+    if (serviceSelector) {
+      serviceSelector.value = service;
+    }
+    if (serviceSelector2) {
+      serviceSelector2.value = service;
+    }
 
     // update custom attribute on body element
     document.body.setAttribute(CONST.ATTR_DATA_CONTROLS, controls);
@@ -365,6 +401,7 @@ function setID(id) {
   socket.emit('load', data);
 }
 
+
 function setDescription(data) {
   if (data.id !== gClientID && gClientID !== null) {
     return;  // Not for us?
@@ -375,7 +412,7 @@ function setDescription(data) {
 }
 
 function setPageNumber(data) {
-  if (data.id !== gClientID && gClientID !== null) {
+  if ((data.id !== gClientID) && (gClientID !== null)) {
     return;  // Not for us?
   }
 
@@ -740,16 +777,8 @@ function keyPressed() // This is called before keyTyped
         break;
 
       case ESCAPE:
-        // @todo A more sophisticated access scheme
         // Services that are editable
-        if (
-          [
-            'wtf',
-            'amigarob',
-            'artfax',
-            'channel19'
-          ].includes(myPage.service)
-        ) {
+        if (CONFIG[CONST.CONFIG.SERVICES_EDITABLE].includes(myPage.service)) {
           switch (editMode) {
             case CONST.EDITMODE_NORMAL:
               editMode = CONST.EDITMODE_EDIT;
@@ -763,6 +792,7 @@ function keyPressed() // This is called before keyTyped
               editMode = CONST.EDITMODE_NORMAL;
               break;
           }
+
           myPage.editSwitch(editMode);
         }
 
@@ -820,8 +850,7 @@ function keyPressed() // This is called before keyTyped
 /** This inserts a space on the server and any listening client,
  *  Not our own page.
  */
-function insertSpace()
-{
+function insertSpace() {
   let xp = 39;
   let txt = {
     S: myPage.service, // service number
@@ -833,14 +862,13 @@ function insertSpace()
     id: gClientID
   };
 
-  for (let xp=39;xp>myPage.cursor.x;xp--)
-  {
+  for (let xp = 39; xp > myPage.cursor.x; xp--) {
     // This looks a bit weird, but keystroke automatically advances the insert position
-    txt.x=xp
-    let ch=myPage.getChar(txt)
-    // txt.x=xp
-    txt.k=String.fromCharCode(ch)
-    socket.emit('keystroke', txt)
+    txt.x = xp;
+    let ch = myPage.getChar(txt);
+    txt.k = String.fromCharCode(ch);
+
+    socket.emit('keystroke', txt);
   }
 
   // Finally insert a space
@@ -854,10 +882,8 @@ function insertSpace()
  * This deletes on the server and any listening client,
  *  Not on our own page.
  */
-function backSpace()
-{
-  let txt=
-  {
+function backSpace() {
+  let txt = {
     S: myPage.service, // service number
     p: myPage.pageNumber,
     s: myPage.subPage,
@@ -865,18 +891,21 @@ function backSpace()
     x: myPage.cursor.x,
     y: myPage.cursor.y,
     id: gClientID
+  };
+
+  for (let xp = myPage.cursor.x; xp < 40; xp++) {
+    txt.x = xp;
+    let ch = myPage.getChar(txt);
+    txt.k = String.fromCharCode(ch);
+
+    socket.emit('keystroke', txt);
   }
-  for (let xp=myPage.cursor.x;xp<40;xp++)
-  {
-    txt.x=xp
-    let ch=myPage.getChar(txt)
-    txt.k=String.fromCharCode(ch)
-    socket.emit('keystroke', txt)
-  }
+
   // Finally insert a space
-  txt.k=' '
-  txt.x=39,
-  socket.emit('keystroke', txt)
+  txt.k = ' ';
+  txt.x = 39;
+
+  socket.emit('keystroke', txt);
 }
 
 /** edit mode is entered if any non numeric code is typed
@@ -946,30 +975,37 @@ function processKey(keyPressed)
   } else {
     // navigation from the keyboard (same as vbit-iv)
     // uiop are red/green/yellow/cyan Fastext buttons.
-    if (keyPressed =='u') { // press the red button
+    if (keyPressed =='u') {
+      // press the red button
       fastext(1);
       return;
-    }
-    if (keyPressed =='i') { // press the green button
+
+    } else if (keyPressed =='i') {
+      // press the green button
       fastext(2);
       return;
-    }
-    if (keyPressed =='o') { // press the yellow button
+
+    } else if (keyPressed =='o') {
+      // press the yellow button
       fastext(3);
       return;
-    }
-    if (keyPressed =='p') { // press the cyan button
+
+    } else if (keyPressed =='p') {
+      // press the cyan button
       fastext(4);
       return;
-    }
-    if (keyPressed =='h') { // hold
+
+    } else if (keyPressed =='h') {
+      // hold
       khold();
-      //return;
-    }
-    if (keyPressed =='r') { // reveal
+      return;
+
+    } else if (keyPressed =='r') {
+      // reveal
       krvl();
-      //return;
+      return;
     }
+
     // Numbers are used for the page selection
     if (keyPressed >= '0' && keyPressed <= '9') {
       if (inputPage && inputPage.elt) {
@@ -989,8 +1025,6 @@ function processKey(keyPressed)
         myPage.pageNumberEntry = digit1 + digit2 + digit3;
 
         if (page >= CONST.PAGE_MIN) {
-          // hdr.setPage(page)
-
           LOG.fn(
             ['sketch', 'processKey'],
             `Page number is 0x${page.toString(16)}`,
@@ -1051,8 +1085,8 @@ function touchStarted(event) {
   // only start block if touch event is within the page canvas, and is not on an overlaid non-canvas elment
   if (
     (event.target !== canvasElement) ||
-    (touchX > (CONFIG.CANVAS_WIDTH * currentPixelDensity)) ||
-    (touchY > (CONFIG.CANVAS_HEIGHT * currentPixelDensity))
+    (touchX > (CONFIG[CONST.CONFIG.CANVAS_WIDTH] * currentPixelDensity)) ||
+    (touchY > (CONFIG[CONST.CONFIG.CANVAS_HEIGHT] * currentPixelDensity))
   ) {
     // touch event not within canvas
     return;
@@ -1071,8 +1105,8 @@ function touchEnded() {
   // only start block if touch event is within the page canvas, and is not on an overlaid non-canvas elment
   if (
     (event.target !== canvasElement) ||
-    (touchX > (CONFIG.CANVAS_WIDTH * currentPixelDensity)) ||
-    (touchY > (CONFIG.CANVAS_HEIGHT * currentPixelDensity))
+    (touchX > (CONFIG[CONST.CONFIG.CANVAS_WIDTH] * currentPixelDensity)) ||
+    (touchY > (CONFIG[CONST.CONFIG.CANVAS_HEIGHT] * currentPixelDensity))
   ) {
     // touch event not within canvas
     return;
@@ -1440,8 +1474,8 @@ function updateScale() {
     newPixelDensity = (
       Math.round(
         Math.min(
-          (windowHeight / CONFIG.CANVAS_HEIGHT),
-          (windowWidth / CONFIG.CANVAS_WIDTH),
+          (windowHeight / CONFIG[CONST.CONFIG.CANVAS_HEIGHT]),
+          (windowWidth / CONFIG[CONST.CONFIG.CANVAS_WIDTH]),
         ) * 100
       ) / 100
     );
@@ -1473,6 +1507,15 @@ function toggleMenu() {
 }
 
 
+function reloadPage(event) {
+  event.preventDefault();
+
+  location.reload();
+
+  return false;
+}
+
+
 function exportPage() {
   const grabSelectLinks = document.querySelector('#grabSelectLinks');
 
@@ -1496,7 +1539,7 @@ function exportPage() {
 
     // Download the tti page
     let svc = myPage.getService();
-    let url3 = 'www/' + svc + '/p' + pg + '.tti';
+    let url3 = `/pages/${svc}/p${pg}${CONST.PAGE_EXT_TTI}`;
 
 
     // update grab link items text and URL...
@@ -1518,7 +1561,7 @@ function exportPage() {
 
     if (dynamicLink3) {
       dynamicLink3.href = url3;
-      dynamicLink3.innerHTML = 'download <br/>P' + pg + '.tti';
+      dynamicLink3.innerHTML = `download <br/>P${pg}${CONST.PAGE_EXT_TTI}`;
     }
 
 

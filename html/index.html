@@ -24,9 +24,9 @@
 
   <body{% if LOGO_SVG %} data-has-logo="true"{% endif %}>
     {% if LOGO_SVG %}
-      <div id="logo">
+      <a id="logo" href="/" onclick="reloadPage(event);">
         {{ LOGO_SVG | safe }}
-      </div>
+      </a>
     {% endif %}
 
 
@@ -53,13 +53,29 @@
 
       <div id="menuContent">
         <div id="settings">
+          <div class="settingsRow settingsRow--service">
+            <label for="serviceSelector">
+              Service
+            </label>
+            <select
+              id="serviceSelector"
+              class="select select--service"
+              onchange="serviceChange(event);"
+            >
+              {% for key, value in SERVICES_AVAILABLE %}
+                <option value="{{ key }}">{{ value.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
           <div class="settingsRow settingsRow--controls">
             <label for="controlsSelector">
               Controls
             </label>
             <select
               id="controlsSelector"
-              onchange="controlsChange()"
+              class="select select--controls"
+              onchange="controlsChange();"
             >
               <option value="standard">Standard</option>
               <option value="zapper">Zapper</option>
@@ -74,7 +90,8 @@
             </label>
             <select
               id="displaySelector"
-              onchange="displayChange()"
+              class="select select--display"
+              onchange="displayChange();"
             >
               <option value="standard">Standard</option>
               <option value="fitscreen">Fit screen</option>
@@ -88,7 +105,8 @@
             </label>
             <select
               id="scaleSelector"
-              onchange="scaleChange()"
+              class="select select--scale"
+              onchange="scaleChange();"
             >
               <option value="1">1x</option>
               <option value="1.5">1.5x</option>
@@ -120,31 +138,7 @@
         </div>
 
         <div id="serviceSelect">
-          <button class="controlsButton controlsButton--red" onclick="openTeefax();">
-            <span>
-              Teefax
-            </span>
-          </button>
-
-          <button class="controlsButton controlsButton--green" onclick="openD2K();">
-            <span>
-              Digitiser
-            </span>
-          </button>
-
-          <button class="controlsButton controlsButton--yellow" onclick="openReadback();">
-            <span>
-              Archive
-            </span>
-          </button>
-
-          <button class="controlsButton controlsButton--cyan" onclick="openWTF();">
-            <span>
-              Wiki
-            </span>
-          </button>
-
-          <button class="controlsButton controlsButton--magenta" onclick="cheatSheet();">
+          <button class="controlsButton" onclick="cheatSheet();">
             <span>
               Cheat sheet
             </span>
@@ -172,19 +166,34 @@
         </div>
 
         <div id="controlsRow">
+          <div id="serviceSelectorControls">
+            <label for="serviceSelector2">
+              Service
+            </label>
+            <select
+              id="serviceSelector2"
+              class="select select--service"
+              onchange="serviceChange(event);"
+            >
+              {% for key, value in SERVICES_AVAILABLE %}
+                <option value="{{ key }}">{{ value.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
           <div id="pageNumberControls">
             <label for="pageNumber">
               Page
             </label>
             <input
               id="pageNumber"
-              class="input_number"
+              class="input input--page-number"
               type="number"
               name="quantity"
               min="0"
               max="899"
               value="100"
-              onchange="inputNumber()"
+              onchange="inputNumber();"
             />
           </div>
         </div>
