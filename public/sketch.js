@@ -313,6 +313,19 @@ function openService(serviceId) {
 }
 
 
+function updateLocationUrl(key, value) {
+  if (history.pushState) {
+    const loc = window.location;
+    let searchParams = new URLSearchParams(loc.search);
+    searchParams.set(key, value);
+
+    const newUrl = `${loc.protocol}//${loc.host}${loc.pathname}?${searchParams.toString()}`;
+
+    window.history.pushState({ path: newUrl }, '', newUrl);
+  }
+}
+
+
 function serviceChange(event) {
   if (event.target) {
     openService(
@@ -326,16 +339,11 @@ function controlsChange() {
   if (controlsSelector) {
     controls = controlsSelector.value;
 
-    // ensure both service selectors are synced with current service value
-    if (serviceSelector) {
-      serviceSelector.value = service;
-    }
-    if (serviceSelector2) {
-      serviceSelector2.value = service;
-    }
-
     // update custom attribute on body element
     document.body.setAttribute(CONST.ATTR_DATA_CONTROLS, controls);
+
+    // update the URL with the current controls mode (without reloading the page)
+    updateLocationUrl('controls', controls);
   }
 }
 
@@ -346,6 +354,9 @@ function displayChange() {
 
     // update custom attribute on body element
     document.body.setAttribute(CONST.ATTR_DATA_DISPLAY, display);
+
+    // update the URL with the current display mode (without reloading the page)
+    updateLocationUrl('display', display);
 
     // update canvas scale
     updateScale();
@@ -363,7 +374,10 @@ function scaleChange() {
     scale = scaleSelector.value;
 
     // update custom attribute on body element
-    document.body.setAttribute(CONST.ATTR_DATA_SCALE, scale.toString());
+    document.body.setAttribute(CONST.ATTR_DATA_SCALE, scale);
+
+    // update the URL with the current scale (without reloading the page)
+    updateLocationUrl('scale', scale);
 
     // update canvas scale
     updateScale();
