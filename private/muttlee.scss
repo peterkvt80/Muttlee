@@ -104,6 +104,17 @@ $font-family--teletext4: 'Teletext4', 'Arial', 'Helvetica', sans-serif;
                         0 0 48px $colour--blue;
                 }
             }
+
+            &:nth-child(4) {
+                label {
+                    text-shadow: 0 0 4px $colour--black,
+                        0 0 8px $colour--black,
+                        0 0 16px $colour--black,
+                        0 0 24px $colour--magenta,
+                        0 0 32px $colour--magenta,
+                        0 0 48px $colour--magenta;
+                }
+            }
         }
     }
 
@@ -162,20 +173,32 @@ canvas {
 }
 
 
-input {
+.input {
     padding: 0 8px;
     font-size: 100%;
     font-family: $font-family--teletext2;
+    border: 4px solid transparent;
+    border-radius: 3px;
+
+    &:focus {
+        border-color: $colour--cyan;
+    }
+
+    // variants
+    &--page-number {
+        width: 100px;
+        height: 50px;
+    }
 }
 
 
-select {
-    padding: 6px 8px;
+.select {
+    padding: 4px 12px;
     font-size: 100%;
     border: none;
     border-radius: 3px;
     cursor: pointer;
-    font-family: $font-family--teletext2;
+    font-family: $font-family--teletext4;
 
     &:focus,
     &:hover {
@@ -185,7 +208,8 @@ select {
 
 
 label {
-    font-family: $font-family--teletext2;
+    font-family: $font-family--teletext4;
+    font-weight: 700;
 }
 
 
@@ -211,7 +235,7 @@ button {
     width: 130px;
     height: 100px;
     color: $colour--black;
-    font-weight: bold;
+    font-weight: 700;
     text-decoration: none;
     font-size: 100%;
 }
@@ -283,17 +307,6 @@ button {
     }
 }
 
-
-.input_number {
-    border: 4px solid transparent;
-    width: 140px;
-    height: 50px;
-    border-radius: 3px;
-
-    &:focus {
-        border-color: $colour--cyan;
-    }
-}
 
 .centre-div {
     margin: auto;
@@ -588,6 +601,14 @@ button {
 
 
 
+#serviceSelect {
+    display: flex;
+    flex-direction: column;
+}
+
+
+
+
 #wrapper {
     position: relative;
     display: flex;
@@ -627,9 +648,17 @@ button {
 #controlsRow {
     display: flex;
     flex-direction: row;
-    justify-content: flex-end;
+    justify-content: space-between;
     width: 100%;
     margin: 40px 0;
+
+    .select {
+        // variants
+        &--service {
+            box-sizing: content-box;
+            height: 50px;
+        }
+    }
 }
 
 

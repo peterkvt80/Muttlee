@@ -5,7 +5,22 @@ const CONFIG = {
   [CONST.CONFIG.LOG_LEVEL_TELETEXT_SERVER]: CONST.LOG_LEVEL_VERBOSE,
   [CONST.CONFIG.LOG_LEVEL_TELETEXT_VIEWER]: CONST.LOG_LEVEL_VERBOSE,
 
-  [CONST.CONFIG.BASE_DIR]: '/var/www/',
+  // this is used by `update-service-pages.js` as the place where the
+  // raw source service pages directories (likely SVN repositories)
+  // are located.
+  // (Note: service pages are not actually served by Muttlee from here
+  //  they need additional renaming first, and are then served from
+  //  CONST.CONFIG.SERVICE_PAGES_SERVE_DIR defined below).
+  [CONST.CONFIG.SERVICE_PAGES_DIR]: '/var/www/teletext-services',
+
+  // (Note: this is the root directory for the live service pages,
+  //  within it should be individual service subdirectories
+  //  e.g. /var/www/private/onair/teefax, /var/www/private/onair/d2k,
+  //  etc. matching the id's of the services defined below in
+  //  CONST.CONFIG.SERVICES_AVAILABLE)
+  [CONST.CONFIG.SERVICE_PAGES_SERVE_DIR]: '/var/www/private/onair',
+
+  [CONST.CONFIG.PAGE_404_PATH]: '/var/www/private/p404.tti',
 
   [CONST.CONFIG.LOGO_SVG_PATH]: '/var/www/private/muttlee_logo.svg',
   [CONST.CONFIG.ZAPPER_STANDARD_SVG_PATH]: '/var/www/private/zapper_standard.svg',
@@ -33,15 +48,6 @@ const CONFIG = {
     '54.162.186.216',
   ],
 
-  // Which teletext socket.io server should the viewer connect to?
-  // (Note: set a protocol independent url, so that http and https can both be accommodated)
-  //
-  // To use this local teletext server, set TELETEXT_SERVER_URL to '//localhost'
-  // (also ensure that TELETEXT_SERVER_PORT matches one of the enabled
-  //  TELETEXT_VIEWER_SERVE_HTTPS_PORT or TELETEXT_VIEWER_SERVE_HTTPS_PORT below)
-  [CONST.CONFIG.TELETEXT_SERVER_URL]: '//www.xenoxxx.com',
-  [CONST.CONFIG.TELETEXT_SERVER_PORT]: 80,
-
   [CONST.CONFIG.TELETEXT_VIEWER_SERVE_HTTP]: true,
   [CONST.CONFIG.TELETEXT_VIEWER_SERVE_HTTP_PORT]: 8080,
 
@@ -59,6 +65,71 @@ const CONFIG = {
   // DO NOT SET THIS TO TRUE IN PRODUCTION!
   [CONST.CONFIG.TELETEXT_VIEWER_HTTPS_REJECT_UNAUTHORIZED]: false,
 
+
+  // service definitions, in the following format:
+  //   [id_of_service]: {
+  //     // display name of service
+  //     name: str,
+  //
+  //     // url should be protocol independent (start with //), so that http and https can both be accommodated)
+  //
+  //     // To use this local teletext server, set `url` to '//localhost'
+  //     // (also ensure that `port` matches one of the enabled
+  //     //  TELETEXT_VIEWER_SERVE_HTTPS_PORT or TELETEXT_VIEWER_SERVE_HTTPS_PORT above)
+  //     url: str,
+  //     port: int,
+  //
+  //     // (optional) a SVN repository containing the service's pages
+  //     updateUrl: str,
+  //   }
+  [CONST.CONFIG.SERVICES_AVAILABLE]: {
+    [CONST.SERVICE_TEEFAX]: {
+      name: 'Teefax',
+      url: '//www.xenoxxx.com',
+      port: 80,
+
+      updateUrl: 'http://teastop.plus.com/svn/teletext/',
+    },
+
+    [CONST.SERVICE_DIGITISER]: {
+      name: 'Digitiser',
+      url: '//www.xenoxxx.com',
+      port: 80,
+
+      updateUrl: 'http://teastop.plus.com/svn/digitiser2k/',
+    },
+
+    [CONST.SERVICE_ARCHIVE]: {
+      name: 'Archive',
+      url: '//www.xenoxxx.com',
+      port: 80,
+
+      // @todo: does this have a SVN repo?
+    },
+
+    [CONST.SERVICE_WIKI]: {
+      name: 'Wiki',
+      url: '//www.xenoxxx.com',
+      port: 80,
+
+      // @todo: this SVN repo seems to be corrupt, unable to checkout!
+      //    `svn: E140001: zlib (uncompress): corrupt data: Decompression of svndiff data failed`
+      // updateUrl: 'http://teastop.plus.com/svn/wtf/',
+    },
+  },
+
+  [CONST.CONFIG.SERVICES_EDITABLE]: [
+    CONST.SERVICE_WIKI,
+    CONST.SERVICE_AMIGAROB,
+    CONST.SERVICE_ARTFAX,
+    CONST.SERVICE_CHANNEL19,
+  ],
+
+
+  // defaults
+  [CONST.CONFIG.DEFAULT_SERVICE]: CONST.SERVICE_TEEFAX,
+  [CONST.CONFIG.OPEN_SERVICE_IN_NEW_WINDOW]: false,
+
   [CONST.CONFIG.DEFAULT_CONTROLS]: CONST.CONTROLS_STANDARD,
   [CONST.CONFIG.DEFAULT_DISPLAY]: CONST.DISPLAY_STANDARD,
   [CONST.CONFIG.DEFAULT_MENU_OPEN]: true,
@@ -75,9 +146,6 @@ const CONFIG = {
     CONST.CONFIG.TITLE,
     CONST.CONFIG.HEADER_TITLE,
 
-    CONST.CONFIG.TELETEXT_SERVER_URL,
-    CONST.CONFIG.TELETEXT_SERVER_PORT,
-
     CONST.CONFIG.TELETEXT_VIEWER_SERVE_HTTP,
     CONST.CONFIG.TELETEXT_VIEWER_SERVE_HTTP_PORT,
 
@@ -86,10 +154,16 @@ const CONFIG = {
 
     CONST.CONFIG.TELETEXT_VIEWER_HTTPS_REJECT_UNAUTHORIZED,
 
+    CONST.CONFIG.SERVICES_AVAILABLE,
+    CONST.CONFIG.SERVICES_EDITABLE,
+
+    CONST.CONFIG.DEFAULT_SERVICE,
     CONST.CONFIG.DEFAULT_CONTROLS,
     CONST.CONFIG.DEFAULT_DISPLAY,
     CONST.CONFIG.DEFAULT_MENU_OPEN,
     CONST.CONFIG.DEFAULT_SCALE,
+
+    CONST.CONFIG.OPEN_SERVICE_IN_NEW_WINDOW,
 
     CONST.CONFIG.CANVAS_WIDTH,
     CONST.CONFIG.CANVAS_HEIGHT,

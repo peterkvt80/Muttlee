@@ -1,0 +1,33 @@
+DE,404 Page Not Found
+DS,inserter
+SP,\\VBOXSVR\VirtualShare\_ Teefax\P404.ttix
+CT,8,T
+PN,40400
+SC,0000
+PS,8000
+RE,0
+OL,0,XXXXXXXXTEEFAX mpp DAY dd MTH C hh:nn.ss
+OL,1,T]G                                     
+OL,2,T]GPAGE NOT FOUND                       
+OL,3,T]G                                     
+OL,4,T]GTry again later, it might work       
+OL,5,T]G(no it won't)                        
+OL,6,T]G                                     
+OL,7,T]GYou might as well accept that this   
+OL,8,T]Gpage has gone to Atlanta and isn't   
+OL,9,T]Gcoming back.                         
+OL,10,Tgso
+OL,11,T?# !p0k?# ! k%"o
+OL,12,U . o 5j . o7  j5   
+OL,13,Q|| ~0#!z|| ~7 "  j5   
+OL,14,Qo5  /  j5   
+OL,15,S5 ?//%  //!  /  j#+5   /
+OL,16,S5 '!   //7##!             75    + 
+OL,17,W         2a `ppppp0 ss1``` (,,,$       
+OL,18,W  !4!4! (  $(,,,,,$ ,,$(((   !!! bs  $ 
+OL,19,W  ! ! ! "" 1"#####!    """ "#" d     !,
+OL,20,W  `>m0//j5  x/t t *o?%x/t   d),,   ,
+OL,21,W  ~qr}  j5 hwp{4j4 j5hwp{4  d),,   ,
+OL,22,W  ##  j}|j7#k5 + j5j7#k5   ),,    
+OL,24,A  Index   BNews    CEvents   FArchive  
+FL,100,104,800,200,8ff,100

@@ -1,4 +1,4 @@
-/**< Miscellaneous utilities for teletext 
+/**< Miscellaneous utilities for teletext
  * \author Peter Kwan 2018.
  */
 

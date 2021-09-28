@@ -40,7 +40,14 @@ Page = function () {
 
     that.ttiLines = [];  // Clear the tti array
 
-    var instream = fs.createReadStream(filename, {encoding: 'ascii'}); // Ascii strips bit 7 without messing up the rest of the text. latin1 does not work :-(
+    const instream = fs.createReadStream(
+      filename,
+      {
+        // ascii strips bit 7 without messing up the rest of the text. latin1 does not work :-(
+        encoding: CONST.ENCODING_ASCII,
+      },
+    );
+
     instream.on('error', function (err) {
       LOG.fn(
         ['page', 'loadPage'],
