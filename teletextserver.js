@@ -440,7 +440,7 @@ function doLoad(data) {
 
   let service = connectionList[data.id];
 
-  if (service === undefined) {
+  if (service == undefined) {
     service = CONST.SERVICE_TEEFAX;
   }
 
