@@ -340,15 +340,8 @@ TTXPAGE = function() {
       );
     }
 
-    // console.warn('++', gTtxW, gTtxH);
-
     // draw row separation lines
     for (let y = 0; y <= CONFIG[CONST.CONFIG.NUM_ROWS]; y++) {
-      // console.log('--',         0,
-      //     (gTtxH * y),
-      //     (gTtxW * CONFIG[CONST.CONFIG.NUM_COLUMNS]),
-      //     (gTtxH * y),);
-
       line(
         0,
         (gTtxH * y) + gridOffsetVertical,

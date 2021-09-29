@@ -5252,7 +5252,7 @@ exports.sizeOf = sizeOf;
 
     function timedOut() {
       self._timedOut = true
-      self.request.abort()      
+      self.request.abort()
     }
 
     function error(resp, msg, t) {
@@ -23995,7 +23995,6 @@ p5.Table.prototype.removeColumn = function(c) {
     // find the position of c in the columns
     cString = c;
     cNumber = this.columns.indexOf(c);
-    console.log('string');
   }
   else{
     cNumber = c;
@@ -27608,7 +27607,6 @@ p5.Font.prototype.textBounds = function(str, x, y, fontSize, options) {
 
     this.cache[cacheKey('textBounds', str, x, y, fontSize)] = result;
   }
-  //else console.log('cache-hit');
 
   return result;
 };

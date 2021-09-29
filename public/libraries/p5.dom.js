@@ -572,7 +572,6 @@
     var radios = document.querySelectorAll("input[type=radio]");
     var count = 0;
     if(radios.length > 1){
-      console.log(radios,radios[0].name);
       var length = radios.length;
       var prev=radios[0].name;
       var current = radios[1].name;
