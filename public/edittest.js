@@ -12,7 +12,7 @@ require('./ttxpage.js');
 
 console.log("Test configuring")
 
-var page=new TTXPAGE();
+var page = new TTXPAGE();
 page.init(0x190);
 page.setSubPage(0001);
 

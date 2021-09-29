@@ -17,6 +17,7 @@ let myPage, ttxFont;
 // metrics
 let gTtxW, gTtxH;
 const gTtxFontSize = 20;
+const gridOffsetVertical = 4;
 
 // page selection
 let digit1 = '1';
@@ -152,7 +153,7 @@ function setup() {
     display = CONST.DISPLAY_FITSCREEN;
   }
 
-  const serviceData = CONFIG.SERVICES_AVAILABLE[service];
+  const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][service];
 
   // if viewer is being served over http and requests a https service, prefix its URL with 'https'
   let serviceUrl = serviceData.url + ':' + serviceData.port;
@@ -181,10 +182,13 @@ function setup() {
     function () {
       if (editMode !== CONST.EDITMODE_NORMAL) {
         // Only need to do this in edit mode
-        const xLoc = int(mouseX / gTtxW);
-        const yLoc = int(mouseY / gTtxH);
+        const xLoc = int((mouseX / currentPixelDensity) / gTtxW);
+        const yLoc = int(((mouseY / currentPixelDensity) - gridOffsetVertical) / gTtxH);
 
-        if (xLoc >= 0 && xLoc < 40 && yLoc >= 0 && yLoc < 25) {
+        if (
+          (xLoc >= 0) && (xLoc < CONFIG[CONST.CONFIG.NUM_COLUMNS]) &&
+          (yLoc >= 0) && (yLoc < CONFIG[CONST.CONFIG.NUM_ROWS])
+        ) {
           myPage.cursor.moveTo(xLoc, yLoc);
 
           LOG.fn(
@@ -203,7 +207,7 @@ function setup() {
   textFont(ttxFont);
   textSize(gTtxFontSize);
 
-  gTtxW = textWidth('M');
+  gTtxW = parseInt(textWidth('M'), 10);       // ensure calculated character width is an int (not a float) for sharpest rendering quality
   gTtxH = gTtxFontSize;
 
   myPage = new TTXPAGE();
@@ -239,10 +243,13 @@ function setup() {
 
   // set specific initial state values as a custom attribute on the body element (for CSS targeting)
   document.body.setAttribute(CONST.ATTR_DATA_SERVICE, service);
+  document.body.setAttribute(CONST.ATTR_DATA_SERVICE_EDITABLE, serviceData.isEditable);
+
   document.body.setAttribute(CONST.ATTR_DATA_SCALE, scale);
   document.body.setAttribute(CONST.ATTR_DATA_CONTROLS, controls);
   document.body.setAttribute(CONST.ATTR_DATA_DISPLAY, display);
-  document.body.setAttribute(CONST.ATTR_MENU_OPEN, menuOpen);
+  document.body.setAttribute(CONST.ATTR_DATA_MENU_OPEN, menuOpen);
+
 
   // store a reference to the DOM elements
   menuButton = document.querySelector('#menuButton');
@@ -800,8 +807,10 @@ function keyPressed() // This is called before keyTyped
         break;
 
       case ESCAPE:
+        const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][myPage.service];
+
         // Services that are editable
-        if (CONFIG[CONST.CONFIG.SERVICES_EDITABLE].includes(myPage.service)) {
+        if (serviceData.isEditable) {
           switch (editMode) {
             case CONST.EDITMODE_NORMAL:
               editMode = CONST.EDITMODE_EDIT;
@@ -916,7 +925,7 @@ function backSpace() {
     id: gClientID
   };
 
-  for (let xp = myPage.cursor.x; xp < 40; xp++) {
+  for (let xp = myPage.cursor.x; xp < CONFIG[CONST.CONFIG.NUM_COLUMNS]; xp++) {
     txt.x = xp;
     let ch = myPage.getChar(txt);
     txt.k = String.fromCharCode(ch);
@@ -1137,7 +1146,7 @@ function touchEnded() {
 
   // Block needs to be a minimum distance (& possibly velocity?
   let mag = blockEnd.mag();
-  if (mag < 40) {
+  if (mag < CONFIG[CONST.CONFIG.NUM_COLUMNS]) {
     return;
   }
 
@@ -1526,7 +1535,7 @@ function toggleMenu() {
   menuOpen = !menuOpen;
 
   // update custom attribute on body element
-  document.body.setAttribute(CONST.ATTR_MENU_OPEN, menuOpen);
+  document.body.setAttribute(CONST.ATTR_DATA_MENU_OPEN, menuOpen);
 }
 
 
@@ -1536,6 +1545,16 @@ function reloadPage(event) {
   location.reload();
 
   return false;
+}
+
+
+function toggleGrid() {
+  if (myPage && (typeof myPage.toggleGrid === 'function')) {
+    const newGridState = myPage.toggleGrid();
+
+    // update custom attribute on body element
+    document.body.setAttribute(CONST.ATTR_DATA_GRID, newGridState);
+  }
 }
 
 

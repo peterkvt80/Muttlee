@@ -5,9 +5,15 @@
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
     <title>{{ TITLE }}</title>
 
-    <script src="libraries/socket.io.js"></script>
-    <script src="libraries/p5.js"></script>
-    <script src="libraries/p5.dom.js"></script>
+    {% if IS_DEV %}
+      <script src="libraries/socket.io.min.js"></script>
+      <script src="libraries/p5.js"></script>
+      <script src="libraries/p5.dom.js"></script>
+    {% else %}
+      <script src="libraries/socket.io.min.js"></script>
+      <script src="libraries/p5.min.js"></script>
+      <script src="libraries/p5.dom.min.js"></script>
+    {% endif %}
 
     <script src="constants.js"></script>
     <script src="config.js"></script>
@@ -115,8 +121,22 @@
           </div>
         </div>
 
+        <div id="gridSelect">
+          <button class="controlsButton" onclick="toggleGrid();">
+            <span>
+              <span class="gridSelectButtonText gridSelectButtonText--show">
+                Show Grid
+              </span>
+
+              <span class="gridSelectButtonText gridSelectButtonText--hide">
+                Hide Grid
+              </span>
+            </span>
+          </button>
+        </div>
+
         <div id="grabSelect">
-          <button class="controlsButton controlsButton--white" onclick="exportPage();">
+          <button class="controlsButton" onclick="exportPage();">
             <span>
               Grab...
             </span>

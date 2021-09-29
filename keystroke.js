@@ -13,6 +13,9 @@
  & @todo Move all the file stuff out of here!
  */
 
+const path = require('path');
+
+
 require('./page.js');
 
 // import logger

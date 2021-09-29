@@ -81,6 +81,12 @@ TTXPAGE = function() {
     this.holdMode = !this.holdMode;
   };
 
+  this.toggleGrid = function () {
+    this.showGrid = !this.showGrid;
+
+    return this.showGrid;
+  };
+
   /** @brief Change the page number for this page and all child rows
    *  Clear the page. We should get a number of rows soon
    */
@@ -131,7 +137,7 @@ TTXPAGE = function() {
     this.rows = [];
 
     // allow a custom header title (as defined in config.js)
-    const titleStr = CONFIG.HEADER_TITLE.toUpperCase().padStart(10, ' ');
+    const titleStr = CONFIG[CONST.CONFIG.HEADER_TITLE].toUpperCase().padStart(10, ' ');
 
     // As rows go from 0 to 31 and pages start at 100, we can use the same parameter for both
     this.rows.push(
@@ -140,7 +146,7 @@ TTXPAGE = function() {
 
     for (let i = 1; i < 26; i++) {
       this.rows.push(
-        new Row(number, i, ''.padStart(40))
+        new Row(number, i, ''.padStart(CONFIG[CONST.CONFIG.NUM_COLUMNS]))
       );
     }
 
@@ -276,7 +282,6 @@ TTXPAGE = function() {
         cpos = this.cursor.x;
       }
 
-      //this.rows[row].draw(cpos) // Original version
       // Single pages tend to have subpage 0000. carousels start from 0001. So subtract 1 unless it is already 0.
       //      let v=this.subPageList[this.subPage>0?this.subPage-1:0]
       if (this.subPage >= this.subPageList.length) { // This shouldn't happen much but it does during start up
@@ -316,19 +321,33 @@ TTXPAGE = function() {
     }
 
     if (this.showGrid) {
-      this.grid();
+      this.drawGrid();
     }
   };
 
   /** Draw a character grid overlay for edit guidance
    */
-  this.grid = function () {
+  this.drawGrid = function () {
     stroke(128);
-    for (let x = 0; x <= 40; x++) {
-      line(gTtxW * x, 0, gTtxW * x, gTtxH * 25);
+
+    // draw column separation lines
+    for (let x = 0; x <= CONFIG[CONST.CONFIG.NUM_COLUMNS]; x++) {
+      line(
+        (gTtxW * x),
+        0 + gridOffsetVertical,
+        (gTtxW * x),
+        (gTtxH * CONFIG[CONST.CONFIG.NUM_ROWS]) + gridOffsetVertical,
+      );
     }
-    for (let y = 0; y <= 25; y++) {
-      line(0, gTtxH * y, gTtxW * 40, gTtxH * y);
+
+    // draw row separation lines
+    for (let y = 0; y <= CONFIG[CONST.CONFIG.NUM_ROWS]; y++) {
+      line(
+        0,
+        (gTtxH * y) + gridOffsetVertical,
+        (gTtxW * CONFIG[CONST.CONFIG.NUM_COLUMNS]),
+        (gTtxH * y) + gridOffsetVertical,
+      );
     }
   };
 
@@ -422,7 +441,7 @@ TTXPAGE = function() {
       let str = pg[y].txt;
       str = str.substr(0, x) + ' ' + str.substr(x);
 
-      // might want to trim back to 40 chars?
+      // might want to trim back to CONFIG[CONST.CONFIG.NUM_COLUMNS] chars?
       pg[y].setrow(str);
     }
   };
@@ -440,7 +459,7 @@ TTXPAGE = function() {
       this.cursor.left();
 
       let str = pg[y].txt;
-      str = str.substr(0, x - 1) + str.substr(x, 40 - x) + ' ';
+      str = str.substr(0, x - 1) + str.substr(x, CONFIG[CONST.CONFIG.NUM_COLUMNS] - x) + ' ';
 
       pg[y].setrow(str);
     }
@@ -487,8 +506,8 @@ TTXPAGE = function() {
     let row = myPage[data.y].txt;
 
     let len = data.x;
-    if (len > 40) {
-      len = 40;
+    if (len > CONFIG[CONST.CONFIG.NUM_COLUMNS]) {
+      len = CONFIG[CONST.CONFIG.NUM_COLUMNS];
     }
 
     let gfxMode = false;
@@ -576,7 +595,7 @@ function Row(page, y, str) {
 
         // substitute TEEFAX service title in header?
         let originalTitle = 'Teefax'.toUpperCase();
-        const newTitle = CONFIG.HEADER_TITLE.toUpperCase();
+        const newTitle = CONFIG[CONST.CONFIG.HEADER_TITLE].toUpperCase();
 
         if (originalTitle !== newTitle) {
           leftSpacing = leftSpacing - (newTitle.length - originalTitle.length);
@@ -590,13 +609,19 @@ function Row(page, y, str) {
           }
 
           if (txt.indexOf(originalTitle.toLowerCase() + ' ') !== -1) {
-            txt = txt.replace(originalTitle.toLowerCase(), CONFIG.HEADER_TITLE.toLowerCase());
+            txt = txt.replace(originalTitle.toLowerCase(), CONFIG[CONST.CONFIG.HEADER_TITLE].toLowerCase());
           }
         }
 
         if (holdMode) {
+          // write HOLD at start of line
           txt = replace(txt, 'HOLD' + ''.padStart(leftSpacing, ' '), 0)
+
         } else {
+          // replace any lingering X characters in the first 8 line characters with blank space characters
+          txt = txt.substr(0, 8).replace(/X/g, ' ') + txt.substr(8);
+
+          // write page number at start of line
           txt = replace(txt, 'P' + this.pagetext + ''.padStart(leftSpacing, ' '), 0);
         }
 
@@ -694,7 +719,7 @@ function Row(page, y, str) {
     }
 
     // Non header substitutions
-    if (this.row > 0 && this.row < 25 && cpos < 0) {    // This is NOT the header row NOR in edit mode.
+    if (this.row > 0 && this.row < CONFIG[CONST.CONFIG.NUM_ROWS] && cpos < 0) {    // This is NOT the header row NOR in edit mode.
       // World time. (two values allowed per line)
       for (let i = 0; i < 2; i++) {
         if ((ix = txt.indexOf('%t')) > 0) {
@@ -733,7 +758,7 @@ function Row(page, y, str) {
     let hasDblHeight = false;
 
     if (txt !== '') {
-      for (let i = 0; i < 40; i++) {
+      for (let i = 0; i < CONFIG[CONST.CONFIG.NUM_COLUMNS]; i++) {
         let ic = txt.charCodeAt(i) & 0x7f;
 
         if (ic === 0x0d) {
@@ -743,7 +768,7 @@ function Row(page, y, str) {
       }
     }
 
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < CONFIG[CONST.CONFIG.NUM_COLUMNS]; i++) {
       let ch = txt.charAt(i);
       let ic = txt.charCodeAt(i) & 0x7f;
       let printable = false;
