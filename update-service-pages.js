@@ -75,13 +75,13 @@ async function updateServices() {
   for (let serviceId in CONFIG[CONST.CONFIG.SERVICES_AVAILABLE]) {
     const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][serviceId];
 
+    const serviceTargetDir = path.join(
+      CONFIG[CONST.CONFIG.SERVICE_PAGES_DIR],
+      serviceId,
+    );
+
     // if service has an update URL...
     if (serviceData.updateUrl) {
-      const serviceTargetDir = path.join(
-        CONFIG[CONST.CONFIG.SERVICE_PAGES_DIR],
-        serviceId,
-      );
-
       // use Subversion to checkout / update pages...
       let svnClient = new svn.SVNClient();
       svnClient.setConfig({
@@ -113,113 +113,112 @@ async function updateServices() {
           serviceTargetDir,
         );
       }
+    }
 
+    // ensure service serve directory exists, and is emptied of existing files
+    const serviceServeDir = path.join(
+      CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],
+      serviceId,
+    );
 
-      // ensure service serve directory exists, and is emptied of existing files
-      const serviceServeDir = path.join(
-        CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],
-        serviceId,
-      );
-
-      if (!fs.existsSync(serviceServeDir)) {
-        // create directory
-        if (options.verbose) {
-          console.log(
-            `Creating ${serviceServeDir} output directory`
-          );
-        }
-
-        fs.mkdirSync(serviceServeDir, { recursive: true });
-
-      } else {
-        // clean directory
-        if (options.verbose) {
-          console.log(
-            `Cleaning ${serviceServeDir} output directory of existing page files...`
-          );
-        }
-
-        const files = fs.readdirSync(serviceServeDir);
-
-        for (const file of files) {
-          fs.unlinkSync(
-            path.join(serviceServeDir, file),
-          );
-        }
-      }
-
-
-      // copy service pages to serve directory, renamed to be compatible with server expectations
-      if (!options.silent) {
+    if (!fs.existsSync(serviceServeDir)) {
+      // create directory
+      if (options.verbose) {
         console.log(
-          `Copying and renaming '${serviceId}' service page files...\n`
+          `Creating ${serviceServeDir} output directory`
         );
       }
 
-      const servicePageFiles = fs.readdirSync(serviceTargetDir);
+      fs.mkdirSync(serviceServeDir, { recursive: true });
 
-      for (const filename of servicePageFiles) {
-        if (filename.endsWith(PAGE_FILE_EXT)) {
-          // determine full source filepath
-          const sourceFilePath = path.join(
-            serviceTargetDir,
-            filename,
+    } else {
+      // clean directory
+      if (options.verbose) {
+        console.log(
+          `Cleaning ${serviceServeDir} output directory of existing page files...`
+        );
+      }
+
+      const files = fs.readdirSync(serviceServeDir);
+
+      for (const file of files) {
+        fs.unlinkSync(
+          path.join(serviceServeDir, file),
+        );
+      }
+    }
+
+
+    // copy service pages to serve directory, renamed to be compatible with server expectations
+    if (!options.silent) {
+      console.log(
+        `Copying and renaming '${serviceId}' service page files...\n`
+      );
+    }
+
+    const servicePageFiles = fs.readdirSync(serviceTargetDir);
+
+    for (const filename of servicePageFiles) {
+      if (filename.endsWith(PAGE_FILE_EXT)) {
+        // determine full source filepath
+        const sourceFilePath = path.join(
+          serviceTargetDir,
+          filename,
+        );
+
+        // read file content as a string
+        let fileContent = fs.readFileSync(
+          sourceFilePath,
+          FILE_ENCODING_INPUT,
+        ).toString();
+
+        // make specified character replacements
+        for (let char in FILE_CHAR_REPLACEMENTS) {
+          fileContent = fileContent.replace(char, FILE_CHAR_REPLACEMENTS[char]);
+        }
+
+        // attempt to extract the page number from the file content
+        let pageNumber;
+        const fileContentLines = fileContent.split('\n');
+
+        for (let i in fileContentLines) {
+          if (fileContentLines[i].startsWith('PN,')) {
+            pageNumber = fileContentLines[i].slice(3, 6);
+
+            break;
+          }
+        }
+
+        if (pageNumber) {
+          // determine new filename and target file path
+          const newFilename = 'p' + pageNumber + PAGE_FILE_EXT;
+          const targetFilePath = path.join(
+            serviceServeDir,
+            newFilename,
           );
 
-          // read file content as a string
-          let fileContent = fs.readFileSync(
-            sourceFilePath,
-            FILE_ENCODING_INPUT,
-          ).toString();
-
-          // make specified character replacements
-          for (let char in FILE_CHAR_REPLACEMENTS) {
-            fileContent = fileContent.replace(char, FILE_CHAR_REPLACEMENTS[char]);
-          }
-
-          // attempt to extract the page number from the file content
-          let pageNumber;
-          const fileContentLines = fileContent.split('\n');
-
-          for (let i in fileContentLines) {
-            if (fileContentLines[i].startsWith('PN,')) {
-              pageNumber = fileContentLines[i].slice(3, 6);
-
-              break;
-            }
-          }
-
-          if (pageNumber) {
-            // determine new filename and target file path
-            const newFilename = 'p' + pageNumber + PAGE_FILE_EXT;
-            const targetFilePath = path.join(
-              serviceServeDir,
-              newFilename,
+          // write file contents out to file
+          try {
+            fs.writeFileSync(
+              targetFilePath,
+              fileContent,
+              FILE_ENCODING_OUTPUT,
             );
 
-            // write file contents out to file
-            try {
-              fs.writeFileSync(
-                targetFilePath,
-                fileContent,
-                FILE_ENCODING_OUTPUT,
-              );
-
-              if (options.verbose) {
-                console.log(filename + ' > ' + newFilename);
-              }
-
-            } catch (err) {
-              if (!options.silent) {
-                console.error(err);
-              }
+            if (options.verbose) {
+              console.log(filename + ' > ' + newFilename);
             }
 
-          } else {
-            // page number could not be extracted
+          } catch (err) {
             if (!options.silent) {
-              console.log('ERROR: Page number could not be extracted from ' + sourceFilePath);
+              console.error(err);
             }
+          }
+
+        } else {
+          // page number could not be extracted
+          if (!options.silent) {
+            console.log('ERROR: Page number could not be extracted from ' + sourceFilePath);
           }
         }
       }
