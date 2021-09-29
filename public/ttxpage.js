@@ -595,8 +595,14 @@ function Row(page, y, str) {
         }
 
         if (holdMode) {
+          // write HOLD at start of line
           txt = replace(txt, 'HOLD' + ''.padStart(leftSpacing, ' '), 0)
+
         } else {
+          // replace any lingering X characters in the first 8 line characters with blank space characters
+          txt = txt.substr(0, 8).replace(/X/g, ' ') + txt.substr(8);
+
+          // write page number at start of line
           txt = replace(txt, 'P' + this.pagetext + ''.padStart(leftSpacing, ' '), 0);
         }
 
