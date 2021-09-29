@@ -2,6 +2,8 @@ const CONST = require('./constants.js');
 
 
 const CONFIG = {
+  [CONST.CONFIG.IS_DEV]: false,
+
   [CONST.CONFIG.LOG_LEVEL_TELETEXT_SERVER]: CONST.LOG_LEVEL_VERBOSE,
   [CONST.CONFIG.LOG_LEVEL_TELETEXT_VIEWER]: CONST.LOG_LEVEL_VERBOSE,
 
@@ -79,6 +81,9 @@ const CONFIG = {
   //     url: str,
   //     port: int,
   //
+  //     // (optional) whether the service is considered editable
+  //     isEditable: bool,
+  //
   //     // (optional) a SVN repository containing the service's pages
   //     updateUrl: str,
   //   }
@@ -91,6 +96,42 @@ const CONFIG = {
       updateUrl: 'http://teastop.plus.com/svn/teletext/',
     },
 
+    // [CONST.SERVICE_AMIGAROB]: {
+    //   name: 'Amiga Rob',
+    //   url: '//www.xenoxxx.com',
+    //   port: 80,
+    //
+    //   isEditable: true,
+    // },
+
+    [CONST.SERVICE_ARTFAX]: {
+      name: 'Artfax',
+      url: '//www.xenoxxx.com',
+      port: 80,
+
+      isEditable: true,
+    },
+
+    [CONST.SERVICE_BBC1980]: {
+      name: 'BBC 1980',
+      url: '//www.xenoxxx.com',
+      port: 80,
+    },
+
+    // [CONST.SERVICE_CHANNEL19]: {
+    //   name: 'Channel 19',
+    //   url: '//www.xenoxxx.com',
+    //   port: 80,
+    //
+    //   isEditable: true,
+    // },
+
+    // [CONST.SERVICE_CHRISLUCA]: {
+    //   name: 'Chris Luca',
+    //   url: '//www.xenoxxx.com',
+    //   port: 80,
+    // },
+
     [CONST.SERVICE_DIGITISER]: {
       name: 'Digitiser',
       url: '//www.xenoxxx.com',
@@ -99,12 +140,22 @@ const CONFIG = {
       updateUrl: 'http://teastop.plus.com/svn/digitiser2k/',
     },
 
+    [CONST.SERVICE_KINDIE]: {
+      name: 'Kindie',
+      url: '//www.xenoxxx.com',
+      port: 80,
+    },
+
     [CONST.SERVICE_ARCHIVE]: {
       name: 'Archive',
       url: '//www.xenoxxx.com',
       port: 80,
+    },
 
-      // @todo: does this have a SVN repo?
+    [CONST.SERVICE_TURNER]: {
+      name: 'Turner the Worm',
+      url: '//www.xenoxxx.com',
+      port: 80,
     },
 
     [CONST.SERVICE_WIKI]: {
@@ -112,18 +163,9 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
-      // @todo: this SVN repo seems to be corrupt, unable to checkout!
-      //    `svn: E140001: zlib (uncompress): corrupt data: Decompression of svndiff data failed`
-      // updateUrl: 'http://teastop.plus.com/svn/wtf/',
+      isEditable: true,
     },
   },
-
-  [CONST.CONFIG.SERVICES_EDITABLE]: [
-    CONST.SERVICE_WIKI,
-    CONST.SERVICE_AMIGAROB,
-    CONST.SERVICE_ARTFAX,
-    CONST.SERVICE_CHANNEL19,
-  ],
 
 
   // defaults
@@ -134,6 +176,11 @@ const CONFIG = {
   [CONST.CONFIG.DEFAULT_DISPLAY]: CONST.DISPLAY_STANDARD,
   [CONST.CONFIG.DEFAULT_MENU_OPEN]: true,
   [CONST.CONFIG.DEFAULT_SCALE]: 1,
+
+
+  // rendering
+  [CONST.CONFIG.NUM_COLUMNS]: 40,
+  [CONST.CONFIG.NUM_ROWS]: 25,
 
   [CONST.CONFIG.CANVAS_WIDTH]: 600,
   [CONST.CONFIG.CANVAS_HEIGHT]: 550,
@@ -155,7 +202,6 @@ const CONFIG = {
     CONST.CONFIG.TELETEXT_VIEWER_HTTPS_REJECT_UNAUTHORIZED,
 
     CONST.CONFIG.SERVICES_AVAILABLE,
-    CONST.CONFIG.SERVICES_EDITABLE,
 
     CONST.CONFIG.DEFAULT_SERVICE,
     CONST.CONFIG.DEFAULT_CONTROLS,
@@ -164,6 +210,9 @@ const CONFIG = {
     CONST.CONFIG.DEFAULT_SCALE,
 
     CONST.CONFIG.OPEN_SERVICE_IN_NEW_WINDOW,
+
+    CONST.CONFIG.NUM_COLUMNS,
+    CONST.CONFIG.NUM_ROWS,
 
     CONST.CONFIG.CANVAS_WIDTH,
     CONST.CONFIG.CANVAS_HEIGHT,

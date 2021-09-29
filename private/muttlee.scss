@@ -58,6 +58,7 @@ $font-family--teletext4: 'Teletext4', 'Arial', 'Helvetica', sans-serif;
         }
 
         // add additional blurred background to menu buttons
+        #gridSelect,
         #serviceSelect,
         #grabSelect {
             button {
@@ -337,7 +338,7 @@ button {
     border-left: 8px solid $colour--white;
     border-right: 8px solid $colour--white;
 
-    span {
+    > span {
         display: block;
         padding: 40px;
         margin: -8px 0;
@@ -348,8 +349,8 @@ button {
 
     &::before,
     &::after,
-    span::before,
-    span::after {
+    > span::before,
+    > span::after {
         content: '';
         display: block;
         position: absolute;
@@ -368,12 +369,12 @@ button {
         right: -5px;
     }
 
-    span::before {
+    > span::before {
         bottom: -5px;
         left: -5px;
     }
 
-    span::after {
+    > span::after {
         bottom: -5px;
         right: -5px;
     }
@@ -488,6 +489,7 @@ button {
         }
     }
 
+    #gridSelect,
     #serviceSelect,
     #grabSelect {
         display: flex;
@@ -708,6 +710,10 @@ button {
 .zapperButton {
     cursor: pointer;
 }
+
+
+
+
 // controls modes
 [data-controls="zapper"] {
     &[data-display="standard"],
@@ -715,6 +721,7 @@ button {
         background: $colour--black;
     }
 
+    #gridSelect,
     #serviceSelect,
     #grabSelect,
     #controls {
@@ -844,6 +851,7 @@ button {
         background: $colour--black;
     }
 
+    #gridSelect,
     #serviceSelect,
     #grabSelect,
     #controls {
@@ -914,6 +922,7 @@ button {
         display: none;
     }
 
+    #gridSelect,
     #serviceSelect,
     #grabSelect,
     #controls,
@@ -944,6 +953,45 @@ button {
 [data-display="fullscreen"] {
     #menuButton {
         opacity: 0;
+    }
+}
+
+
+
+
+// editable services...
+#menu #gridSelect {
+    display: none;
+}
+
+[data-service-editable="true"] {
+    // edit mode grid
+    #menu #gridSelect {
+        display: flex;
+
+        .controlsButton {
+            .gridSelectButtonText--show {
+                display: inline;
+            }
+
+            .gridSelectButtonText--hide {
+                display: none;
+            }
+        }
+    }
+
+    &[data-grid="true"] {
+        #menu #gridSelect {
+            .controlsButton {
+                .gridSelectButtonText--show {
+                    display: none;
+                }
+
+                .gridSelectButtonText--hide {
+                    display: inline;
+                }
+            }
+        }
     }
 }
 

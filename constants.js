@@ -18,10 +18,12 @@ const CONST = {
 
   // custom HTML attributes
   ATTR_DATA_SERVICE: 'data-service',
+  ATTR_DATA_SERVICE_EDITABLE: 'data-service-editable',
   ATTR_DATA_CONTROLS: 'data-controls',
   ATTR_DATA_DISPLAY: 'data-display',
   ATTR_DATA_SCALE: 'data-scale',
-  ATTR_MENU_OPEN: 'data-menu-open',
+  ATTR_DATA_GRID: 'data-grid',
+  ATTR_DATA_MENU_OPEN: 'data-menu-open',
 
   // edit modes
   EDITMODE_NORMAL: 0,    // normal viewing
@@ -44,22 +46,26 @@ const CONST = {
   CONTROLS_MINIMAL: 'minimal',
   CONTROLS_BIGSCREEN: 'bigscreen',
 
-  // services 
-  // (these ID's are also the name of the subdirectories of 
+  // services
+  // (these ID's are also the name of the subdirectories of
   //  CONFIG.SERVICE_PAGES_DIR and CONFIG.SERVICE_PAGES_SERVE_DIR
   //  that contains the service's pages)
   SERVICE_TEEFAX: 'teefax',
-  SERVICE_TELETEXX: 'teletexx',
-  SERVICE_DIGITISER: 'd2k',
-  SERVICE_ARCHIVE: 'readback',
-  SERVICE_WIKI: 'wtf',
-
   SERVICE_AMIGAROB: 'amigarob',
   SERVICE_ARTFAX: 'artfax',
+  SERVICE_BBC1980: 'bbc1980',
   SERVICE_CHANNEL19: 'channel19',
+  SERVICE_CHRISLUCA: 'chrisluca',
+  SERVICE_DIGITISER: 'd2k',
+  SERVICE_KINDIE: 'kindie',
+  SERVICE_ARCHIVE: 'readback',
+  SERVICE_TURNER: 'turner',
+  SERVICE_WIKI: 'wtf',
 
   // config keys
   CONFIG: {
+    IS_DEV: 'IS_DEV',
+
     LOG_LEVEL_TELETEXT_SERVER: 'LOG_LEVEL_TELETEXT_SERVER',
     LOG_LEVEL_TELETEXT_VIEWER: 'LOG_LEVEL_TELETEXT_VIEWER',
 
@@ -91,7 +97,6 @@ const CONST = {
     TELETEXT_VIEWER_HTTPS_REJECT_UNAUTHORIZED: 'TELETEXT_VIEWER_HTTPS_REJECT_UNAUTHORIZED',
 
     SERVICES_AVAILABLE: 'SERVICES_AVAILABLE',
-    SERVICES_EDITABLE: 'SERVICES_EDITABLE',
 
     DEFAULT_SERVICE: 'DEFAULT_SERVICE',
     DEFAULT_CONTROLS: 'DEFAULT_CONTROLS',
@@ -101,8 +106,13 @@ const CONST = {
 
     OPEN_SERVICE_IN_NEW_WINDOW: 'OPEN_SERVICE_IN_NEW_WINDOW',
 
+    // rendering
+    NUM_COLUMNS: 'NUM_COLUMNS',
+    NUM_ROWS: 'NUM_ROWS',
+
     CANVAS_WIDTH: 'CANVAS_WIDTH',
     CANVAS_HEIGHT: 'CANVAS_HEIGHT',
+
 
     FRONTEND_CONFIG_KEYS: 'FRONTEND_CONFIG_KEYS',
   },

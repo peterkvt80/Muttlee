@@ -104,6 +104,7 @@ env.addFilter(
 let templateVars = {
   TITLE: CONFIG[CONST.CONFIG.TITLE],
   SERVICES_AVAILABLE: CONFIG[CONST.CONFIG.SERVICES_AVAILABLE],
+  IS_DEV: CONFIG[CONST.CONFIG.IS_DEV],
 };
 
 // read in logo SVG to pass into the template
@@ -130,7 +131,21 @@ app.use(
 
     for (let key in CONFIG) {
       if (CONFIG[CONST.CONFIG.FRONTEND_CONFIG_KEYS].includes(key)) {
-        content[key] = CONFIG[key];
+        let configKeyData = CONFIG[key];
+
+        // further modify / filter this config key's data?
+        if (key === CONST.CONFIG.SERVICES_AVAILABLE) {
+          for (let i in configKeyData) {
+            configKeyData[i] = {
+              name: configKeyData[i].name,
+              url: configKeyData[i].url,
+              port: configKeyData[i].port,
+              isEditable: configKeyData[i].isEditable || false,
+            };
+          }
+        }
+
+        content[key] = configKeyData;
       }
     }
 

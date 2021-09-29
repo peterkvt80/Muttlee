@@ -190,7 +190,7 @@ button:focus, button:hover {
   border-right: 8px solid #ffffff;
 }
 
-.controlsButton span {
+.controlsButton > span {
   display: block;
   padding: 40px;
   margin: -8px 0;
@@ -200,8 +200,8 @@ button:focus, button:hover {
 }
 
 .controlsButton::before, .controlsButton::after,
-.controlsButton span::before,
-.controlsButton span::after {
+.controlsButton > span::before,
+.controlsButton > span::after {
   content: '';
   display: block;
   position: absolute;
@@ -220,12 +220,12 @@ button:focus, button:hover {
   right: -5px;
 }
 
-.controlsButton span::before {
+.controlsButton > span::before {
   bottom: -5px;
   left: -5px;
 }
 
-.controlsButton span::after {
+.controlsButton > span::after {
   bottom: -5px;
   right: -5px;
 }
@@ -331,6 +331,7 @@ button:focus, button:hover {
   transform: translate(0, -6.3px);
 }
 
+#menu #gridSelect,
 #menu #serviceSelect,
 #menu #grabSelect {
   display: flex;
@@ -339,6 +340,7 @@ button:focus, button:hover {
   padding: 8px 0;
 }
 
+#menu #gridSelect button,
 #menu #serviceSelect button,
 #menu #grabSelect button {
   width: 240px;
@@ -530,6 +532,7 @@ button:focus, button:hover {
   background: #000000;
 }
 
+[data-controls="zapper"] #gridSelect,
 [data-controls="zapper"] #serviceSelect,
 [data-controls="zapper"] #grabSelect,
 [data-controls="zapper"] #controls {
@@ -660,6 +663,7 @@ button:focus, button:hover {
   background: #000000;
 }
 
+[data-controls="minimal"] #gridSelect,
 [data-controls="minimal"] #serviceSelect,
 [data-controls="minimal"] #grabSelect,
 [data-controls="minimal"] #controls {
@@ -726,6 +730,7 @@ button:focus, button:hover {
   display: none;
 }
 
+[data-display="fullscreen"] #gridSelect,
 [data-display="fullscreen"] #serviceSelect,
 [data-display="fullscreen"] #grabSelect,
 [data-display="fullscreen"] #controls,
@@ -756,6 +761,30 @@ button:focus, button:hover {
   opacity: 0;
 }
 
+#menu #gridSelect {
+  display: none;
+}
+
+[data-service-editable="true"] #menu #gridSelect {
+  display: flex;
+}
+
+[data-service-editable="true"] #menu #gridSelect .controlsButton .gridSelectButtonText--show {
+  display: inline;
+}
+
+[data-service-editable="true"] #menu #gridSelect .controlsButton .gridSelectButtonText--hide {
+  display: none;
+}
+
+[data-service-editable="true"][data-grid="true"] #menu #gridSelect .controlsButton .gridSelectButtonText--show {
+  display: none;
+}
+
+[data-service-editable="true"][data-grid="true"] #menu #gridSelect .controlsButton .gridSelectButtonText--hide {
+  display: inline;
+}
+
 [data-display="fitscreen"] #menu::before,
 [data-display="fullscreen"] #menu::before {
   content: '';
@@ -773,17 +802,23 @@ button:focus, button:hover {
   margin-right: 0;
 }
 
+[data-display="fitscreen"] #menu #gridSelect button,
 [data-display="fitscreen"] #menu #serviceSelect button,
 [data-display="fitscreen"] #menu #grabSelect button,
+[data-display="fullscreen"] #menu #gridSelect button,
 [data-display="fullscreen"] #menu #serviceSelect button,
 [data-display="fullscreen"] #menu #grabSelect button {
   -webkit-backdrop-filter: blur(6px) brightness(50%);
           backdrop-filter: blur(6px) brightness(50%);
 }
 
-[data-display="fitscreen"] #menu #serviceSelect button:hover, [data-display="fitscreen"] #menu #serviceSelect button:focus,
+[data-display="fitscreen"] #menu #gridSelect button:hover, [data-display="fitscreen"] #menu #gridSelect button:focus,
+[data-display="fitscreen"] #menu #serviceSelect button:hover,
+[data-display="fitscreen"] #menu #serviceSelect button:focus,
 [data-display="fitscreen"] #menu #grabSelect button:hover,
 [data-display="fitscreen"] #menu #grabSelect button:focus,
+[data-display="fullscreen"] #menu #gridSelect button:hover,
+[data-display="fullscreen"] #menu #gridSelect button:focus,
 [data-display="fullscreen"] #menu #serviceSelect button:hover,
 [data-display="fullscreen"] #menu #serviceSelect button:focus,
 [data-display="fullscreen"] #menu #grabSelect button:hover,
@@ -842,12 +877,15 @@ button:focus, button:hover {
   [data-menu-open="true"] #menu::before {
     margin-right: 0;
   }
+  [data-scale="1"] #menu #gridSelect button,
   [data-scale="1"] #menu #serviceSelect button,
   [data-scale="1"] #menu #grabSelect button {
     -webkit-backdrop-filter: blur(6px) brightness(50%);
             backdrop-filter: blur(6px) brightness(50%);
   }
-  [data-scale="1"] #menu #serviceSelect button:hover, [data-scale="1"] #menu #serviceSelect button:focus,
+  [data-scale="1"] #menu #gridSelect button:hover, [data-scale="1"] #menu #gridSelect button:focus,
+  [data-scale="1"] #menu #serviceSelect button:hover,
+  [data-scale="1"] #menu #serviceSelect button:focus,
   [data-scale="1"] #menu #grabSelect button:hover,
   [data-scale="1"] #menu #grabSelect button:focus {
     -webkit-backdrop-filter: blur(10px) brightness(25%);
@@ -890,12 +928,15 @@ button:focus, button:hover {
   [data-menu-open="true"] #menu::before {
     margin-right: 0;
   }
+  [data-scale="1.5"] #menu #gridSelect button,
   [data-scale="1.5"] #menu #serviceSelect button,
   [data-scale="1.5"] #menu #grabSelect button {
     -webkit-backdrop-filter: blur(6px) brightness(50%);
             backdrop-filter: blur(6px) brightness(50%);
   }
-  [data-scale="1.5"] #menu #serviceSelect button:hover, [data-scale="1.5"] #menu #serviceSelect button:focus,
+  [data-scale="1.5"] #menu #gridSelect button:hover, [data-scale="1.5"] #menu #gridSelect button:focus,
+  [data-scale="1.5"] #menu #serviceSelect button:hover,
+  [data-scale="1.5"] #menu #serviceSelect button:focus,
   [data-scale="1.5"] #menu #grabSelect button:hover,
   [data-scale="1.5"] #menu #grabSelect button:focus {
     -webkit-backdrop-filter: blur(10px) brightness(25%);
@@ -938,12 +979,15 @@ button:focus, button:hover {
   [data-menu-open="true"] #menu::before {
     margin-right: 0;
   }
+  [data-scale="2"] #menu #gridSelect button,
   [data-scale="2"] #menu #serviceSelect button,
   [data-scale="2"] #menu #grabSelect button {
     -webkit-backdrop-filter: blur(6px) brightness(50%);
             backdrop-filter: blur(6px) brightness(50%);
   }
-  [data-scale="2"] #menu #serviceSelect button:hover, [data-scale="2"] #menu #serviceSelect button:focus,
+  [data-scale="2"] #menu #gridSelect button:hover, [data-scale="2"] #menu #gridSelect button:focus,
+  [data-scale="2"] #menu #serviceSelect button:hover,
+  [data-scale="2"] #menu #serviceSelect button:focus,
   [data-scale="2"] #menu #grabSelect button:hover,
   [data-scale="2"] #menu #grabSelect button:focus {
     -webkit-backdrop-filter: blur(10px) brightness(25%);
