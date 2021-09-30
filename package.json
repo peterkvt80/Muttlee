@@ -1,6 +1,6 @@
 {
   "name": "muttlee",
-  "version": "1.1.6",
+  "version": "1.1.7",
   "description": "Teletext live on the web",
   "main": "teletextserver.js",
   "repository": "https://github.com/peterkvt80/Muttlee",
@@ -14,6 +14,7 @@
     "css:minify": "cleancss --with-rebase --source-map --source-map-inline-sources --output public/muttlee.min.css public/muttlee.css",
     "css:watch": "npm run css:compile && npm run css:compile-watch",
     "js:build": "npx terser public/libraries/p5.js -o public/libraries/p5.min.js -c -m && npx terser public/libraries/p5.dom.js -o public/libraries/p5.dom.min.js -c -m",
+    "watch": "npm run css:watch",
     "build": "npm run js:build && npm run css:build"
   },
   "browserslist": [

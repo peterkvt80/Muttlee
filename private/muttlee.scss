@@ -48,7 +48,7 @@ $font-family--teletext4: 'Teletext4', 'Arial', 'Helvetica', sans-serif;
             z-index: -1;
 
             backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
-            transition: margin-right 0.5s ease-in-out;
+            transition: margin-right 0.4s ease-in-out;
 
             @at-root {
                 [data-menu-open="true"] #menu::before {
@@ -122,13 +122,12 @@ $font-family--teletext4: 'Teletext4', 'Arial', 'Helvetica', sans-serif;
     // hide letters in logo
     #logo {
         svg {
-            .c2,
-            .c3,
-            .c4,
-            .c5,
-            .c6,
-            .c7 {
+            .c {
                 opacity: 0;
+            }
+
+            .c1 {
+                opacity: 1;
             }
         }
     }
@@ -233,7 +232,6 @@ button {
 .button {
     border-radius: 8px;
     padding: 10px;
-    width: 130px;
     height: 100px;
     color: $colour--black;
     font-weight: 700;
@@ -935,6 +933,7 @@ button {
 
 
 // fade out UI elements in specific controls / display modes
+[data-controls="zapper"],
 [data-controls="minimal"],
 [data-display="fitscreen"],
 [data-display="fullscreen"] {
@@ -1019,5 +1018,38 @@ button {
 @media only screen and (max-width: 2000px) {
     [data-scale="2"] {
         @include menu-obscures-canvas;
+    }
+}
+
+
+
+
+// position p5 loading message in centre of screen
+.canvas--p5_loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed !important;
+    width: 500px;
+    height: 50px;
+    left: calc(50% - (500px /2));
+    top: calc(50% - (50px /2));
+}
+
+
+
+
+// don't show the page content until the render setup has completed (to stop visible layout shifts)
+#wrapper {
+    opacity: 0;
+    pointer-events: none;
+
+    transition: opacity 0.75s ease-in-out;
+}
+
+[data-ready="true"] {
+    #wrapper {
+        opacity: 1;
+        pointer-events: all;
     }
 }

@@ -5,7 +5,7 @@ const CONFIG = {
   [CONST.CONFIG.IS_DEV]: false,
 
   [CONST.CONFIG.LOG_LEVEL_TELETEXT_SERVER]: CONST.LOG_LEVEL_VERBOSE,
-  [CONST.CONFIG.LOG_LEVEL_TELETEXT_VIEWER]: CONST.LOG_LEVEL_VERBOSE,
+  [CONST.CONFIG.LOG_LEVEL_TELETEXT_VIEWER]: CONST.LOG_LEVEL_INFO,
 
   // this is used by `update-service-pages.js` as the place where the
   // raw source service pages directories (likely SVN repositories)
@@ -182,8 +182,9 @@ const CONFIG = {
   [CONST.CONFIG.NUM_COLUMNS]: 40,
   [CONST.CONFIG.NUM_ROWS]: 25,
 
-  [CONST.CONFIG.CANVAS_WIDTH]: 600,
-  [CONST.CONFIG.CANVAS_HEIGHT]: 550,
+  [CONST.CONFIG.CANVAS_WIDTH]: 562,
+  [CONST.CONFIG.CANVAS_HEIGHT]: 510,
+  [CONST.CONFIG.CANVAS_PADDING_RIGHT_SINGLE_COLUMN]: true,
 
 
   // explicitly whitelist config values that are available in the frontend
@@ -216,6 +217,7 @@ const CONFIG = {
 
     CONST.CONFIG.CANVAS_WIDTH,
     CONST.CONFIG.CANVAS_HEIGHT,
+    CONST.CONFIG.CANVAS_PADDING_RIGHT_SINGLE_COLUMN,
   ],
 };
 
