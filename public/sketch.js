@@ -149,16 +149,33 @@ function setup() {
     }
   }
 
+
+  // override specific settings based on other initial settings values
+  if (
+    [
+      CONST.CONTROLS_ZAPPER,
+      CONST.CONTROLS_MINIMAL,
+      CONST.CONTROLS_BIGSCREEN,
+    ].includes(controls)
+  ) {
+    menuOpen = false;
+  }
+
   if (controls === CONST.CONTROLS_BIGSCREEN) {
     display = CONST.DISPLAY_FITSCREEN;
   }
 
+
   const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][service];
 
-  // if viewer is being served over http and requests a https service, prefix its URL with 'https'
   let serviceUrl = serviceData.url + ':' + serviceData.port;
   if ((window.location.protocol === 'http:') && (serviceData.port === 443)) {
+    // if viewer is being served over http and requests a https service, prefix its URL with 'https'
     serviceUrl = 'https:' + serviceUrl;
+
+  } else if ((window.location.protocol === 'https:') && (serviceData.port === 80)) {
+    // if viewer is being served over https and requests a http service, prefix its URL with 'http'
+    serviceUrl = 'http:' + serviceUrl;
   }
 
   // connect via socket.io to server
@@ -170,9 +187,24 @@ function setup() {
   );
 
 
+  // font metrics
+  textFont(ttxFont);
+  textSize(gTtxFontSize);
+
+  gTtxW = parseInt(textWidth('M'), 10);       // ensure calculated character width is an int (not a float) for sharpest rendering quality
+  gTtxH = gTtxFontSize;
+
+
   // create the p5 canvas, and move it into the #canvas DOM element
   cnv = createCanvas(
-    CONFIG[CONST.CONFIG.CANVAS_WIDTH],
+    (
+      CONFIG[CONST.CONFIG.CANVAS_WIDTH] +
+      (
+        !serviceData.isEditable && CONFIG[CONST.CONFIG.CANVAS_PADDING_RIGHT_SINGLE_COLUMN] ?
+          gTtxW :
+          0
+      )
+    ),
     CONFIG[CONST.CONFIG.CANVAS_HEIGHT]
   );
   cnv.parent('canvas');
@@ -203,13 +235,8 @@ function setup() {
     }
   );
 
-  // font metrics
-  textFont(ttxFont);
-  textSize(gTtxFontSize);
 
-  gTtxW = parseInt(textWidth('M'), 10);       // ensure calculated character width is an int (not a float) for sharpest rendering quality
-  gTtxH = gTtxFontSize;
-
+  // initialise page
   myPage = new TTXPAGE();
   myPage.init(
     page ?
@@ -288,6 +315,10 @@ function setup() {
 
   // indicate changes that have not been processed by the server yet
   changed = new CHARCHANGED();
+
+
+  // update custom attribute on body element, indicating that rendering setup has complete
+  document.body.setAttribute(CONST.ATTR_DATA_READY, true);
 }
 
 
@@ -1276,7 +1307,7 @@ function editTF(key) {
       break; // flash on (same as zxnet)
     case 'f' :
       chr = '\x09';
-      break; // steady )same as zxnet)
+      break; // steady (same as zxnet)
 
       // chr='\x0a';break; // endbox
       // chr='\x0b';break; // startbox

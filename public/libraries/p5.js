@@ -11688,6 +11688,7 @@ var p5 = function(sketch, node, sync) {
       if(!loadingScreen){
         loadingScreen = document.createElement('div');
         loadingScreen.innerHTML = 'Loading...';
+        loadingScreen.className = 'canvas canvas--' + this._loadingScreenId;
         loadingScreen.style.position = 'absolute';
         loadingScreen.id = this._loadingScreenId;
         var node = this._userNode || document.body;
@@ -15811,8 +15812,10 @@ p5.prototype.createCanvas = function(w, h, renderer) {
     if(c){ //if defaultCanvas already exists
       c.parentNode.removeChild(c); //replace the existing defaultCanvas
     }
+
     c = document.createElement('canvas');
     c.id = defaultId;
+    c.className = 'canvas canvas--' + defaultId;
   }
   else {
     if (isDefault) {
@@ -15823,6 +15826,8 @@ p5.prototype.createCanvas = function(w, h, renderer) {
       }
       defaultId = 'defaultCanvas'+i;
       c.id = defaultId;
+      c.className = 'canvas canvas--' + defaultId;
+
     } else { // resize the default canvas if new one is created
       c = this.canvas;
     }

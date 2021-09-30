@@ -18,6 +18,7 @@ const CONST = {
 
   // custom HTML attributes
   ATTR_DATA_SERVICE: 'data-service',
+  ATTR_DATA_READY: 'data-ready',
   ATTR_DATA_SERVICE_EDITABLE: 'data-service-editable',
   ATTR_DATA_CONTROLS: 'data-controls',
   ATTR_DATA_DISPLAY: 'data-display',
@@ -112,6 +113,7 @@ const CONST = {
 
     CANVAS_WIDTH: 'CANVAS_WIDTH',
     CANVAS_HEIGHT: 'CANVAS_HEIGHT',
+    CANVAS_PADDING_RIGHT_SINGLE_COLUMN: 'CANVAS_PADDING_RIGHT_SINGLE_COLUMN',
 
 
     FRONTEND_CONFIG_KEYS: 'FRONTEND_CONFIG_KEYS',

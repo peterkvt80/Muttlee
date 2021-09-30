@@ -88,7 +88,6 @@ button:focus, button:hover {
 .button {
   border-radius: 8px;
   padding: 10px;
-  width: 130px;
   height: 100px;
   color: #000000;
   font-weight: 700;
@@ -738,6 +737,8 @@ button:focus, button:hover {
   display: none;
 }
 
+[data-controls="zapper"] #logo,
+[data-controls="zapper"] #menuButton,
 [data-controls="minimal"] #logo,
 [data-controls="minimal"] #menuButton,
 [data-display="fitscreen"] #logo,
@@ -748,6 +749,8 @@ button:focus, button:hover {
   transition: opacity 0.2s ease-in-out;
 }
 
+[data-controls="zapper"] #logo:hover,
+[data-controls="zapper"] #menuButton:hover,
 [data-controls="minimal"] #logo:hover,
 [data-controls="minimal"] #menuButton:hover,
 [data-display="fitscreen"] #logo:hover,
@@ -795,7 +798,7 @@ button:focus, button:hover {
   z-index: -1;
   -webkit-backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
           backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
-  transition: margin-right 0.5s ease-in-out;
+  transition: margin-right 0.4s ease-in-out;
 }
 
 [data-menu-open="true"] #menu::before {
@@ -847,19 +850,14 @@ button:focus, button:hover {
   text-shadow: 0 0 4px #000000, 0 0 8px #000000, 0 0 16px #000000, 0 0 24px #ff00ff, 0 0 32px #ff00ff, 0 0 48px #ff00ff;
 }
 
-[data-display="fitscreen"] #logo svg .c2,
-[data-display="fitscreen"] #logo svg .c3,
-[data-display="fitscreen"] #logo svg .c4,
-[data-display="fitscreen"] #logo svg .c5,
-[data-display="fitscreen"] #logo svg .c6,
-[data-display="fitscreen"] #logo svg .c7,
-[data-display="fullscreen"] #logo svg .c2,
-[data-display="fullscreen"] #logo svg .c3,
-[data-display="fullscreen"] #logo svg .c4,
-[data-display="fullscreen"] #logo svg .c5,
-[data-display="fullscreen"] #logo svg .c6,
-[data-display="fullscreen"] #logo svg .c7 {
+[data-display="fitscreen"] #logo svg .c,
+[data-display="fullscreen"] #logo svg .c {
   opacity: 0;
+}
+
+[data-display="fitscreen"] #logo svg .c1,
+[data-display="fullscreen"] #logo svg .c1 {
+  opacity: 1;
 }
 
 @media only screen and (max-width: 1384px) {
@@ -872,7 +870,7 @@ button:focus, button:hover {
     z-index: -1;
     -webkit-backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
             backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
-    transition: margin-right 0.5s ease-in-out;
+    transition: margin-right 0.4s ease-in-out;
   }
   [data-menu-open="true"] #menu::before {
     margin-right: 0;
@@ -903,13 +901,11 @@ button:focus, button:hover {
   [data-scale="1"] #menu .settingsRow:nth-child(4) label {
     text-shadow: 0 0 4px #000000, 0 0 8px #000000, 0 0 16px #000000, 0 0 24px #ff00ff, 0 0 32px #ff00ff, 0 0 48px #ff00ff;
   }
-  [data-scale="1"] #logo svg .c2,
-  [data-scale="1"] #logo svg .c3,
-  [data-scale="1"] #logo svg .c4,
-  [data-scale="1"] #logo svg .c5,
-  [data-scale="1"] #logo svg .c6,
-  [data-scale="1"] #logo svg .c7 {
+  [data-scale="1"] #logo svg .c {
     opacity: 0;
+  }
+  [data-scale="1"] #logo svg .c1 {
+    opacity: 1;
   }
 }
 
@@ -923,7 +919,7 @@ button:focus, button:hover {
     z-index: -1;
     -webkit-backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
             backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
-    transition: margin-right 0.5s ease-in-out;
+    transition: margin-right 0.4s ease-in-out;
   }
   [data-menu-open="true"] #menu::before {
     margin-right: 0;
@@ -954,13 +950,11 @@ button:focus, button:hover {
   [data-scale="1.5"] #menu .settingsRow:nth-child(4) label {
     text-shadow: 0 0 4px #000000, 0 0 8px #000000, 0 0 16px #000000, 0 0 24px #ff00ff, 0 0 32px #ff00ff, 0 0 48px #ff00ff;
   }
-  [data-scale="1.5"] #logo svg .c2,
-  [data-scale="1.5"] #logo svg .c3,
-  [data-scale="1.5"] #logo svg .c4,
-  [data-scale="1.5"] #logo svg .c5,
-  [data-scale="1.5"] #logo svg .c6,
-  [data-scale="1.5"] #logo svg .c7 {
+  [data-scale="1.5"] #logo svg .c {
     opacity: 0;
+  }
+  [data-scale="1.5"] #logo svg .c1 {
+    opacity: 1;
   }
 }
 
@@ -974,7 +968,7 @@ button:focus, button:hover {
     z-index: -1;
     -webkit-backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
             backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
-    transition: margin-right 0.5s ease-in-out;
+    transition: margin-right 0.4s ease-in-out;
   }
   [data-menu-open="true"] #menu::before {
     margin-right: 0;
@@ -1005,14 +999,34 @@ button:focus, button:hover {
   [data-scale="2"] #menu .settingsRow:nth-child(4) label {
     text-shadow: 0 0 4px #000000, 0 0 8px #000000, 0 0 16px #000000, 0 0 24px #ff00ff, 0 0 32px #ff00ff, 0 0 48px #ff00ff;
   }
-  [data-scale="2"] #logo svg .c2,
-  [data-scale="2"] #logo svg .c3,
-  [data-scale="2"] #logo svg .c4,
-  [data-scale="2"] #logo svg .c5,
-  [data-scale="2"] #logo svg .c6,
-  [data-scale="2"] #logo svg .c7 {
+  [data-scale="2"] #logo svg .c {
     opacity: 0;
   }
+  [data-scale="2"] #logo svg .c1 {
+    opacity: 1;
+  }
+}
+
+.canvas--p5_loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed !important;
+  width: 500px;
+  height: 50px;
+  left: calc(50% - (500px /2));
+  top: calc(50% - (50px /2));
+}
+
+#wrapper {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.75s ease-in-out;
+}
+
+[data-ready="true"] #wrapper {
+  opacity: 1;
+  pointer-events: all;
 }
 
 /*# sourceMappingURL=muttlee.css.map */

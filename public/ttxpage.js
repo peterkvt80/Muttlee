@@ -338,6 +338,8 @@ TTXPAGE = function() {
         (gTtxW * x),
         (gTtxH * CONFIG[CONST.CONFIG.NUM_ROWS]) + gridOffsetVertical,
       );
+
+      // console.log((gTtxW * x));
     }
 
     // draw row separation lines
@@ -348,6 +350,8 @@ TTXPAGE = function() {
         (gTtxW * CONFIG[CONST.CONFIG.NUM_COLUMNS]),
         (gTtxH * y) + gridOffsetVertical,
       );
+
+      // console.log((gTtxH * y) + gridOffsetVertical);
     }
   };
 
