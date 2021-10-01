@@ -42,8 +42,9 @@ config.*.js
 .node_repl_history
 
 # Pages
+BBCNEWS/BBC100.ttix.BAK
+*.bak
 *.ttix
 *.tti
 !private/p404.tti
-BBCNEWS/BBC100.ttix.BAK
-*.bak
+!private/p404_editable.tti

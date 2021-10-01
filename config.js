@@ -23,6 +23,7 @@ const CONFIG = {
   [CONST.CONFIG.SERVICE_PAGES_SERVE_DIR]: '/var/www/private/onair',
 
   [CONST.CONFIG.PAGE_404_PATH]: '/var/www/private/p404.tti',
+  [CONST.CONFIG.PAGE_404_EDITABLE_PATH]: '/var/www/private/p404_editable.tti',
 
   [CONST.CONFIG.LOGO_SVG_PATH]: '/var/www/private/muttlee_logo.svg',
   [CONST.CONFIG.ZAPPER_STANDARD_SVG_PATH]: '/var/www/private/zapper_standard.svg',

@@ -30,7 +30,7 @@
 
   <body{% if LOGO_SVG %} data-has-logo="true"{% endif %}>
     {% if LOGO_SVG %}
-      <a id="logo" href="/" onclick="reloadPage(event);">
+      <a id="logo" href="/" onclick="reloadService(event);">
         {{ LOGO_SVG | safe }}
       </a>
     {% endif %}
