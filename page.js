@@ -12,6 +12,8 @@ require('./utils.js'); // Prestel and other string handling
 // import logger
 const LOG = require('./log.js');
 
+// import constants for use server-side
+const CONST = require('./constants.js');
 
 Page = function () {
   // basic properties
