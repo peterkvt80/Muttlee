@@ -29,6 +29,6 @@ OL,19,W  ! ! ! "" 1"#####!    """ "#" d     !,
 OL,20,W  `>m0//j5  x/t t *o?%x/t   d),,   ,
 OL,21,W  ~qr}  j5 hwp{4j4 j5hwp{4  d),,   ,
 OL,22,W  ##  j}|j7#k5 + j5j7#k5   ),,
-OL,23,
-OL,24,A Index    BNews    CEvents    FArchive
+OL,23,   *CYELLOWGcreates a new page
+OL,24,A Index  BNews  CCreateNewPage  FArchive
 FL,100,104,800,200,8ff,100

@@ -339,7 +339,7 @@ function openService(serviceId) {
   params.set('service', serviceId);
   params.delete('page');      // don't carry current page number over when changing service
 
-  const newUrl = location.pathname + '?' + params;
+  const newUrl = `${location.pathname}?${params}`;
 
   // open in same, or new window?
   if (CONFIG[CONST.CONFIG.OPEN_SERVICE_IN_NEW_WINDOW] === true) {
@@ -532,8 +532,7 @@ function fastext(index) {
       break;
 
     case 3:
-      // Special hack for yellow:
-      // If page is greater than 0x0fff then it is a request to create the page
+      // if yellow fastext has been set to a number greater than 0x0fff then it is a request to create the page
       page = myPage.yellowLink;
 
       if (page > 0x0fff) {
@@ -561,7 +560,8 @@ function fastext(index) {
     LOG.LOG_LEVEL_VERBOSE,
   );
 
-  if (page >= CONST.PAGE_MIN && page <= CONST.PAGE_MAX) {   // Page in range
+  // if page in range...
+  if (page >= CONST.PAGE_MIN && page <= CONST.PAGE_MAX) {
     myPage.setPage(page);   // We now have a different page number
 
     let data = {
@@ -1191,13 +1191,14 @@ function nextPage() {
   let p = myPage.pageNumber;
   p++;
 
-  // Hex numbers should be skipped. Users should not select them.
-  if ((p & 0xf) === 0xa) {
+  // don't allow navigation to hexadecimal page numbers, skip to next valid decimal page number
+  while (/[A-F]+/i.test(p.toString(16))) {
     p += 6;
   }
 
-  if (p > 0x8fe) {
-    p = 0x8fe;
+  // don't allow navigation to a page above our maximum page number
+  if (p > CONST.PAGE_MAX) {
+    p = CONST.PAGE_MAX;
   }
 
   myPage.setPage(p); // We now have a different page number
@@ -1224,11 +1225,12 @@ function prevPage() {
   let p = myPage.pageNumber;
   p--;
 
-  // Hex numbers should be skipped. Users should not select them.
-  if ((p & 0xf) === 0xf) {
+  // don't allow navigation to hexadecimal page numbers, skip to next valid decimal page number
+  while (/[A-F]+/i.test(p.toString(16))) {
     p -= 6;
   }
 
+  // don't allow navigation to a page below our minimum page number
   if (p < CONST.PAGE_MIN) {
     p = CONST.PAGE_MIN;
   }
@@ -1570,10 +1572,13 @@ function toggleMenu() {
 }
 
 
-function reloadPage(event) {
+function reloadService(event) {
   event.preventDefault();
 
-  location.reload();
+  const params = new URLSearchParams(location.search);
+  params.delete('page');      // don't carry current page number over when changing service
+
+  window.location.href = `${location.pathname}?${params}`;
 
   return false;
 }

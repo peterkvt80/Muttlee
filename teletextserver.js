@@ -26,8 +26,7 @@ const PACKAGE_JSON = require('./package.json');
 const LOG = require('./log.js');
 
 
-// output logo in console?
-if (CONFIG[CONST.CONFIG.SHOW_CONSOLE_LOGO] === true) {
+function renderLogo(includeEndBlankLine = false) {
   // determine logo char array length
   const logoCharLength = CONFIG[CONST.CONFIG.CONSOLE_LOGO_CHAR_ARRAY].reduce(
     (previousValue, currentValue) => {
@@ -40,18 +39,33 @@ if (CONFIG[CONST.CONFIG.SHOW_CONSOLE_LOGO] === true) {
     }
   );
 
-  // output logo char array lines to console
-  console.log(''.padStart(logoCharLength));
+  let str = '';
+
+  // output logo char array lines
+  str += ''.padStart(logoCharLength) + '\n';
 
   for (let i in CONFIG[CONST.CONFIG.CONSOLE_LOGO_CHAR_ARRAY]) {
-    console.log(CONFIG[CONST.CONFIG.CONSOLE_LOGO_CHAR_ARRAY][i]);
+    str += CONFIG[CONST.CONFIG.CONSOLE_LOGO_CHAR_ARRAY][i] + '\n';
   }
 
   // include current version under the logo
   const versionString = 'v' + PACKAGE_JSON.version;
-  console.log(''.padStart(logoCharLength - versionString.length) + versionString);
+  str += ''.padStart(logoCharLength - versionString.length) + versionString + '\n';
 
-  console.log(''.padStart(logoCharLength));
+  if (includeEndBlankLine) {
+    str += ''.padStart(logoCharLength) + '\n';
+  }
+
+  return str;
+}
+
+
+// output logo in console?
+if (CONFIG[CONST.CONFIG.SHOW_CONSOLE_LOGO] === true) {
+  // output logo char array lines to console
+  console.log(
+    renderLogo(true)
+  );
 }
 
 
@@ -102,10 +116,16 @@ env.addFilter(
 
 // define shared template variables
 let templateVars = {
-  TITLE: CONFIG[CONST.CONFIG.TITLE],
-  SERVICES_AVAILABLE: CONFIG[CONST.CONFIG.SERVICES_AVAILABLE],
   IS_DEV: CONFIG[CONST.CONFIG.IS_DEV],
+
+  TITLE: CONFIG[CONST.CONFIG.TITLE],
+
+  SERVICES_AVAILABLE: CONFIG[CONST.CONFIG.SERVICES_AVAILABLE],
 };
+
+if (CONFIG[CONST.CONFIG.SHOW_CONSOLE_LOGO] === true) {
+  templateVars.LOGO_CHARS = renderLogo();
+}
 
 // read in logo SVG to pass into the template
 try {
@@ -424,6 +444,7 @@ function doInitialLoad(data) {
   );
 
   data.p = parseInt(initialPage);
+
   doLoad(data);
 }
 
@@ -438,25 +459,33 @@ function doLoad(data) {
     data.x = 0;
   }
 
+
+  // get service (and set to default service if not found)
   let service = connectionList[data.id];
 
-  if (service == undefined) {
-    service = CONST.SERVICE_TEEFAX;
+  if (!service) {
+    service = CONFIG[CONST.CONFIG.DEFAULT_SERVICE];
   }
 
 
   // determine what to serve...
   let filename;
 
-  if (data.p === CONST.PAGE_404) {
+  if (data.x === CONST.SIGNAL_PAGE_NOT_FOUND) {
+    // determine 404 page file to serve...
+    filename = CONFIG[CONST.CONFIG.PAGE_404_PATH];
+
+    const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE];
+
+    // if service is editable, serve editable 404 page
+    if (serviceData[data.S] && serviceData[data.S].isEditable) {
+      filename = CONFIG[CONST.CONFIG.PAGE_404_EDITABLE_PATH];
+    }
+
     // serve custom 404 page, or leave existing blanked page?
-    if (!fs.existsSync(CONFIG[CONST.CONFIG.PAGE_404_PATH])) {
+    if (!fs.existsSync(filename)) {
       // custom 404 page does not exist, leave existing blanked page
       return false;
-
-    } else {
-      // custom 404 page exists, serve it
-      filename = CONFIG[CONST.CONFIG.PAGE_404_PATH];
     }
 
   } else {
@@ -468,7 +497,7 @@ function doLoad(data) {
   }
 
 
-  // !!! Here we want to check if the page is already in cache
+  // check if the page is already in cache
   let found = findService(service);
 
   if (found === false) {
@@ -518,7 +547,7 @@ function doLoad(data) {
 
       ...{
         y: data.p,                          // Save the page number, we will ask the user if they want to create the page
-        p: CONST.PAGE_404,
+        p: data.p,
         x: CONST.SIGNAL_PAGE_NOT_FOUND,     // Signal a 404 error
         S: connectionList[data.id],         // How do we lose the service type? This hack shouldn't be needed
       },
@@ -564,8 +593,8 @@ function doLoad(data) {
     } else if (line.indexOf('DE,') === 0) {   // Detect a description row
       data.desc = line.substring(3);
 
-      // Hacky hack. Page 404 gets the failed page number in data.y
-      if (data.p === CONST.PAGE_404) {
+      // if page has page not found signal set, append the failed page number to the page description display
+      if (data.x === CONST.SIGNAL_PAGE_NOT_FOUND) {
         missingPage = data.y.toString(16);
 
         data.desc += ` - page ${missingPage}`;
@@ -594,10 +623,14 @@ function doLoad(data) {
         data.fastext[link] = flink;
       }
 
-      // Hacky hack: 404 page signals the missing page in data.y
-      // We will offer to make the page from template eventually
-      if (data.p === CONST.PAGE_404) {
-        data.fastext[2] = `1${missingPage}`;  // Flag that this page doesn't exist
+      // if page has page not found signal set...
+      if (data.x === CONST.SIGNAL_PAGE_NOT_FOUND) {
+        // ...and service is editable, change the yellow fastext link to allow creating of a new page at this page number
+        const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE];
+
+        if (serviceData[data.S] && serviceData[data.S].isEditable) {
+          data.fastext[2] = `1${missingPage}`;
+        }
       }
 
       io.sockets.emit('fastext', data);
@@ -709,14 +742,36 @@ function findService(name) {
 /** Create a page from template number data.p
  */
 function createPage(data, callback) {
+  const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE];
+
+  // don't create page if service is not defined, or is not a known service
+  if (!data.S || !serviceData[data.S]) {
+    LOG.fn(
+      ['teletextserver', 'createPage'],
+      `Error: Could not create page, service=${data.S} unknown`,
+      LOG.LOG_LEVEL_ERROR,
+    );
+
+    return false;
+  }
+
+  // don't create page if service is not editable
+  if (!serviceData[data.S].isEditable) {
+    LOG.fn(
+      ['teletextserver', 'createPage'],
+      `Error: Could not create page, service=${data.S} is not editable`,
+      LOG.LOG_LEVEL_ERROR,
+    );
+
+    return false;
+  }
+
   LOG.fn(
     ['teletextserver', 'createPage'],
-    `Starts`,
+    `Creating page=${data.p.toString(16)}`,
     LOG.LOG_LEVEL_VERBOSE,
   );
 
-  // what is my page name? /var/www/<service>/p<page number>.tti
-  // @todo Check for service being undefined
   const filename = path.join(
     CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],
     data.S,
@@ -730,11 +785,11 @@ function createPage(data, callback) {
   );
 
   // open write file stream
-  var wstream = fs.createWriteStream(filename);
+  const wstream = fs.createWriteStream(filename);
 
   // write the template
   wstream.write('DE,Topic: Created by user\n');
-  wstream.write('DS,muttlee\n');
+  wstream.write('DS,' + CONFIG[CONST.CONFIG.TITLE] + '\n');
   wstream.write('SP,' + filename + '\n');
   wstream.write('CT,8,T\n');
   wstream.write('PN,' + data.p.toString(16) + '00\n'); // @todo How can we add subpages?
