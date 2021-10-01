@@ -1,9 +1,22 @@
 <!DOCTYPE html>
+{% if LOGO_CHARS %}
+<!--
+{{ LOGO_CHARS }}
+-->
+{% endif %}
 <html>
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
     <title>{{ TITLE }}</title>
+
+    {% if LOGO_CHARS %}
+      <script>
+        if (window.console && (typeof console.log === 'function')) {
+          console.log(('{{ LOGO_CHARS | replace("\n", "::n::") }}' + '::n::').replace(/::n::/g, '\n'));
+        }
+      </script>
+    {% endif %}
 
     {% if IS_DEV %}
       <script src="libraries/socket.io.min.js"></script>

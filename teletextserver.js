@@ -26,8 +26,7 @@ const PACKAGE_JSON = require('./package.json');
 const LOG = require('./log.js');
 
 
-// output logo in console?
-if (CONFIG[CONST.CONFIG.SHOW_CONSOLE_LOGO] === true) {
+function renderLogo(includeEndBlankLine = false) {
   // determine logo char array length
   const logoCharLength = CONFIG[CONST.CONFIG.CONSOLE_LOGO_CHAR_ARRAY].reduce(
     (previousValue, currentValue) => {
@@ -40,18 +39,33 @@ if (CONFIG[CONST.CONFIG.SHOW_CONSOLE_LOGO] === true) {
     }
   );
 
-  // output logo char array lines to console
-  console.log(''.padStart(logoCharLength));
+  let str = '';
+
+  // output logo char array lines
+  str += ''.padStart(logoCharLength) + '\n';
 
   for (let i in CONFIG[CONST.CONFIG.CONSOLE_LOGO_CHAR_ARRAY]) {
-    console.log(CONFIG[CONST.CONFIG.CONSOLE_LOGO_CHAR_ARRAY][i]);
+    str += CONFIG[CONST.CONFIG.CONSOLE_LOGO_CHAR_ARRAY][i] + '\n';
   }
 
   // include current version under the logo
   const versionString = 'v' + PACKAGE_JSON.version;
-  console.log(''.padStart(logoCharLength - versionString.length) + versionString);
+  str += ''.padStart(logoCharLength - versionString.length) + versionString + '\n';
 
-  console.log(''.padStart(logoCharLength));
+  if (includeEndBlankLine) {
+    str += ''.padStart(logoCharLength) + '\n';
+  }
+
+  return str;
+}
+
+
+// output logo in console?
+if (CONFIG[CONST.CONFIG.SHOW_CONSOLE_LOGO] === true) {
+  // output logo char array lines to console
+  console.log(
+    renderLogo(true)
+  );
 }
 
 
@@ -102,10 +116,16 @@ env.addFilter(
 
 // define shared template variables
 let templateVars = {
-  TITLE: CONFIG[CONST.CONFIG.TITLE],
-  SERVICES_AVAILABLE: CONFIG[CONST.CONFIG.SERVICES_AVAILABLE],
   IS_DEV: CONFIG[CONST.CONFIG.IS_DEV],
+
+  TITLE: CONFIG[CONST.CONFIG.TITLE],
+
+  SERVICES_AVAILABLE: CONFIG[CONST.CONFIG.SERVICES_AVAILABLE],
 };
+
+if (CONFIG[CONST.CONFIG.SHOW_CONSOLE_LOGO] === true) {
+  templateVars.LOGO_CHARS = renderLogo();
+}
 
 // read in logo SVG to pass into the template
 try {
