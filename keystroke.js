@@ -182,9 +182,9 @@ KeyStroke = function () {
     // Sort the event list by S(service name) p(page 100..8ff) s(subpage 0..99) y(row 0..24)
     this.eventList.sort(
       function (a, b) {
-        // the main service is never defined, so set it to the proper CONST.SERVICE_TEEFAX
-        if (a.S === undefined) a.S = CONST.SERVICE_TEEFAX;
-        if (b.S === undefined) a.S = CONST.SERVICE_TEEFAX;
+        // the main service is never defined, so set it to the configured CONFIG.DEFAULT_SERVICE
+        if (a.S === undefined) a.S = CONFIG[CONST.CONFIG.DEFAULT_SERVICE];
+        if (b.S === undefined) a.S = CONFIG[CONST.CONFIG.DEFAULT_SERVICE];
         // Service sort
         if (a.S < b.S) return -1;
         if (a.S > b.S) return 1;
@@ -209,8 +209,8 @@ KeyStroke = function () {
 
       // Get the filename
       service = event.S;
-      if (service === undefined) {
-        service = CONST.SERVICE_TEEFAX;
+      if (!service) {
+        service = CONFIG[CONST.CONFIG.DEFAULT_SERVICE];
       }
 
       var pageNumber = event.p;

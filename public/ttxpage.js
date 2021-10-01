@@ -124,8 +124,8 @@ TTXPAGE = function() {
   this.getService = function () {
     let svc = String(this.service);
 
-    if (svc === undefined) {
-      svc = CONST.SERVICE_TEEFAX;
+    if (!svc) {
+      svc = CONFIG[CONST.CONFIG.DEFAULT_SERVICE];
     }
 
     return svc;

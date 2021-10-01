@@ -444,7 +444,7 @@ function doLoad(data) {
   let service = connectionList[data.id];
 
   if (!service) {
-    service = CONST.SERVICE_TEEFAX;
+    service = CONFIG[CONST.CONFIG.DEFAULT_SERVICE];
   }
 
 
