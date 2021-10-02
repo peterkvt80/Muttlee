@@ -619,9 +619,11 @@ button {
 
 
 
-#instructionsSelect {
-    display: flex;
-    flex-direction: column;
+#menu {
+    #instructionsSelect {
+        // only shown for editable services
+        display: none;
+    }
 }
 
 
@@ -1124,17 +1126,25 @@ button {
 }
 
 [data-service-editable="true"] {
-    // edit mode grid
-    #menu #gridSelect {
-        display: flex;
+    #menu {
+        // show instructions menu button
+        #instructionsSelect {
+            display: flex;
+            flex-direction: column;
+        }
 
-        .controlsButton {
-            .gridSelectButtonText--show {
-                display: inline;
-            }
+        // edit mode grid
+        #gridSelect {
+            display: flex;
 
-            .gridSelectButtonText--hide {
-                display: none;
+            .controlsButton {
+                .gridSelectButtonText--show {
+                    display: inline;
+                }
+
+                .gridSelectButtonText--hide {
+                    display: none;
+                }
             }
         }
     }

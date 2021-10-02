@@ -41,8 +41,7 @@ canvas {
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
-  -webkit-clip-path: inset(50%);
-          clip-path: inset(50%);
+  clip-path: inset(50%);
   border: 0;
 }
 
@@ -94,10 +93,7 @@ button {
   padding: 0;
   cursor: pointer;
   font-family: "Teletext4", "Arial", "Helvetica", sans-serif;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
+  user-select: none;
 }
 
 button:focus, button:hover {
@@ -452,9 +448,8 @@ button:focus, button:hover {
   font-family: "Teletext4", "Arial", "Helvetica", sans-serif;
 }
 
-#instructionsSelect {
-  display: flex;
-  flex-direction: column;
+#menu #instructionsSelect {
+  display: none;
 }
 
 #wrapper {
@@ -921,6 +916,11 @@ button:focus, button:hover {
   display: none;
 }
 
+[data-service-editable="true"] #menu #instructionsSelect {
+  display: flex;
+  flex-direction: column;
+}
+
 [data-service-editable="true"] #menu #gridSelect {
   display: flex;
 }
@@ -949,8 +949,7 @@ button:focus, button:hover {
   height: 100%;
   margin-right: -64px;
   z-index: -1;
-  -webkit-backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
-          backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
+  backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
   transition: margin-right 0.4s ease-in-out;
 }
 
@@ -960,15 +959,13 @@ button:focus, button:hover {
 
 [data-display="fitscreen"] #menu .menuSection button,
 [data-display="fullscreen"] #menu .menuSection button {
-  -webkit-backdrop-filter: blur(6px) brightness(50%);
-          backdrop-filter: blur(6px) brightness(50%);
+  backdrop-filter: blur(6px) brightness(50%);
 }
 
 [data-display="fitscreen"] #menu .menuSection button:hover, [data-display="fitscreen"] #menu .menuSection button:focus,
 [data-display="fullscreen"] #menu .menuSection button:hover,
 [data-display="fullscreen"] #menu .menuSection button:focus {
-  -webkit-backdrop-filter: blur(10px) brightness(25%);
-          backdrop-filter: blur(10px) brightness(25%);
+  backdrop-filter: blur(10px) brightness(25%);
 }
 
 [data-display="fitscreen"] #menu .settingsRow:nth-child(1) label,
@@ -1009,20 +1006,17 @@ button:focus, button:hover {
     height: 100%;
     margin-right: -64px;
     z-index: -1;
-    -webkit-backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
-            backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
+    backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
     transition: margin-right 0.4s ease-in-out;
   }
   [data-menu-open="true"] #menu::before {
     margin-right: 0;
   }
   [data-scale="1"] #menu .menuSection button {
-    -webkit-backdrop-filter: blur(6px) brightness(50%);
-            backdrop-filter: blur(6px) brightness(50%);
+    backdrop-filter: blur(6px) brightness(50%);
   }
   [data-scale="1"] #menu .menuSection button:hover, [data-scale="1"] #menu .menuSection button:focus {
-    -webkit-backdrop-filter: blur(10px) brightness(25%);
-            backdrop-filter: blur(10px) brightness(25%);
+    backdrop-filter: blur(10px) brightness(25%);
   }
   [data-scale="1"] #menu .settingsRow:nth-child(1) label {
     text-shadow: 0 0 4px #000000, 0 0 8px #000000, 0 0 16px #000000, 0 0 24px #ff0000, 0 0 32px #ff0000, 0 0 48px #ff0000;
@@ -1052,20 +1046,17 @@ button:focus, button:hover {
     height: 100%;
     margin-right: -64px;
     z-index: -1;
-    -webkit-backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
-            backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
+    backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
     transition: margin-right 0.4s ease-in-out;
   }
   [data-menu-open="true"] #menu::before {
     margin-right: 0;
   }
   [data-scale="1.5"] #menu .menuSection button {
-    -webkit-backdrop-filter: blur(6px) brightness(50%);
-            backdrop-filter: blur(6px) brightness(50%);
+    backdrop-filter: blur(6px) brightness(50%);
   }
   [data-scale="1.5"] #menu .menuSection button:hover, [data-scale="1.5"] #menu .menuSection button:focus {
-    -webkit-backdrop-filter: blur(10px) brightness(25%);
-            backdrop-filter: blur(10px) brightness(25%);
+    backdrop-filter: blur(10px) brightness(25%);
   }
   [data-scale="1.5"] #menu .settingsRow:nth-child(1) label {
     text-shadow: 0 0 4px #000000, 0 0 8px #000000, 0 0 16px #000000, 0 0 24px #ff0000, 0 0 32px #ff0000, 0 0 48px #ff0000;
@@ -1095,20 +1086,17 @@ button:focus, button:hover {
     height: 100%;
     margin-right: -64px;
     z-index: -1;
-    -webkit-backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
-            backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
+    backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
     transition: margin-right 0.4s ease-in-out;
   }
   [data-menu-open="true"] #menu::before {
     margin-right: 0;
   }
   [data-scale="2"] #menu .menuSection button {
-    -webkit-backdrop-filter: blur(6px) brightness(50%);
-            backdrop-filter: blur(6px) brightness(50%);
+    backdrop-filter: blur(6px) brightness(50%);
   }
   [data-scale="2"] #menu .menuSection button:hover, [data-scale="2"] #menu .menuSection button:focus {
-    -webkit-backdrop-filter: blur(10px) brightness(25%);
-            backdrop-filter: blur(10px) brightness(25%);
+    backdrop-filter: blur(10px) brightness(25%);
   }
   [data-scale="2"] #menu .settingsRow:nth-child(1) label {
     text-shadow: 0 0 4px #000000, 0 0 8px #000000, 0 0 16px #000000, 0 0 24px #ff0000, 0 0 32px #ff0000, 0 0 48px #ff0000;
@@ -1151,5 +1139,3 @@ button:focus, button:hover {
   opacity: 1;
   pointer-events: all;
 }
-
-/*# sourceMappingURL=muttlee.css.map */
