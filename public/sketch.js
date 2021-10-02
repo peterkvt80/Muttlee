@@ -1067,6 +1067,16 @@ function processKey(keyPressed)
       // reveal
       krvl();
       return;
+
+    } else if (keyPressed === 'f') {
+      // forward one page
+      kfwd();
+      return;
+
+    } else if (keyPressed === 'b') {
+      // back one page
+      kback();
+      return;
     }
 
     // Numbers are used for the page selection
