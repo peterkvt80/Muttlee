@@ -297,9 +297,9 @@ var missingPage = 0;
 
 
 
-function save() {
+function autosave() {
   LOG.fn(
-    ['teletextserver', 'save'],
+    ['teletextserver', 'autosave'],
     `Autosave`,
     LOG.LOG_LEVEL_VERBOSE,
   );
@@ -307,7 +307,24 @@ function save() {
   keystroke.saveEdits();
 }
 
-setInterval(save, 60000);  // every minute we save away the edits
+
+function keyMessage(data) {
+  // socket.broadcast.emit('keystroke', data) // To all but sender
+  io.emit('keystroke', data); // To everyone
+
+  // Also send this keymessage to our pages
+  // Or maybe to our services who can then switch the message as needed?
+  for (let i = 0; i < services.length; i++) {
+    services[i].keyMessage(data);
+  }
+
+  // Temporary hack. Use ] to trigger the writeback mechanism.
+  if (data.k === ']') {
+    keystroke.saveEdits();
+  } else {
+    keystroke.addEvent(data);
+  }
+}
 
 
 function newConnection(socket) {
@@ -372,24 +389,6 @@ function newConnection(socket) {
 
   // Set up handlers for this socket
   socket.on('keystroke', keyMessage);
-
-  function keyMessage(data) {
-    // socket.broadcast.emit('keystroke', data) // To all but sender
-    io.emit('keystroke', data); // To everyone
-
-    // Also send this keymessage to our pages
-    // Or maybe to our services who can then switch the message as needed?
-    for (let i = 0; i < services.length; i++) {
-      services[i].keyMessage(data);
-    }
-    // Temporary hack. Use ] to trigger the writeback mechanism.
-    if (data.k === ']') {
-      keystroke.saveEdits();
-    } else {
-      keystroke.addEvent(data);
-    }
-  }
-
   socket.on('load', doLoad);
   socket.on('initialLoad', doInitialLoad);
   socket.on('create', doCreate);
@@ -399,6 +398,18 @@ function newConnection(socket) {
   socket.on('disconnect', function () {
     delete connectionList[socket.id];
   });
+
+
+  const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE];
+
+  // for editable services...
+  if (serviceData[service].isEditable) {
+    // ...every minute autosave the edits
+    setInterval(
+      autosave,
+      60000,
+    );
+  }
 }
 
 /** Clear the current page to blank

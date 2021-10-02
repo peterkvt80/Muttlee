@@ -169,8 +169,6 @@ KeyStroke = function () {
 
   /* Write the edits back to file */
   this.saveEdits = function () {
-    var tempFile = '/run/shm/work.tti'; // where the edited file gets written first
-
     LOG.fn(
       ['keystroke', 'saveEdit'],
       '',
@@ -208,16 +206,15 @@ KeyStroke = function () {
     // Now that we are sorted we can apply the edits
     // However, due to the async nature, we only do one file at a time
     if (this.eventList.length > 0) {
-      var event = this.eventList[0];
+      const event = this.eventList[0];
 
       // Get the filename
-      service = event.S;
+      let service = event.S;
       if (!service) {
         service = CONFIG[CONST.CONFIG.DEFAULT_SERVICE];
       }
 
-      var pageNumber = event.p;
-      var subPage = event.s;
+      const pageNumber = event.p;
 
       const filename = path.join(
         CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],
@@ -255,8 +252,6 @@ KeyStroke = function () {
           );
         }
       );
-
-      return;
     }
   };
 
