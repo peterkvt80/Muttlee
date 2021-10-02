@@ -42,6 +42,10 @@
   </head>
 
   <body{% if LOGO_SVG %} data-has-logo="true"{% endif %}>
+    <h1 class="u-show-for-sr">
+      {{ TITLE }}
+    </h1>
+
     {% if LOGO_SVG %}
       <a id="logo" href="/" onclick="reloadService(event);">
         {{ LOGO_SVG | safe }}
@@ -133,7 +137,7 @@
           </div>
         </div>
 
-        <div id="gridSelect">
+        <div id="gridSelect" class="menuSection">
           <button class="controlsButton" onclick="toggleGrid();">
             <span>
               <span class="gridSelectButtonText gridSelectButtonText--show">
@@ -147,7 +151,15 @@
           </button>
         </div>
 
-        <div id="grabSelect">
+        <div id="instructionsSelect" class="menuSection">
+          <button class="controlsButton" onclick="cheatSheet();">
+            <span>
+              Cheat sheet
+            </span>
+          </button>
+        </div>
+
+        <div id="grabSelect" class="menuSection">
           <button class="controlsButton" onclick="exportPage();">
             <span>
               Grab...
@@ -156,11 +168,11 @@
 
           <ul id="grabSelectLinks" data-visible="false">
             <li>
-              <a id="dynamicLink" href="#" target="_blank"></a>
+              <a id="dynamicLink" href="#" target="_blank" rel="noopener noreferrer"></a>
             </li>
 
             <li>
-              <a id="dynamicLink2" href="#" target="_blank"></a>
+              <a id="dynamicLink2" href="#" target="_blank" rel="noopener noreferrer"></a>
             </li>
 
             <li>
@@ -169,10 +181,10 @@
           </ul>
         </div>
 
-        <div id="serviceSelect">
-          <button class="controlsButton" onclick="cheatSheet();">
+        <div id="aboutSelect" class="menuSection">
+          <button class="controlsButton" onclick="toggleAbout();">
             <span>
-              Cheat sheet
+              About...
             </span>
           </button>
         </div>
@@ -187,14 +199,10 @@
 
       <div id="controls">
         <div id="fastextControls">
-          <button class="button button--red" id="red" onclick="fastextR();">Red</button>
-          <button class="button button--green" id="green" onclick="fastextG();">Green</button>
-          <button class="button button--yellow" id="yellow" onclick="fastextY();">Yellow</button>
-          <button class="button button--cyan" id="cyan" onclick="fastextC();">Cyan</button>
-
-          <!-- <button style="width:140px;"   onClick="showText();"  id="none"/>?</button>
-          <button style="width:140px;" id="index"/>Index</button> -->
-          <!-- Page <textarea>100</textarea>  This should make it easier for mobile users one day -->
+          <button class="button button--red" id="red" onclick="fastextR();" title="Red [u]">Red</button>
+          <button class="button button--green" id="green" onclick="fastextG();" title="Green [i]">Green</button>
+          <button class="button button--yellow" id="yellow" onclick="fastextY();" title="Yellow [o]">Yellow</button>
+          <button class="button button--cyan" id="cyan" onclick="fastextC();" title="Cyan [p]">Cyan</button>
         </div>
 
         <div id="controlsRow">
@@ -232,23 +240,13 @@
 
         <!-- if the phone is sideways, how do we move this to the right? Answer: Don't use this. Use a standard number input field-->
         <div id="keypadControls">
-          <button class="button button--keypad" id="krvl" onclick="krvl();">Reveal</button>
-          <button class="button button--keypad" id="khold" onclick="khold();">Hold</button>
-          <button class="button button--keypad" id="kback" onclick="kback();">&lt;</button>
-          <button class="button button--keypad" id="kfwd" onclick="kfwd();">&gt;</button>
+          <button class="button button--keypad" id="krvl" onclick="krvl();" title="Reveal [r]">Reveal</button>
+          <button class="button button--keypad" id="khold" onclick="khold();" title="Hold [h]">Hold</button>
+          <button class="button button--keypad" id="kback" onclick="kback();" title="Back one page [b]">&lt;</button>
+          <button class="button button--keypad" id="kfwd" onclick="kfwd();" title="Forward one page [f]">&gt;</button>
         </div>
 
         <div id="description"></div>
-
-        <p id="info">
-          Type in a number to get to a page or try a Fastext button.<br/>
-          Pages 100 to 131 are automatically generated from BBC News.<br/>
-          Page 400 is live data from a Cumulus weather station<br/>
-          All other pages are archived from BBC ONE on 20/11/2007<br/>
-          Project source is on GitHub at <a href="https://github.com/peterkvt80/Muttlee">Muttlee Project</a>
-        </p>
-
-        <!--<button class="button button--keypad" style="width:140px; height:100px;"  id="kinfo">Info</button> -->
       </div>
 
 
@@ -266,20 +264,54 @@
     </div>
 
 
-    <script>
-      var hide = true;
+    <div id="about" class="about">
+      <div class="aboutContent">
+        <header>
+          <h2>
+            About {{ TITLE }}
+          </h2>
 
-      function showText() {
-        if (hide) {
-          document.getElementById('info').style.display = 'none';
-        } else {
-          document.getElementById('info').style.display = 'block';
-        }
+          <button id="aboutCloseButton" onclick="toggleAbout();">
+            <svg class="menuIcon" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 31.75 31.75">
+              <path d="M0 0h6.35v6.35H0Z" class="c c1-1"/>
+              <path d="M6.35 0h6.35v6.35H6.35Z" class="c c1-2"/>
+              <path d="M12.7 0h6.35v6.35H12.7z" class="c c1-3"/>
+              <path d="M19.05 0h6.35v6.35h-6.35z" class="c c1-4"/>
+              <path d="M25.4 0h6.35v6.35H25.4z" class="c c1-5"/>
+              <path d="M0 19.05h6.35V12.7H0Z" class="c c2-1"/>
+              <path d="M6.35 19.05h6.35V12.7H6.35Z" class="c c2-2"/>
+              <path d="M12.7 19.05h6.35V12.7H12.7z" class="c c2-3"/>
+              <path d="M19.05 19.05h6.35V12.7h-6.35z" class="c c2-4"/>
+              <path d="M25.4 19.05h6.35V12.7H25.4z" class="c c2-5"/>
+              <path d="M0 31.75h6.35V25.4H0Z" class="c c3-1"/>
+              <path d="M6.35 31.75h6.35V25.4H6.35Z" class="c c3-2"/>
+              <path d="M12.7 31.75h6.35V25.4H12.7z" class="c c3-3"/>
+              <path d="M19.05 31.75h6.35V25.4h-6.35z" class="c c3-4"/>
+              <path d="M25.4 31.75h6.35V25.4H25.4z" class="c c3-5"/>
+            </svg>
+          </button>
+        </header>
 
-        hide = !hide;
-      }
+        <p>
+          Type in a number to get to a page or try a Fastext button.
+        </p>
 
-      showText();
-    </script>
+        <p>
+          Pages 100 to 131 are automatically generated from BBC News.
+        </p>
+
+        <p>
+          Page 400 is live data from a Cumulus weather station.
+        </p>
+
+        <p>
+          All other pages are archived from BBC ONE on 20/11/2007.
+        </p>
+
+        <p>
+          Project source is on GitHub at <a href="https://github.com/peterkvt80/Muttlee" target="_blank" rel="noopener noreferrer">Muttlee Project</a>
+        </p>
+      </div>
+    </div>
   </body>
 </html>

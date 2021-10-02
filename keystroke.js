@@ -15,11 +15,11 @@
 
 const path = require('path');
 
-
-require('./page.js');
 // import constants and config for use server-side
 const CONST = require('./constants.js');
 const CONFIG = require('./config.js');
+
+require('./page.js');
 
 // import logger
 const LOG = require('./log.js');

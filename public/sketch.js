@@ -30,9 +30,9 @@ let gClientID = null; // Our unique connection id
 
 // DOM
 let inputPage;
-let indexButton;
 let menuButton;
 let serviceSelector, serviceSelector2, scaleSelector, controlsSelector, displaySelector;
+let aboutModal;
 
 // timer for expiring incomplete keypad entries
 let expiredState = true; // True for four seconds after the last keypad number was typed OR until a valid page number is typed
@@ -257,9 +257,6 @@ function setup() {
   socket.on('timer', setTimer); // Subpage timing. Currently this is just an overall value. Need to implement for animations
   socket.on('id', setID); // id is a socket id that identifies this client. Use this when requesting a page load
 
-  //indexButton=select('#index')
-  //indexButton.mousePressed(fastextIndex)
-
 
   // create page number input field
   inputPage = select('#pageNumber');
@@ -280,13 +277,15 @@ function setup() {
 
   // store a reference to the DOM elements
   menuButton = document.querySelector('#menuButton');
-  canvasElement = document.getElementById('defaultCanvas0');
+  canvasElement = document.querySelector('#defaultCanvas0');
 
   serviceSelector = document.querySelector('#serviceSelector');
   serviceSelector2 = document.querySelector('#serviceSelector2');
   scaleSelector = document.querySelector('#scaleSelector');
   controlsSelector = document.querySelector('#controlsSelector');
   displaySelector = document.querySelector('#displaySelector');
+
+  aboutModal = document.querySelector('#about');
 
 
   // set initial state values into their UI elements...
@@ -1068,14 +1067,14 @@ function processKey(keyPressed)
       krvl();
       return;
 
-    } else if (keyPressed === 'f') {
-      // forward one page
-      kfwd();
-      return;
-
     } else if (keyPressed === 'b') {
       // back one page
       kback();
+      return;
+
+    } else if (keyPressed === 'f') {
+      // forward one page
+      kfwd();
       return;
     }
 
@@ -1133,8 +1132,6 @@ function k6() { processKey('6') }
 function k7() { processKey('7') }
 function k8() { processKey('8') }
 function k9() { processKey('9') }
-
-// function kinfo() {  processKey('x') } // @todo
 
 function krvl() {
   myPage.toggleReveal();
@@ -1579,6 +1576,13 @@ function toggleMenu() {
 
   // update custom attribute on body element
   document.body.setAttribute(CONST.ATTR_DATA_MENU_OPEN, menuOpen);
+}
+
+
+function toggleAbout() {
+  if (aboutModal) {
+    aboutModal.classList.toggle('about--visible');
+  }
 }
 
 

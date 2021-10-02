@@ -130,7 +130,7 @@
         class="zapperButton"
         onclick="fastextY();"
     >
-      <title>Yellow</title>
+      <title>Yellow [o]</title>
       <circle
           class="zapperButton"
           onclick="fastextY();"
@@ -142,7 +142,7 @@
         class="zapperButton"
         onclick="fastextG();"
     >
-      <title>Green</title>
+      <title>Green [i]</title>
       <circle
           style="fill:url(#c_h);stroke:#000;stroke-width:1"
           cx="94.886" cy="1017.345" r="24"/>
@@ -152,7 +152,7 @@
         class="zapperButton"
         onclick="fastextR();"
     >
-      <title>Red</title>
+      <title>Red [u]</title>
       <circle
           class="zapperButton"
           onclick="fastextR();"
@@ -164,7 +164,7 @@
         class="zapperButton"
         onclick="fastextC();"
     >
-      <title>Cyan</title>
+      <title>Cyan [p]</title>
       <circle
           style="fill:url(#c_j);stroke:#000;stroke-width:1"
           cx="207.386" cy="1017.345" r="24"/>
@@ -174,7 +174,7 @@
         class="zapperButton"
         onclick="k1();"
     >
-      <title>1</title>
+      <title>1 [1]</title>
       <circle r="24" cy="848.451" cx="376.28"
               style="fill:url(#c_k);stroke:#000;stroke-width:1"/>
       <path
@@ -187,7 +187,7 @@
         class="zapperButton"
         onclick="k2();"
     >
-      <title>2</title>
+      <title>2 [2]</title>
       <circle r="24" cy="848.451" cx="432.53"
               style="fill:url(#c_l);stroke:#000;stroke-width:1"/>
       <path
@@ -200,7 +200,7 @@
         class="zapperButton"
         onclick="k3();"
     >
-      <title>3</title>
+      <title>3 [3]</title>
       <circle r="24" cy="848.451" cx="488.78"
               style="fill:url(#c_m);stroke:#000;stroke-width:1"/>
       <path
@@ -213,7 +213,7 @@
         class="zapperButton"
         onclick="k4();"
     >
-      <title>4</title>
+      <title>4 [4]</title>
       <circle r="24" cy="904.701" cx="376.28"
               style="fill:url(#c_n);stroke:#000;stroke-width:1"/>
       <path
@@ -226,7 +226,7 @@
         class="zapperButton"
         onclick="k5();"
     >
-      <title>5</title>
+      <title>5 [5]</title>
       <circle r="24" cy="904.701" cx="432.53"
               style="fill:url(#c_o);stroke:#000;stroke-width:1"/>
       <path
@@ -239,7 +239,7 @@
         class="zapperButton"
         onclick="k6();"
     >
-      <title>6</title>
+      <title>6 [6]</title>
       <circle r="24" cy="904.701" cx="488.78"
               style="fill:url(#c_p);stroke:#000;stroke-width:1"/>
       <path
@@ -252,7 +252,7 @@
         class="zapperButton"
         onclick="k7();"
     >
-      <title>7</title>
+      <title>7 [7]</title>
       <circle r="24" cy="960.951" cx="376.28"
               style="fill:url(#c_q);stroke:#000;stroke-width:1"/>
       <path
@@ -265,7 +265,7 @@
         class="zapperButton"
         onclick="k8();"
     >
-      <title>8</title>
+      <title>8 [8]</title>
       <circle r="24" cy="960.951" cx="432.53"
               style="fill:url(#c_r);stroke:#000;stroke-width:1"/>
       <path
@@ -278,7 +278,7 @@
         class="zapperButton"
         onclick="k9();"
     >
-      <title>9</title>
+      <title>9 [9]</title>
       <circle r="24" cy="960.951" cx="488.78"
               style="fill:url(#c_s);stroke:#000;stroke-width:1"/>
       <path
@@ -291,7 +291,7 @@
         class="zapperButton"
         onclick="k0();"
     >
-      <title>0</title>
+      <title>0 [0]</title>
       <circle r="24" cy="1017.201" cx="432.53"
               style="fill:url(#c_t);stroke:#000;stroke-width:1"/>
       <path
@@ -333,7 +333,7 @@
         class="zapperButton"
         onclick="krvl();"
     >
-      <title>Reveal</title>
+      <title>Reveal [r]</title>
       <circle r="24" cy="961.095" cx="94.886"
               style="fill:url(#c_y);stroke:#000;stroke-width:1"/>
       <g style="fill:#ccc">
@@ -347,7 +347,7 @@
         class="zapperButton"
         onclick="khold();"
     >
-      <title>Hold</title>
+      <title>Hold [h]</title>
       <circle r="24" cy="961.095" cx="38.636"
               style="fill:url(#c_z);stroke:#000;stroke-width:1"/>
       <g style="fill:#ccc">
@@ -430,7 +430,7 @@
       class="zapperButton"
       onclick="kfwd();"
     >
-      <title>Page Up</title>
+      <title>Forward one page [f]</title>
       <circle r="24"
               style="fill:url(#c_G);stroke:#000;stroke-width:1"
               cx="320.342" cy="904.701"/>
@@ -442,7 +442,7 @@
       class="zapperButton"
       onclick="kback();"
     >
-      <title>Page Down</title>
+      <title>Back one page [b]</title>
       <circle
           style="fill:url(#c_H);stroke:#000;stroke-width:1"
           cx="320.342" cy="960.951" r="24"/>

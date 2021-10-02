@@ -13,6 +13,7 @@ $colour--yellow: #ffff00;
 $colour--cyan: #00ffff;
 $colour--magenta: #ff00ff;
 
+$colour--black--70: rgba(0, 0, 0, 0.7);
 $colour--grey: #777777;
 
 $colour--lightgrey: #cedce7;
@@ -58,9 +59,7 @@ $font-family--teletext4: 'Teletext4', 'Arial', 'Helvetica', sans-serif;
         }
 
         // add additional blurred background to menu buttons
-        #gridSelect,
-        #serviceSelect,
-        #grabSelect {
+        .menuSection {
             button {
                 backdrop-filter: blur(6px) brightness(50%);
 
@@ -170,6 +169,27 @@ canvas {
     margin-left: auto;
     margin-right: auto;
     left: 0;
+}
+
+
+// hide visibly, but allow detection by screenreaders
+.u-show-for-sr {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    clip-path: inset(50%);
+    border: 0;
+}
+
+
+h1 {
+    top: 0;
+    left: 0;
+    pointer-events: none;
 }
 
 
@@ -487,9 +507,7 @@ button {
         }
     }
 
-    #gridSelect,
-    #serviceSelect,
-    #grabSelect {
+    .menuSection {
         display: flex;
         flex-direction: column;
         margin-top: #{$menu-button-spacing / 2};
@@ -501,7 +519,7 @@ button {
         }
     }
 
-    #serviceSelect {
+    #instructionsSelect {
         button {
             margin: #{$menu-button-spacing / 2} 0;
             border-top-right-radius: 0;
@@ -601,7 +619,7 @@ button {
 
 
 
-#serviceSelect {
+#instructionsSelect {
     display: flex;
     flex-direction: column;
 }
@@ -695,6 +713,142 @@ button {
 
 
 
+.about {
+    display: none;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: $colour--black--70;
+
+    .aboutContent {
+        display: none;
+        position: fixed;
+        width: 864px;
+        height: 682px;
+        top: calc(50% - (682px / 2));
+        left: calc(50% - (864px / 2));
+        background: $colour--blue;
+        padding: 40px;
+        box-sizing: border-box;
+
+        @media only screen and (max-width: 900px) {
+            width: 100vw;
+            height: 100vh;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+
+        header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+
+            h2 {
+                margin: -6px 0 16px 0;
+                font-size: 42px;
+            }
+
+            #aboutCloseButton {
+                width: 64px;
+                height: 64px;
+                padding: 16px;
+                margin: -16px -16px 0 0;
+                background: none;
+                border: 0;
+
+                .menuIcon {
+                    width: 100%;
+                    height: 100%;
+
+                    .c {
+                        fill: $colour--white;
+                        stroke: $colour--white;
+                        stroke-width: 1px;
+                        transform: translate(0, 0);
+
+                        transition: transform 0.2s linear;
+                    }
+
+                    .c1-2 {
+                        transform: translate(0, 6.3px);
+                    }
+                    .c1-3 {
+                        transform: translate(0, 12.6px);
+                    }
+                    .c1-4 {
+                        transform: translate(0, 6.3px);
+                    }
+
+                    .c2-1 {
+                        transform: translate(12.6px, 0);
+                    }
+                    .c2-2 {
+                        transform: translate(6.3px, 0);
+                    }
+                    .c2-4 {
+                        transform: translate(-6.3px, 0);
+                    }
+                    .c2-5 {
+                        transform: translate(-12.6px, 0);
+                    }
+
+                    .c3-2 {
+                        transform: translate(0, -6.3px);
+                    }
+                    .c3-3 {
+                        transform: translate(0, -12.6px);
+                    }
+                    .c3-4 {
+                        transform: translate(0, -6.3px);
+                    }
+                }
+
+
+                // interaction states
+                &:hover,
+                &:focus {
+                    .menuIcon {
+                        .c {
+                            fill: $colour--yellow;
+                            stroke: $colour--yellow;
+                        }
+                    }
+                }
+            }
+        }
+
+        p {
+            margin: 18px 0;
+
+            a {
+                color: $colour--white;
+
+                &:hover,
+                &:focus {
+                    color: $colour--yellow;
+                }
+            }
+        }
+    }
+
+
+    // interaction states
+    &--visible {
+        display: flex;
+
+        .aboutContent {
+            display: flex;
+            flex-direction: column;
+        }
+    }
+}
+
+
+
+
 #zapperWrapperStandard,
 #zapperWrapperCompact {
     display: none;
@@ -720,7 +874,7 @@ button {
     }
 
     #gridSelect,
-    #serviceSelect,
+    #instructionsSelect,
     #grabSelect,
     #controls {
         display: none;
@@ -850,7 +1004,7 @@ button {
     }
 
     #gridSelect,
-    #serviceSelect,
+    #instructionsSelect,
     #grabSelect,
     #controls {
         display: none;
@@ -877,7 +1031,7 @@ button {
         background: $colour--black;
     }
 
-    #serviceSelect,
+    #instructionsSelect,
     #controls,
     #cast {
         display: none;
@@ -921,7 +1075,7 @@ button {
     }
 
     #gridSelect,
-    #serviceSelect,
+    #instructionsSelect,
     #grabSelect,
     #controls,
     .settingsRow--scale {
@@ -944,6 +1098,12 @@ button {
         transition: opacity 0.2s ease-in-out;
 
         &:hover {
+            opacity: 1;
+        }
+    }
+
+    &[data-menu-open="true"] {
+        #menuButton {
             opacity: 1;
         }
     }
