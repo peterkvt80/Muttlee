@@ -113,7 +113,9 @@ TTXPAGE = function() {
 
     // keep page number input field synced with the current page number
     if (inputPage && inputPage.elt) {
-      inputPage.elt.value = this.pageNumberEntry;
+      if (!/[A-F]+/i.test(this.pageNumberEntry)) {
+        inputPage.elt.value = this.pageNumberEntry;
+      }
     }
   };
 
