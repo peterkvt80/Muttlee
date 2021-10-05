@@ -87,6 +87,8 @@ const CONFIG = {
   //
   //     // (optional) a SVN repository containing the service's pages
   //     updateUrl: str,
+  //     // (optional) number of minutes to wait before checking for updates
+  //     updateInterval: int,
   //   }
   [CONST.CONFIG.SERVICES_AVAILABLE]: {
     [CONST.SERVICE_TEEFAX]: {
@@ -95,6 +97,7 @@ const CONFIG = {
       port: 80,
 
       updateUrl: 'http://teastop.plus.com/svn/teletext/',
+      updateInterval: 60,
     },
 
     // [CONST.SERVICE_AMIGAROB]: {
@@ -134,11 +137,12 @@ const CONFIG = {
     // },
 
     [CONST.SERVICE_DIGITISER]: {
-      name: 'Digitiser',
+      name: 'Digitiser2000',
       url: '//www.xenoxxx.com',
       port: 80,
 
       updateUrl: 'http://teastop.plus.com/svn/digitiser2k/',
+      updateInterval: 60,
     },
 
     [CONST.SERVICE_KINDIE]: {
