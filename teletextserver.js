@@ -472,13 +472,17 @@ function newConnection(socket) {
   const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE];
 
   // for editable services...
-  if (serviceData[service].isEditable) {
-    // ...every minute autosave the edits
-    setInterval(
-      autosave,
-      60000,
-    );
+  if (service !== null) {
+    if (serviceData[service].isEditable) {
+      // ...every minute autosave the edits
+      console.log ("THIS SERVICE IS EDITABLE "+service);
+      setInterval(
+        autosave,
+        60000,
+      );
+    }
   }
+
 }
 
 /** Clear the current page to blank

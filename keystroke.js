@@ -206,7 +206,7 @@ KeyStroke = function () {
     // Now that we are sorted we can apply the edits
     // However, due to the async nature, we only do one file at a time
     if (this.eventList.length > 0) {
-      const event = this.eventList[0];
+      /*const*/ event = this.eventList[0];
 
       // Get the filename
       let service = event.S;

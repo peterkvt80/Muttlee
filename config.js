@@ -95,7 +95,7 @@ const CONFIG = {
       name: 'Teefax',
       url: '//www.xenoxxx.com',
       port: 80,
-
+      isEditable: false,
       updateUrl: 'http://teastop.plus.com/svn/teletext/',
       updateInterval: 60,
     },
