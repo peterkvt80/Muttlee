@@ -41,7 +41,8 @@ canvas {
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
-  clip-path: inset(50%);
+  -webkit-clip-path: inset(50%);
+          clip-path: inset(50%);
   border: 0;
 }
 
@@ -93,7 +94,10 @@ button {
   padding: 0;
   cursor: pointer;
   font-family: "Teletext4", "Arial", "Helvetica", sans-serif;
-  user-select: none;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
 }
 
 button:focus, button:hover {
@@ -523,6 +527,321 @@ button:focus, button:hover {
   font-family: "Teletext4", "Arial", "Helvetica", sans-serif;
 }
 
+.manifest {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.manifest .manifestContent {
+  display: none;
+  position: fixed;
+  width: 864px;
+  height: 682px;
+  top: calc(50% - (682px / 2));
+  left: calc(50% - (864px / 2));
+  background: #0000ff;
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+@media only screen and (max-width: 900px) {
+  .manifest .manifestContent {
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+  }
+}
+
+.manifest .manifestContent header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.manifest .manifestContent header h2 {
+  margin: -6px 0 16px 0;
+  font-size: 42px;
+}
+
+.manifest .manifestContent header #manifestCloseButton {
+  width: 64px;
+  height: 64px;
+  padding: 16px;
+  margin: -16px -16px 0 0;
+  background: none;
+  border: 0;
+}
+
+.manifest .manifestContent header #manifestCloseButton .menuIcon {
+  width: 100%;
+  height: 100%;
+}
+
+.manifest .manifestContent header #manifestCloseButton .menuIcon .c {
+  fill: #ffffff;
+  stroke: #ffffff;
+  stroke-width: 1px;
+  transform: translate(0, 0);
+  transition: transform 0.2s linear;
+}
+
+.manifest .manifestContent header #manifestCloseButton .menuIcon .c1-2 {
+  transform: translate(0, 6.3px);
+}
+
+.manifest .manifestContent header #manifestCloseButton .menuIcon .c1-3 {
+  transform: translate(0, 12.6px);
+}
+
+.manifest .manifestContent header #manifestCloseButton .menuIcon .c1-4 {
+  transform: translate(0, 6.3px);
+}
+
+.manifest .manifestContent header #manifestCloseButton .menuIcon .c2-1 {
+  transform: translate(12.6px, 0);
+}
+
+.manifest .manifestContent header #manifestCloseButton .menuIcon .c2-2 {
+  transform: translate(6.3px, 0);
+}
+
+.manifest .manifestContent header #manifestCloseButton .menuIcon .c2-4 {
+  transform: translate(-6.3px, 0);
+}
+
+.manifest .manifestContent header #manifestCloseButton .menuIcon .c2-5 {
+  transform: translate(-12.6px, 0);
+}
+
+.manifest .manifestContent header #manifestCloseButton .menuIcon .c3-2 {
+  transform: translate(0, -6.3px);
+}
+
+.manifest .manifestContent header #manifestCloseButton .menuIcon .c3-3 {
+  transform: translate(0, -12.6px);
+}
+
+.manifest .manifestContent header #manifestCloseButton .menuIcon .c3-4 {
+  transform: translate(0, -6.3px);
+}
+
+.manifest .manifestContent header #manifestCloseButton:hover .menuIcon .c, .manifest .manifestContent header #manifestCloseButton:focus .menuIcon .c {
+  fill: #ffff00;
+  stroke: #ffff00;
+}
+
+.manifest .manifestContent .manifestContentInner {
+  overflow-y: auto;
+}
+
+.manifest .manifestContent .manifestContentInner ul {
+  margin: 0;
+  padding: 0 16px 0 0;
+  list-style: square;
+}
+
+.manifest .manifestContent .manifestContentInner ul li {
+  font-size: 0;
+}
+
+.manifest .manifestContent .manifestContentInner ul li a {
+  display: block;
+  position: relative;
+  margin: 4px 0 4px 46px;
+  padding: 6px 0;
+  font-size: 22px;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.manifest .manifestContent .manifestContentInner ul li a:before {
+  content: '\0025AB';
+  position: absolute;
+  top: -23px;
+  left: -34px;
+  font-size: 70px;
+  color: #ffffff;
+}
+
+.manifest .manifestContent .manifestContentInner ul li a:hover, .manifest .manifestContent .manifestContentInner ul li a:focus {
+  color: #ffff00;
+  text-decoration: underline;
+}
+
+.manifest .manifestContent .manifestContentInner ul li a dl {
+  margin: 0;
+}
+
+.manifest .manifestContent .manifestContentInner ul li a dl dt,
+.manifest .manifestContent .manifestContentInner ul li a dl dd {
+  display: inline-block;
+  vertical-align: top;
+}
+
+.manifest .manifestContent .manifestContentInner ul li a dl dt {
+  width: 100px;
+}
+
+.manifest .manifestContent .manifestContentInner ul li a dl dd {
+  margin: 0;
+  width: calc(100% - 100px);
+}
+
+.manifest .manifestContent .manifestContentInner ul li.selected {
+  background: #000000;
+}
+
+.manifest .manifestContent .manifestContentInner ul li.selected a:before {
+  content: '\0025AA';
+}
+
+.manifest--visible {
+  display: flex;
+}
+
+.manifest--visible .manifestContent {
+  display: flex;
+  flex-direction: column;
+}
+
+.instructions {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.instructions .instructionsContent {
+  display: none;
+  position: fixed;
+  width: 864px;
+  height: 682px;
+  top: calc(50% - (682px / 2));
+  left: calc(50% - (864px / 2));
+  background: #0000ff;
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+@media only screen and (max-width: 900px) {
+  .instructions .instructionsContent {
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+  }
+}
+
+.instructions .instructionsContent header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.instructions .instructionsContent header h2 {
+  margin: -6px 0 16px 0;
+  font-size: 42px;
+}
+
+.instructions .instructionsContent header #instructionsCloseButton {
+  width: 64px;
+  height: 64px;
+  padding: 16px;
+  margin: -16px -16px 0 0;
+  background: none;
+  border: 0;
+}
+
+.instructions .instructionsContent header #instructionsCloseButton .menuIcon {
+  width: 100%;
+  height: 100%;
+}
+
+.instructions .instructionsContent header #instructionsCloseButton .menuIcon .c {
+  fill: #ffffff;
+  stroke: #ffffff;
+  stroke-width: 1px;
+  transform: translate(0, 0);
+  transition: transform 0.2s linear;
+}
+
+.instructions .instructionsContent header #instructionsCloseButton .menuIcon .c1-2 {
+  transform: translate(0, 6.3px);
+}
+
+.instructions .instructionsContent header #instructionsCloseButton .menuIcon .c1-3 {
+  transform: translate(0, 12.6px);
+}
+
+.instructions .instructionsContent header #instructionsCloseButton .menuIcon .c1-4 {
+  transform: translate(0, 6.3px);
+}
+
+.instructions .instructionsContent header #instructionsCloseButton .menuIcon .c2-1 {
+  transform: translate(12.6px, 0);
+}
+
+.instructions .instructionsContent header #instructionsCloseButton .menuIcon .c2-2 {
+  transform: translate(6.3px, 0);
+}
+
+.instructions .instructionsContent header #instructionsCloseButton .menuIcon .c2-4 {
+  transform: translate(-6.3px, 0);
+}
+
+.instructions .instructionsContent header #instructionsCloseButton .menuIcon .c2-5 {
+  transform: translate(-12.6px, 0);
+}
+
+.instructions .instructionsContent header #instructionsCloseButton .menuIcon .c3-2 {
+  transform: translate(0, -6.3px);
+}
+
+.instructions .instructionsContent header #instructionsCloseButton .menuIcon .c3-3 {
+  transform: translate(0, -12.6px);
+}
+
+.instructions .instructionsContent header #instructionsCloseButton .menuIcon .c3-4 {
+  transform: translate(0, -6.3px);
+}
+
+.instructions .instructionsContent header #instructionsCloseButton:hover .menuIcon .c, .instructions .instructionsContent header #instructionsCloseButton:focus .menuIcon .c {
+  fill: #ffff00;
+  stroke: #ffff00;
+}
+
+.instructions .instructionsContent p {
+  margin: 18px 0;
+}
+
+.instructions .instructionsContent p a {
+  color: #ffffff;
+}
+
+.instructions .instructionsContent p a:hover, .instructions .instructionsContent p a:focus {
+  color: #ffff00;
+}
+
+.instructions--visible {
+  display: flex;
+}
+
+.instructions--visible .instructionsContent {
+  display: flex;
+  flex-direction: column;
+}
+
 .about {
   display: none;
   position: fixed;
@@ -537,9 +856,6 @@ button:focus, button:hover {
   display: none;
   position: fixed;
   width: 864px;
-  height: 682px;
-  top: calc(50% - (682px / 2));
-  left: calc(50% - (864px / 2));
   background: #0000ff;
   padding: 40px;
   box-sizing: border-box;
@@ -637,6 +953,10 @@ button:focus, button:hover {
   margin: 18px 0;
 }
 
+.about .aboutContent p:last-child {
+  margin-bottom: 0;
+}
+
 .about .aboutContent p a {
   color: #ffffff;
 }
@@ -647,6 +967,8 @@ button:focus, button:hover {
 
 .about--visible {
   display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .about--visible .aboutContent {
@@ -949,7 +1271,8 @@ button:focus, button:hover {
   height: 100%;
   margin-right: -64px;
   z-index: -1;
-  backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
+  -webkit-backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
+          backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
   transition: margin-right 0.4s ease-in-out;
 }
 
@@ -959,13 +1282,15 @@ button:focus, button:hover {
 
 [data-display="fitscreen"] #menu .menuSection button,
 [data-display="fullscreen"] #menu .menuSection button {
-  backdrop-filter: blur(6px) brightness(50%);
+  -webkit-backdrop-filter: blur(6px) brightness(50%);
+          backdrop-filter: blur(6px) brightness(50%);
 }
 
 [data-display="fitscreen"] #menu .menuSection button:hover, [data-display="fitscreen"] #menu .menuSection button:focus,
 [data-display="fullscreen"] #menu .menuSection button:hover,
 [data-display="fullscreen"] #menu .menuSection button:focus {
-  backdrop-filter: blur(10px) brightness(25%);
+  -webkit-backdrop-filter: blur(10px) brightness(25%);
+          backdrop-filter: blur(10px) brightness(25%);
 }
 
 [data-display="fitscreen"] #menu .settingsRow:nth-child(1) label,
@@ -1006,17 +1331,20 @@ button:focus, button:hover {
     height: 100%;
     margin-right: -64px;
     z-index: -1;
-    backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
+    -webkit-backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
+            backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
     transition: margin-right 0.4s ease-in-out;
   }
   [data-menu-open="true"] #menu::before {
     margin-right: 0;
   }
   [data-scale="1"] #menu .menuSection button {
-    backdrop-filter: blur(6px) brightness(50%);
+    -webkit-backdrop-filter: blur(6px) brightness(50%);
+            backdrop-filter: blur(6px) brightness(50%);
   }
   [data-scale="1"] #menu .menuSection button:hover, [data-scale="1"] #menu .menuSection button:focus {
-    backdrop-filter: blur(10px) brightness(25%);
+    -webkit-backdrop-filter: blur(10px) brightness(25%);
+            backdrop-filter: blur(10px) brightness(25%);
   }
   [data-scale="1"] #menu .settingsRow:nth-child(1) label {
     text-shadow: 0 0 4px #000000, 0 0 8px #000000, 0 0 16px #000000, 0 0 24px #ff0000, 0 0 32px #ff0000, 0 0 48px #ff0000;
@@ -1046,17 +1374,20 @@ button:focus, button:hover {
     height: 100%;
     margin-right: -64px;
     z-index: -1;
-    backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
+    -webkit-backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
+            backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
     transition: margin-right 0.4s ease-in-out;
   }
   [data-menu-open="true"] #menu::before {
     margin-right: 0;
   }
   [data-scale="1.5"] #menu .menuSection button {
-    backdrop-filter: blur(6px) brightness(50%);
+    -webkit-backdrop-filter: blur(6px) brightness(50%);
+            backdrop-filter: blur(6px) brightness(50%);
   }
   [data-scale="1.5"] #menu .menuSection button:hover, [data-scale="1.5"] #menu .menuSection button:focus {
-    backdrop-filter: blur(10px) brightness(25%);
+    -webkit-backdrop-filter: blur(10px) brightness(25%);
+            backdrop-filter: blur(10px) brightness(25%);
   }
   [data-scale="1.5"] #menu .settingsRow:nth-child(1) label {
     text-shadow: 0 0 4px #000000, 0 0 8px #000000, 0 0 16px #000000, 0 0 24px #ff0000, 0 0 32px #ff0000, 0 0 48px #ff0000;
@@ -1086,17 +1417,20 @@ button:focus, button:hover {
     height: 100%;
     margin-right: -64px;
     z-index: -1;
-    backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
+    -webkit-backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
+            backdrop-filter: url(/assets/pixelate.svg#pixelate) grayscale(100%) blur(2px);
     transition: margin-right 0.4s ease-in-out;
   }
   [data-menu-open="true"] #menu::before {
     margin-right: 0;
   }
   [data-scale="2"] #menu .menuSection button {
-    backdrop-filter: blur(6px) brightness(50%);
+    -webkit-backdrop-filter: blur(6px) brightness(50%);
+            backdrop-filter: blur(6px) brightness(50%);
   }
   [data-scale="2"] #menu .menuSection button:hover, [data-scale="2"] #menu .menuSection button:focus {
-    backdrop-filter: blur(10px) brightness(25%);
+    -webkit-backdrop-filter: blur(10px) brightness(25%);
+            backdrop-filter: blur(10px) brightness(25%);
   }
   [data-scale="2"] #menu .settingsRow:nth-child(1) label {
     text-shadow: 0 0 4px #000000, 0 0 8px #000000, 0 0 16px #000000, 0 0 24px #ff0000, 0 0 32px #ff0000, 0 0 48px #ff0000;
@@ -1139,3 +1473,5 @@ button:focus, button:hover {
   opacity: 1;
   pointer-events: all;
 }
+
+/*# sourceMappingURL=muttlee.css.map */

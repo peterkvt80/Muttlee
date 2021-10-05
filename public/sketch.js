@@ -28,11 +28,14 @@ let digit3 = '0';
 let socket;
 let gClientID = null; // Our unique connection id
 
+// fetched service manifests
+let serviceManifests = {};
+
 // DOM
 let inputPage;
 let menuButton;
 let serviceSelector, serviceSelector2, scaleSelector, controlsSelector, displaySelector;
-let aboutModal;
+let manifestModal, instructionsModal, aboutModal;
 
 // timer for expiring incomplete keypad entries
 let expiredState = true; // True for four seconds after the last keypad number was typed OR until a valid page number is typed
@@ -146,6 +149,10 @@ function setup() {
 
     } else if (key === 'page') {
       page = value;
+
+      if (typeof page !== 'number') {
+        page = CONST.PAGE_MIN.toString(16);
+      }
     }
   }
 
@@ -285,6 +292,8 @@ function setup() {
   controlsSelector = document.querySelector('#controlsSelector');
   displaySelector = document.querySelector('#displaySelector');
 
+  manifestModal = document.querySelector('#manifest');
+  instructionsModal = document.querySelector('#instructions');
   aboutModal = document.querySelector('#about');
 
 
@@ -318,11 +327,6 @@ function setup() {
 
   // update custom attribute on body element, indicating that rendering setup has complete
   document.body.setAttribute(CONST.ATTR_DATA_READY, true);
-}
-
-
-function cheatSheet() {
-  window.open('/assets/WikiTelFax.pdf');
 }
 
 
@@ -471,6 +475,7 @@ function setDescription(data) {
   document.getElementById('description').innerHTML = '<strong>Page info:</strong> ' + data.desc;
 }
 
+
 function setPageNumber(data) {
   if ((data.id !== gClientID) && (gClientID !== null)) {
     return;  // Not for us?
@@ -554,7 +559,7 @@ function fastext(index) {
   }
 
   LOG.fn(
-    ['sketch', 'setPageNumber'],
+    ['sketch', 'fastext'],
     `Fastext pressed, index=${index}, link to 0x${page.toString(16)} (${page})`,
     LOG.LOG_LEVEL_VERBOSE,
   );
@@ -1576,6 +1581,116 @@ function toggleMenu() {
 
   // update custom attribute on body element
   document.body.setAttribute(CONST.ATTR_DATA_MENU_OPEN, menuOpen);
+}
+
+
+function selectManifestPage(event) {
+  event.preventDefault();
+
+  let target = event.target;
+
+  if (target) {
+    while (target.tagName !== 'A') {
+      target = target.parentNode;
+
+      if (target.tagName === 'BODY') {
+        break;
+      }
+    }
+
+    const pageNumber = target.getAttribute('data-page');
+    const pageNumberHex = parseInt(pageNumber, 16);
+
+    myPage.setPage(pageNumberHex);
+
+    const data = {
+      S: myPage.service,
+      p: pageNumberHex,
+      s: 0,
+      y: 0,
+      rowText: '',
+      id: gClientID
+    };
+
+    socket.emit('load', data);
+
+    // unfocus the clicked DOM link element
+    event.target.blur();
+
+    // change the visually-selected item to highlight the new page
+    const manifestSelectedItem = manifestModal.querySelector('.manifestContentInner ul li.selected');
+    const manifestNewSelectedItem = manifestModal.querySelector(`.manifestContentInner ul li a[data-page="${pageNumber}"]`);
+
+    if (manifestSelectedItem && manifestNewSelectedItem) {
+      manifestSelectedItem.className = '';
+      manifestNewSelectedItem.parentNode.className = 'selected';
+    }
+  }
+
+  return false;
+}
+
+
+function renderManifestData(data) {
+  if (data.pages) {
+    const manifestContentInner = manifestModal.querySelector('.manifestContentInner');
+
+    if (manifestContentInner) {
+      // clear existing content
+      manifestContentInner.innerHTML = '';
+
+      // generate a list from the manifest page items...
+      let manifestList = document.createElement('ul');
+
+      const currentPageNumber = hex(myPage.pageNumber, 3);
+
+      for (let i in data.pages) {
+        let manifestListItem = document.createElement('li');
+
+        if (data.pages[i].p === currentPageNumber) {
+          manifestListItem.className = 'selected';
+        }
+
+        let manifestListItemLink = document.createElement('a');
+
+        manifestListItemLink.href = '#';
+        manifestListItemLink.setAttribute('data-page', data.pages[i].p);
+        manifestListItemLink.onclick = selectManifestPage;
+        manifestListItemLink.innerHTML = `<dl><dt>p${data.pages[i].p}</dt><dd>${data.pages[i].d ? data.pages[i].d : ''}</dd></dl>`;
+
+        manifestListItem.appendChild(manifestListItemLink);
+        manifestList.appendChild(manifestListItem);
+      }
+
+      manifestContentInner.appendChild(manifestList);
+    }
+  }
+}
+
+
+function toggleManifest() {
+  if (manifestModal) {
+    manifestModal.classList.toggle('manifest--visible');
+
+    // load manifest data
+    if (!serviceManifests[service]) {
+      fetch(`/manifest.json?service=${service}`)
+        .then((response) => response.json())
+        .then(renderManifestData);
+
+    } else {
+      renderManifestData(
+        serviceManifests[service]
+      );
+    }
+  }
+}
+
+
+function toggleInstructions() {
+  if (instructionsModal) {
+    instructionsModal.classList.toggle('instructions--visible');
+  }
 }
 
 

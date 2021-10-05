@@ -715,6 +715,333 @@ button {
 
 
 
+.manifest {
+    display: none;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: $colour--black--70;
+
+    .manifestContent {
+        display: none;
+        position: fixed;
+        width: 864px;
+        height: 682px;
+        top: calc(50% - (682px / 2));
+        left: calc(50% - (864px / 2));
+        background: $colour--blue;
+        padding: 40px;
+        box-sizing: border-box;
+
+        @media only screen and (max-width: 900px) {
+            width: 100vw;
+            height: 100vh;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+
+        header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+
+            h2 {
+                margin: -6px 0 16px 0;
+                font-size: 42px;
+            }
+
+            #manifestCloseButton {
+                width: 64px;
+                height: 64px;
+                padding: 16px;
+                margin: -16px -16px 0 0;
+                background: none;
+                border: 0;
+
+                .menuIcon {
+                    width: 100%;
+                    height: 100%;
+
+                    .c {
+                        fill: $colour--white;
+                        stroke: $colour--white;
+                        stroke-width: 1px;
+                        transform: translate(0, 0);
+
+                        transition: transform 0.2s linear;
+                    }
+
+                    .c1-2 {
+                        transform: translate(0, 6.3px);
+                    }
+                    .c1-3 {
+                        transform: translate(0, 12.6px);
+                    }
+                    .c1-4 {
+                        transform: translate(0, 6.3px);
+                    }
+
+                    .c2-1 {
+                        transform: translate(12.6px, 0);
+                    }
+                    .c2-2 {
+                        transform: translate(6.3px, 0);
+                    }
+                    .c2-4 {
+                        transform: translate(-6.3px, 0);
+                    }
+                    .c2-5 {
+                        transform: translate(-12.6px, 0);
+                    }
+
+                    .c3-2 {
+                        transform: translate(0, -6.3px);
+                    }
+                    .c3-3 {
+                        transform: translate(0, -12.6px);
+                    }
+                    .c3-4 {
+                        transform: translate(0, -6.3px);
+                    }
+                }
+
+
+                // interaction states
+                &:hover,
+                &:focus {
+                    .menuIcon {
+                        .c {
+                            fill: $colour--yellow;
+                            stroke: $colour--yellow;
+                        }
+                    }
+                }
+            }
+        }
+
+        .manifestContentInner {
+            overflow-y: auto;
+
+            ul {
+                margin: 0;
+                padding: 0 16px 0 0;
+                list-style: square;
+
+                li {
+                    font-size: 0;
+
+                    a {
+                        display: block;
+                        position: relative;
+                        margin: 4px 0 4px 46px;
+                        padding: 6px 0;
+                        font-size: 22px;
+                        color: $colour--white;
+                        text-decoration: none;
+
+                        &:before {
+                            content: '\0025AB';
+                            position: absolute;
+                            top: -23px;
+                            left: -34px;
+                            font-size: 70px;
+                            color: $colour--white;
+                        }
+
+                        &:hover,
+                        &:focus {
+                            color: $colour--yellow;
+                            text-decoration: underline;
+                        }
+
+                        dl {
+                            margin: 0;
+
+                            dt,
+                            dd {
+                                display: inline-block;
+                                vertical-align: top;
+                            }
+
+                            dt {
+                                width: 100px;
+                            }
+
+                            dd {
+                                margin: 0;
+                                width: calc(100% - 100px);
+                            }
+                        }
+                    }
+
+                    &.selected {
+                        background: $colour--black;
+
+                        a {
+                            &:before {
+                                content: '\0025AA';
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
+    // interaction states
+    &--visible {
+        display: flex;
+
+        .manifestContent {
+            display: flex;
+            flex-direction: column;
+        }
+    }
+}
+
+
+
+
+.instructions {
+    display: none;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: $colour--black--70;
+
+    .instructionsContent {
+        display: none;
+        position: fixed;
+        width: 864px;
+        height: 682px;
+        top: calc(50% - (682px / 2));
+        left: calc(50% - (864px / 2));
+        background: $colour--blue;
+        padding: 40px;
+        box-sizing: border-box;
+
+        @media only screen and (max-width: 900px) {
+            width: 100vw;
+            height: 100vh;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+        }
+
+        header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+
+            h2 {
+                margin: -6px 0 16px 0;
+                font-size: 42px;
+            }
+
+            #instructionsCloseButton {
+                width: 64px;
+                height: 64px;
+                padding: 16px;
+                margin: -16px -16px 0 0;
+                background: none;
+                border: 0;
+
+                .menuIcon {
+                    width: 100%;
+                    height: 100%;
+
+                    .c {
+                        fill: $colour--white;
+                        stroke: $colour--white;
+                        stroke-width: 1px;
+                        transform: translate(0, 0);
+
+                        transition: transform 0.2s linear;
+                    }
+
+                    .c1-2 {
+                        transform: translate(0, 6.3px);
+                    }
+                    .c1-3 {
+                        transform: translate(0, 12.6px);
+                    }
+                    .c1-4 {
+                        transform: translate(0, 6.3px);
+                    }
+
+                    .c2-1 {
+                        transform: translate(12.6px, 0);
+                    }
+                    .c2-2 {
+                        transform: translate(6.3px, 0);
+                    }
+                    .c2-4 {
+                        transform: translate(-6.3px, 0);
+                    }
+                    .c2-5 {
+                        transform: translate(-12.6px, 0);
+                    }
+
+                    .c3-2 {
+                        transform: translate(0, -6.3px);
+                    }
+                    .c3-3 {
+                        transform: translate(0, -12.6px);
+                    }
+                    .c3-4 {
+                        transform: translate(0, -6.3px);
+                    }
+                }
+
+
+                // interaction states
+                &:hover,
+                &:focus {
+                    .menuIcon {
+                        .c {
+                            fill: $colour--yellow;
+                            stroke: $colour--yellow;
+                        }
+                    }
+                }
+            }
+        }
+
+        p {
+            margin: 18px 0;
+
+            a {
+                color: $colour--white;
+
+                &:hover,
+                &:focus {
+                    color: $colour--yellow;
+                }
+            }
+        }
+    }
+
+
+    // interaction states
+    &--visible {
+        display: flex;
+
+        .instructionsContent {
+            display: flex;
+            flex-direction: column;
+        }
+    }
+}
+
+
+
+
 .about {
     display: none;
     position: fixed;
@@ -728,9 +1055,6 @@ button {
         display: none;
         position: fixed;
         width: 864px;
-        height: 682px;
-        top: calc(50% - (682px / 2));
-        left: calc(50% - (864px / 2));
         background: $colour--blue;
         padding: 40px;
         box-sizing: border-box;
@@ -825,6 +1149,10 @@ button {
         p {
             margin: 18px 0;
 
+            &:last-child {
+                margin-bottom: 0;
+            }
+
             a {
                 color: $colour--white;
 
@@ -840,6 +1168,8 @@ button {
     // interaction states
     &--visible {
         display: flex;
+        justify-content: center;
+        align-items: center;
 
         .aboutContent {
             display: flex;

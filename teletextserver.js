@@ -169,10 +169,57 @@ app.use(
       }
     }
 
-    content = 'const CONFIG = ' + JSON.stringify(content) + ';';
+    const output = 'const CONFIG = ' + JSON.stringify(content) + ';';
 
     res.send(
-      content
+      output
+    );
+  }
+);
+
+app.use(
+  '/manifest.json',
+  function (req, res) {
+    let output = {};
+
+    try {
+      const searchParams = new URLSearchParams(parseUrl(req).search);
+      const service = searchParams.get('service');
+
+      // deep clone before modification
+      output = JSON.parse(
+        JSON.stringify(
+          loadServiceManifest(service)
+        )
+      );
+
+      // only output relevant page object keys...
+      if (typeof output.pages === 'object') {
+        let pages = {};
+
+        for (let pageNumber in output.pages) {
+          // skip non-numeric page numbers
+          if (/[A-F]+/i.test(pageNumber)) {
+            continue;
+          }
+
+          pages[pageNumber] = {
+            p: output.pages[pageNumber].p,
+          };
+
+          if (output.pages[pageNumber].d) {
+            pages[pageNumber].d = output.pages[pageNumber].d;
+          }
+        }
+
+        output.pages = pages;
+      }
+
+    } catch (e) { }
+
+    res.setHeader('Content-Type', 'application/json');
+    res.send(
+      JSON.stringify(output)
     );
   }
 );
@@ -294,6 +341,8 @@ var connectionList = new Object();
 
 var missingPage = 0;
 
+let serviceManifests = {};
+
 
 
 
@@ -324,6 +373,26 @@ function keyMessage(data) {
   } else {
     keystroke.addEvent(data);
   }
+}
+
+
+function loadServiceManifest(service) {
+  if (!serviceManifests[service]) {
+    const serviceManifestFile = path.join(
+      CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],
+      service,
+      'manifest.json',
+    );
+
+    try {
+      serviceManifests[service] = JSON.parse(
+        fs.readFileSync(serviceManifestFile)
+      );
+
+    } catch (e) { }
+  }
+
+  return serviceManifests[service];
 }
 
 
@@ -460,6 +529,10 @@ function doInitialLoad(data) {
 }
 
 function doLoad(data) {
+  if (typeof data.p !== 'number') {
+    data.p = CONST.PAGE_MIN;
+  }
+
   // @todo: This should emit only to socket.emit, not all units
   // clear the existing page
   io.sockets.emit('blank', data);
@@ -500,11 +573,25 @@ function doLoad(data) {
     }
 
   } else {
-    filename = path.join(
-      CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],
-      service,
-      `p${data.p.toString(16)}.tti`,
-    );
+    // attempt serve a standard page...
+    const serviceManifest = loadServiceManifest(service);
+
+    if (serviceManifest && serviceManifest.pages && serviceManifest.pages[data.p.toString(16)] && serviceManifest.pages[data.p.toString(16)].f) {
+      // ...use page filename as defined in service manifest
+      filename = path.join(
+        CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],
+        service,
+          serviceManifest.pages[data.p.toString(16)].f,
+      );
+
+    } else {
+      // service manifest does not exist, use standard page-number-based filename format
+      filename = path.join(
+        CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],
+        service,
+        `p${data.p.toString(16)}.tti`,
+      );
+    }
   }
 
 
