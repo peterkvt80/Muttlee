@@ -1,6 +1,6 @@
 {
   "name": "muttlee",
-  "version": "1.1.8",
+  "version": "1.2.0",
   "description": "Teletext live on the web",
   "main": "teletextserver.js",
   "repository": "https://github.com/peterkvt80/Muttlee",
@@ -30,8 +30,10 @@
   "author": "Peter Kwan",
   "license": "ISC",
   "dependencies": {
+    "@pacote/xxhash": "^0.2.3",
     "colorette": "^2.0.8",
     "datastore": "^1.8.2",
+    "deep-object-diff": "^1.1.0",
     "express": "^4.17.1",
     "nunjucks": "^3.2.3",
     "request": "^2.88.2",

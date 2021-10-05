@@ -169,10 +169,57 @@ app.use(
       }
     }
 
-    content = 'const CONFIG = ' + JSON.stringify(content) + ';';
+    const output = 'const CONFIG = ' + JSON.stringify(content) + ';';
 
     res.send(
-      content
+      output
+    );
+  }
+);
+
+app.use(
+  '/manifest.json',
+  function (req, res) {
+    let output = {};
+
+    try {
+      const searchParams = new URLSearchParams(parseUrl(req).search);
+      const service = searchParams.get('service');
+
+      // deep clone before modification
+      output = JSON.parse(
+        JSON.stringify(
+          loadServiceManifest(service)
+        )
+      );
+
+      // only output relevant page object keys...
+      if (typeof output.pages === 'object') {
+        let pages = {};
+
+        for (let pageNumber in output.pages) {
+          // skip non-numeric page numbers
+          if (/[A-F]+/i.test(pageNumber)) {
+            continue;
+          }
+
+          pages[pageNumber] = {
+            p: output.pages[pageNumber].p,
+          };
+
+          if (output.pages[pageNumber].d) {
+            pages[pageNumber].d = output.pages[pageNumber].d;
+          }
+        }
+
+        output.pages = pages;
+      }
+
+    } catch (e) { }
+
+    res.setHeader('Content-Type', 'application/json');
+    res.send(
+      JSON.stringify(output)
     );
   }
 );
@@ -294,12 +341,14 @@ var connectionList = new Object();
 
 var missingPage = 0;
 
+let serviceManifests = {};
 
 
 
-function save() {
+
+function autosave() {
   LOG.fn(
-    ['teletextserver', 'save'],
+    ['teletextserver', 'autosave'],
     `Autosave`,
     LOG.LOG_LEVEL_VERBOSE,
   );
@@ -307,7 +356,44 @@ function save() {
   keystroke.saveEdits();
 }
 
-setInterval(save, 60000);  // every minute we save away the edits
+
+function keyMessage(data) {
+  // socket.broadcast.emit('keystroke', data) // To all but sender
+  io.emit('keystroke', data); // To everyone
+
+  // Also send this keymessage to our pages
+  // Or maybe to our services who can then switch the message as needed?
+  for (let i = 0; i < services.length; i++) {
+    services[i].keyMessage(data);
+  }
+
+  // Temporary hack. Use ] to trigger the writeback mechanism.
+  if (data.k === ']') {
+    keystroke.saveEdits();
+  } else {
+    keystroke.addEvent(data);
+  }
+}
+
+
+function loadServiceManifest(service) {
+  if (!serviceManifests[service]) {
+    const serviceManifestFile = path.join(
+      CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],
+      service,
+      'manifest.json',
+    );
+
+    try {
+      serviceManifests[service] = JSON.parse(
+        fs.readFileSync(serviceManifestFile)
+      );
+
+    } catch (e) { }
+  }
+
+  return serviceManifests[service];
+}
 
 
 function newConnection(socket) {
@@ -372,24 +458,6 @@ function newConnection(socket) {
 
   // Set up handlers for this socket
   socket.on('keystroke', keyMessage);
-
-  function keyMessage(data) {
-    // socket.broadcast.emit('keystroke', data) // To all but sender
-    io.emit('keystroke', data); // To everyone
-
-    // Also send this keymessage to our pages
-    // Or maybe to our services who can then switch the message as needed?
-    for (let i = 0; i < services.length; i++) {
-      services[i].keyMessage(data);
-    }
-    // Temporary hack. Use ] to trigger the writeback mechanism.
-    if (data.k === ']') {
-      keystroke.saveEdits();
-    } else {
-      keystroke.addEvent(data);
-    }
-  }
-
   socket.on('load', doLoad);
   socket.on('initialLoad', doInitialLoad);
   socket.on('create', doCreate);
@@ -399,6 +467,18 @@ function newConnection(socket) {
   socket.on('disconnect', function () {
     delete connectionList[socket.id];
   });
+
+
+  const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE];
+
+  // for editable services...
+  if (serviceData[service].isEditable) {
+    // ...every minute autosave the edits
+    setInterval(
+      autosave,
+      60000,
+    );
+  }
 }
 
 /** Clear the current page to blank
@@ -449,6 +529,10 @@ function doInitialLoad(data) {
 }
 
 function doLoad(data) {
+  if (typeof data.p !== 'number') {
+    data.p = CONST.PAGE_MIN;
+  }
+
   // @todo: This should emit only to socket.emit, not all units
   // clear the existing page
   io.sockets.emit('blank', data);
@@ -489,11 +573,25 @@ function doLoad(data) {
     }
 
   } else {
-    filename = path.join(
-      CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],
-      service,
-      `p${data.p.toString(16)}.tti`,
-    );
+    // attempt serve a standard page...
+    const serviceManifest = loadServiceManifest(service);
+
+    if (serviceManifest && serviceManifest.pages && serviceManifest.pages[data.p.toString(16)] && serviceManifest.pages[data.p.toString(16)].f) {
+      // ...use page filename as defined in service manifest
+      filename = path.join(
+        CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],
+        service,
+          serviceManifest.pages[data.p.toString(16)].f,
+      );
+
+    } else {
+      // service manifest does not exist, use standard page-number-based filename format
+      filename = path.join(
+        CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],
+        service,
+        `p${data.p.toString(16)}.tti`,
+      );
+    }
   }
 
 

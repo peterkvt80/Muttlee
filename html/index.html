@@ -42,6 +42,10 @@
   </head>
 
   <body{% if LOGO_SVG %} data-has-logo="true"{% endif %}>
+    <h1 class="u-show-for-sr">
+      {{ TITLE }}
+    </h1>
+
     {% if LOGO_SVG %}
       <a id="logo" href="/" onclick="reloadService(event);">
         {{ LOGO_SVG | safe }}
@@ -49,25 +53,27 @@
     {% endif %}
 
     <div id="menu">
-      <button id="menuButton" onclick="toggleMenu();">
-        <svg class="menuIcon" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 31.75 31.75">
-          <path d="M0 0h6.35v6.35H0Z" class="c c1-1"/>
-          <path d="M6.35 0h6.35v6.35H6.35Z" class="c c1-2"/>
-          <path d="M12.7 0h6.35v6.35H12.7z" class="c c1-3"/>
-          <path d="M19.05 0h6.35v6.35h-6.35z" class="c c1-4"/>
-          <path d="M25.4 0h6.35v6.35H25.4z" class="c c1-5"/>
-          <path d="M0 19.05h6.35V12.7H0Z" class="c c2-1"/>
-          <path d="M6.35 19.05h6.35V12.7H6.35Z" class="c c2-2"/>
-          <path d="M12.7 19.05h6.35V12.7H12.7z" class="c c2-3"/>
-          <path d="M19.05 19.05h6.35V12.7h-6.35z" class="c c2-4"/>
-          <path d="M25.4 19.05h6.35V12.7H25.4z" class="c c2-5"/>
-          <path d="M0 31.75h6.35V25.4H0Z" class="c c3-1"/>
-          <path d="M6.35 31.75h6.35V25.4H6.35Z" class="c c3-2"/>
-          <path d="M12.7 31.75h6.35V25.4H12.7z" class="c c3-3"/>
-          <path d="M19.05 31.75h6.35V25.4h-6.35z" class="c c3-4"/>
-          <path d="M25.4 31.75h6.35V25.4H25.4z" class="c c3-5"/>
-        </svg>
-      </button>
+      <nav>
+        <button id="menuButton" onclick="toggleMenu();">
+          <svg class="menuIcon" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 31.75 31.75">
+            <path d="M0 0h6.35v6.35H0Z" class="c c1-1"/>
+            <path d="M6.35 0h6.35v6.35H6.35Z" class="c c1-2"/>
+            <path d="M12.7 0h6.35v6.35H12.7z" class="c c1-3"/>
+            <path d="M19.05 0h6.35v6.35h-6.35z" class="c c1-4"/>
+            <path d="M25.4 0h6.35v6.35H25.4z" class="c c1-5"/>
+            <path d="M0 19.05h6.35V12.7H0Z" class="c c2-1"/>
+            <path d="M6.35 19.05h6.35V12.7H6.35Z" class="c c2-2"/>
+            <path d="M12.7 19.05h6.35V12.7H12.7z" class="c c2-3"/>
+            <path d="M19.05 19.05h6.35V12.7h-6.35z" class="c c2-4"/>
+            <path d="M25.4 19.05h6.35V12.7H25.4z" class="c c2-5"/>
+            <path d="M0 31.75h6.35V25.4H0Z" class="c c3-1"/>
+            <path d="M6.35 31.75h6.35V25.4H6.35Z" class="c c3-2"/>
+            <path d="M12.7 31.75h6.35V25.4H12.7z" class="c c3-3"/>
+            <path d="M19.05 31.75h6.35V25.4h-6.35z" class="c c3-4"/>
+            <path d="M25.4 31.75h6.35V25.4H25.4z" class="c c3-5"/>
+          </svg>
+        </button>
+      </nav>
 
       <div id="menuContent">
         <div id="settings">
@@ -133,7 +139,7 @@
           </div>
         </div>
 
-        <div id="gridSelect">
+        <div id="gridSelect" class="menuSection">
           <button class="controlsButton" onclick="toggleGrid();">
             <span>
               <span class="gridSelectButtonText gridSelectButtonText--show">
@@ -147,7 +153,23 @@
           </button>
         </div>
 
-        <div id="grabSelect">
+        <div id="manifestSelect" class="menuSection">
+          <button class="controlsButton" onclick="toggleManifest();">
+            <span>
+              Manifest...
+            </span>
+          </button>
+        </div>
+
+        <div id="instructionsSelect" class="menuSection">
+          <button class="controlsButton" onclick="toggleInstructions();">
+            <span>
+              Cheatsheet...
+            </span>
+          </button>
+        </div>
+
+        <div id="grabSelect" class="menuSection">
           <button class="controlsButton" onclick="exportPage();">
             <span>
               Grab...
@@ -156,11 +178,11 @@
 
           <ul id="grabSelectLinks" data-visible="false">
             <li>
-              <a id="dynamicLink" href="#" target="_blank"></a>
+              <a id="dynamicLink" href="#" target="_blank" rel="noopener noreferrer"></a>
             </li>
 
             <li>
-              <a id="dynamicLink2" href="#" target="_blank"></a>
+              <a id="dynamicLink2" href="#" target="_blank" rel="noopener noreferrer"></a>
             </li>
 
             <li>
@@ -169,10 +191,10 @@
           </ul>
         </div>
 
-        <div id="serviceSelect">
-          <button class="controlsButton" onclick="cheatSheet();">
+        <div id="aboutSelect" class="menuSection">
+          <button class="controlsButton" onclick="toggleAbout();">
             <span>
-              Cheat sheet
+              About...
             </span>
           </button>
         </div>
@@ -187,14 +209,10 @@
 
       <div id="controls">
         <div id="fastextControls">
-          <button class="button button--red" id="red" onclick="fastextR();">Red</button>
-          <button class="button button--green" id="green" onclick="fastextG();">Green</button>
-          <button class="button button--yellow" id="yellow" onclick="fastextY();">Yellow</button>
-          <button class="button button--cyan" id="cyan" onclick="fastextC();">Cyan</button>
-
-          <!-- <button style="width:140px;"   onClick="showText();"  id="none"/>?</button>
-          <button style="width:140px;" id="index"/>Index</button> -->
-          <!-- Page <textarea>100</textarea>  This should make it easier for mobile users one day -->
+          <button class="button button--red" id="red" onclick="fastextR();" title="Red [u]">Red</button>
+          <button class="button button--green" id="green" onclick="fastextG();" title="Green [i]">Green</button>
+          <button class="button button--yellow" id="yellow" onclick="fastextY();" title="Yellow [o]">Yellow</button>
+          <button class="button button--cyan" id="cyan" onclick="fastextC();" title="Cyan [p]">Cyan</button>
         </div>
 
         <div id="controlsRow">
@@ -232,23 +250,13 @@
 
         <!-- if the phone is sideways, how do we move this to the right? Answer: Don't use this. Use a standard number input field-->
         <div id="keypadControls">
-          <button class="button button--keypad" id="krvl" onclick="krvl();">Reveal</button>
-          <button class="button button--keypad" id="khold" onclick="khold();">Hold</button>
-          <button class="button button--keypad" id="kback" onclick="kback();">&lt;</button>
-          <button class="button button--keypad" id="kfwd" onclick="kfwd();">&gt;</button>
+          <button class="button button--keypad" id="krvl" onclick="krvl();" title="Reveal [r]">Reveal</button>
+          <button class="button button--keypad" id="khold" onclick="khold();" title="Hold [h]">Hold</button>
+          <button class="button button--keypad" id="kback" onclick="kback();" title="Back one page [b]">&lt;</button>
+          <button class="button button--keypad" id="kfwd" onclick="kfwd();" title="Forward one page [f]">&gt;</button>
         </div>
 
         <div id="description"></div>
-
-        <p id="info">
-          Type in a number to get to a page or try a Fastext button.<br/>
-          Pages 100 to 131 are automatically generated from BBC News.<br/>
-          Page 400 is live data from a Cumulus weather station<br/>
-          All other pages are archived from BBC ONE on 20/11/2007<br/>
-          Project source is on GitHub at <a href="https://github.com/peterkvt80/Muttlee">Muttlee Project</a>
-        </p>
-
-        <!--<button class="button button--keypad" style="width:140px; height:100px;"  id="kinfo">Info</button> -->
       </div>
 
 
@@ -266,20 +274,561 @@
     </div>
 
 
-    <script>
-      var hide = true;
+    <div id="manifest" class="manifest">
+      <div class="manifestContent">
+        <header>
+          <h2>
+            Manifest
+          </h2>
 
-      function showText() {
-        if (hide) {
-          document.getElementById('info').style.display = 'none';
-        } else {
-          document.getElementById('info').style.display = 'block';
-        }
+          <button id="manifestCloseButton" onclick="toggleManifest();">
+            <svg class="menuIcon" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 31.75 31.75">
+              <path d="M0 0h6.35v6.35H0Z" class="c c1-1"/>
+              <path d="M6.35 0h6.35v6.35H6.35Z" class="c c1-2"/>
+              <path d="M12.7 0h6.35v6.35H12.7z" class="c c1-3"/>
+              <path d="M19.05 0h6.35v6.35h-6.35z" class="c c1-4"/>
+              <path d="M25.4 0h6.35v6.35H25.4z" class="c c1-5"/>
+              <path d="M0 19.05h6.35V12.7H0Z" class="c c2-1"/>
+              <path d="M6.35 19.05h6.35V12.7H6.35Z" class="c c2-2"/>
+              <path d="M12.7 19.05h6.35V12.7H12.7z" class="c c2-3"/>
+              <path d="M19.05 19.05h6.35V12.7h-6.35z" class="c c2-4"/>
+              <path d="M25.4 19.05h6.35V12.7H25.4z" class="c c2-5"/>
+              <path d="M0 31.75h6.35V25.4H0Z" class="c c3-1"/>
+              <path d="M6.35 31.75h6.35V25.4H6.35Z" class="c c3-2"/>
+              <path d="M12.7 31.75h6.35V25.4H12.7z" class="c c3-3"/>
+              <path d="M19.05 31.75h6.35V25.4h-6.35z" class="c c3-4"/>
+              <path d="M25.4 31.75h6.35V25.4H25.4z" class="c c3-5"/>
+            </svg>
+          </button>
+        </header>
 
-        hide = !hide;
-      }
+        <div class="manifestContentInner">
+          [Loading...]
+        </div>
+      </div>
+    </div>
 
-      showText();
-    </script>
+
+    <div id="instructions" class="instructions">
+      <div class="instructionsContent">
+        <header>
+          <h2>
+            Cheatsheet
+            <a href="#" onclick="window.open('/assets/WikiTelFax.pdf');">
+              PDF
+            </a>
+          </h2>
+
+          <button id="instructionsCloseButton" onclick="toggleInstructions();">
+            <svg class="menuIcon" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 31.75 31.75">
+              <path d="M0 0h6.35v6.35H0Z" class="c c1-1"/>
+              <path d="M6.35 0h6.35v6.35H6.35Z" class="c c1-2"/>
+              <path d="M12.7 0h6.35v6.35H12.7z" class="c c1-3"/>
+              <path d="M19.05 0h6.35v6.35h-6.35z" class="c c1-4"/>
+              <path d="M25.4 0h6.35v6.35H25.4z" class="c c1-5"/>
+              <path d="M0 19.05h6.35V12.7H0Z" class="c c2-1"/>
+              <path d="M6.35 19.05h6.35V12.7H6.35Z" class="c c2-2"/>
+              <path d="M12.7 19.05h6.35V12.7H12.7z" class="c c2-3"/>
+              <path d="M19.05 19.05h6.35V12.7h-6.35z" class="c c2-4"/>
+              <path d="M25.4 19.05h6.35V12.7H25.4z" class="c c2-5"/>
+              <path d="M0 31.75h6.35V25.4H0Z" class="c c3-1"/>
+              <path d="M6.35 31.75h6.35V25.4H6.35Z" class="c c3-2"/>
+              <path d="M12.7 31.75h6.35V25.4H12.7z" class="c c3-3"/>
+              <path d="M19.05 31.75h6.35V25.4h-6.35z" class="c c3-4"/>
+              <path d="M25.4 31.75h6.35V25.4H25.4z" class="c c3-5"/>
+            </svg>
+          </button>
+        </header>
+
+        <div class="instructionsContentInner">
+          <div class="column">
+            <h3>
+              Coloured text
+            </h3>
+            <table>
+              <tbody>
+                <tr>
+                  <td>
+                    <kbd>r</kbd>
+                  </td>
+                  <td>
+                    red text
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <kbd>g</kbd>
+                  </td>
+                  <td>
+                    green text
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <kbd>y</kbd>
+                  </td>
+                  <td>
+                    yellow text
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <kbd>b</kbd>
+                  </td>
+                  <td>
+                    blue text
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <kbd>m</kbd>
+                  </td>
+                  <td>
+                    magenta text
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <kbd>c</kbd>
+                  </td>
+                  <td>
+                    cyan text
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <kbd>w</kbd>
+                  </td>
+                  <td>
+                    white text
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <kbd>k</kbd>
+                  </td>
+                  <td>
+                    black text
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+
+            <h3>
+              Coloured graphics
+            </h3>
+            <table>
+              <tbody>
+                <tr>
+                  <td>
+                    <kbd>R</kbd>
+                  </td>
+                  <td>
+                    red graphics
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <kbd>G</kbd>
+                  </td>
+                  <td>
+                    green graphics
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <kbd>Y</kbd>
+                  </td>
+                  <td>
+                    yellow graphics
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <kbd>B</kbd>
+                  </td>
+                  <td>
+                    blue graphics
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <kbd>M</kbd>
+                  </td>
+                  <td>
+                    magenta graphics
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <kbd>C</kbd>
+                  </td>
+                  <td>
+                    cyan graphics
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <kbd>W</kbd>
+                  </td>
+                  <td>
+                    white graphics
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <kbd>K</kbd>
+                  </td>
+                  <td>
+                    black graphics
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+
+          <div class="column">
+            <h3>
+              Subpages
+            </h3>
+            <table>
+              <tbody>
+              <tr>
+                <td class="wide">
+                  <kbd>Page Up</kbd>
+                </td>
+                <td>
+                  Next subpage
+                </td>
+              </tr>
+
+              <tr>
+                <td class="wide">
+                  <kbd>Page Down</kbd>
+                </td>
+                <td>
+                  Previous subpage
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <kbd>Insert</kbd>
+                </td>
+                <td>
+                  Add a subpage
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <kbd>Delete</kbd>
+                </td>
+                <td>
+                  Remove a subpage
+                </td>
+              </tr>
+              </tbody>
+            </table>
+
+
+            <h3>
+              Effects
+            </h3>
+            <table>
+              <tbody>
+                <tr>
+                  <td class="wide">
+                    <kbd>f</kbd> / <kbd>F</kbd>
+                  </td>
+                  <td>
+                    steady / flash
+                  </td>
+                </tr>
+
+                <tr>
+                  <td class="wide">
+                    <kbd>h</kbd> / <kbd>H</kbd>
+                  </td>
+                  <td>
+                    release / hold graphics
+                  </td>
+                </tr>
+
+                <tr>
+                  <td class="wide">
+                    <kbd>d</kbd> / <kbd>d</kbd>
+                  </td>
+                  <td>
+                    normal / double height
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <kbd>O</kbd>
+                  </td>
+                  <td>
+                    conceal
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <kbd>S</kbd>
+                  </td>
+                  <td>
+                    separated graphics
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <kbd>s</kbd>
+                  </td>
+                  <td>
+                    contiguous graphics
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+
+            <h3>
+              Colour effects
+            </h3>
+            <table>
+              <tbody>
+              <tr>
+                <td>
+                  <kbd>N</kbd>
+                </td>
+                <td>
+                  new background
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <kbd>n</kbd>
+                </td>
+                <td>
+                  end / black background
+                </td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+
+
+          <div class="column">
+            <div class="columnInner">
+              <h3>
+                Layout
+              </h3>
+              <table>
+                <tbody>
+                <tr>
+                  <td>
+                    <kbd>x</kbd>
+                  </td>
+                  <td>
+                    toggle grid
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <kbd>Z</kbd>
+                  </td>
+                  <td>
+                    clear page
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+
+
+              <h3>
+                Navigation (no <kbd>esc</kbd>)
+              </h3>
+              <table class="compact">
+                <tbody>
+                <tr>
+                  <td class="ultrawide">
+                    <kbd>Left</kbd>,
+                    <kbd>Right</kbd>,
+                    <kbd>Up</kbd>,
+                    <kbd>Down</kbd>
+                  </td>
+                  <td>
+                    Move cursor
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+
+              <table>
+                <tbody>
+                <tr>
+                  <td>
+                    <kbd>Tab</kbd>
+                  </td>
+                  <td>
+                    Insert a space
+                  </td>
+                </tr>
+
+                <tr>
+                  <td class="wide">
+                    <kbd>Backspace</kbd>
+                  </td>
+                  <td>
+                    Delete a space
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+
+
+            <div class="columnInner">
+              <h3>
+                Sixel Graphics (no <kbd>esc</kbd>)
+              </h3>
+              <p>
+                In a graphics region, use these keys to toggle sixels.
+              </p>
+              <table>
+                <tbody>
+                <tr>
+                  <td>
+                    <kbd>Q</kbd>
+                  </td>
+                  <td>
+                    <kbd>W</kbd>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <kbd>A</kbd>
+                  </td>
+                  <td>
+                    <kbd>S</kbd>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <kbd>Z</kbd>
+                  </td>
+                  <td>
+                    <kbd>X</kbd>
+                  </td>
+                </tr>
+                </tbody>
+
+                <tbody>
+                <tr>
+                  <td>
+                    <kbd>R</kbd>
+                  </td>
+                  <td>
+                    Reverse all bits
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <kbd>F</kbd>
+                  </td>
+                  <td>
+                    Fill all bits
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <kbd>C</kbd>
+                  </td>
+                  <td>
+                    Clear all bits
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="about" class="about">
+      <div class="aboutContent">
+        <header>
+          <h2>
+            About {{ TITLE }}
+          </h2>
+
+          <button id="aboutCloseButton" onclick="toggleAbout();">
+            <svg class="menuIcon" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 31.75 31.75">
+              <path d="M0 0h6.35v6.35H0Z" class="c c1-1"/>
+              <path d="M6.35 0h6.35v6.35H6.35Z" class="c c1-2"/>
+              <path d="M12.7 0h6.35v6.35H12.7z" class="c c1-3"/>
+              <path d="M19.05 0h6.35v6.35h-6.35z" class="c c1-4"/>
+              <path d="M25.4 0h6.35v6.35H25.4z" class="c c1-5"/>
+              <path d="M0 19.05h6.35V12.7H0Z" class="c c2-1"/>
+              <path d="M6.35 19.05h6.35V12.7H6.35Z" class="c c2-2"/>
+              <path d="M12.7 19.05h6.35V12.7H12.7z" class="c c2-3"/>
+              <path d="M19.05 19.05h6.35V12.7h-6.35z" class="c c2-4"/>
+              <path d="M25.4 19.05h6.35V12.7H25.4z" class="c c2-5"/>
+              <path d="M0 31.75h6.35V25.4H0Z" class="c c3-1"/>
+              <path d="M6.35 31.75h6.35V25.4H6.35Z" class="c c3-2"/>
+              <path d="M12.7 31.75h6.35V25.4H12.7z" class="c c3-3"/>
+              <path d="M19.05 31.75h6.35V25.4h-6.35z" class="c c3-4"/>
+              <path d="M25.4 31.75h6.35V25.4H25.4z" class="c c3-5"/>
+            </svg>
+          </button>
+        </header>
+
+        <p>
+          Type in a number to get to a page or try a Fastext button.
+        </p>
+
+        <p>
+          Pages 100 to 131 are automatically generated from BBC News.
+        </p>
+
+        <p>
+          Page 400 is live data from a Cumulus weather station.
+        </p>
+
+        <p>
+          All other pages are archived from BBC ONE on 20/11/2007.
+        </p>
+
+        <p>
+          Project source is on GitHub at <a href="https://github.com/peterkvt80/Muttlee" target="_blank" rel="noopener noreferrer">Muttlee Project</a>
+        </p>
+      </div>
+    </div>
   </body>
 </html>
