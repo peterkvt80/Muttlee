@@ -724,22 +724,24 @@ button:focus, button:hover {
 .instructions .instructionsContent {
   display: none;
   position: fixed;
-  width: 864px;
-  height: 682px;
-  top: calc(50% - (682px / 2));
-  left: calc(50% - (864px / 2));
   background: #0000ff;
   padding: 40px;
   box-sizing: border-box;
 }
 
-@media only screen and (max-width: 900px) {
+@media only screen and (max-width: 1800px) {
   .instructions .instructionsContent {
     width: 100vw;
     height: 100vh;
     top: 0;
     left: 0;
     z-index: 1000;
+  }
+}
+
+@media only screen and (max-width: 1379px) {
+  .instructions .instructionsContent {
+    overflow: auto;
   }
 }
 
@@ -752,6 +754,10 @@ button:focus, button:hover {
 .instructions .instructionsContent header h2 {
   margin: -6px 0 16px 0;
   font-size: 42px;
+}
+
+.instructions .instructionsContent header h2 a {
+  font-size: 22px;
 }
 
 .instructions .instructionsContent header #instructionsCloseButton {
@@ -821,20 +827,153 @@ button:focus, button:hover {
   stroke: #ffff00;
 }
 
+.instructions .instructionsContent .instructionsContentInner {
+  display: flex;
+  flex-direction: row;
+}
+
+@media only screen and (max-width: 1800px) {
+  .instructions .instructionsContent .instructionsContentInner {
+    flex-wrap: wrap;
+  }
+}
+
+.instructions .instructionsContent .instructionsContentInner .column {
+  width: 33.3%;
+}
+
+.instructions .instructionsContent .instructionsContentInner .column:nth-child(1) {
+  width: 440px;
+}
+
+@media only screen and (max-width: 1800px) {
+  .instructions .instructionsContent .instructionsContentInner .column:nth-child(1) {
+    width: 50%;
+  }
+}
+
+@media only screen and (max-width: 1379px) {
+  .instructions .instructionsContent .instructionsContentInner .column:nth-child(1) {
+    width: 100%;
+  }
+}
+
+.instructions .instructionsContent .instructionsContentInner .column:nth-child(2) {
+  width: 660px;
+}
+
+@media only screen and (max-width: 1800px) {
+  .instructions .instructionsContent .instructionsContentInner .column:nth-child(2) {
+    width: 50%;
+  }
+}
+
+@media only screen and (max-width: 1379px) {
+  .instructions .instructionsContent .instructionsContentInner .column:nth-child(2) {
+    width: 100%;
+  }
+}
+
+.instructions .instructionsContent .instructionsContentInner .column:nth-child(3) {
+  width: 580px;
+}
+
+.instructions .instructionsContent .instructionsContentInner .column:nth-child(3) .columnInner:last-child {
+  margin-top: 50px;
+}
+
+@media only screen and (max-width: 1800px) {
+  .instructions .instructionsContent .instructionsContentInner .column:nth-child(3) {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    margin-top: 20px;
+  }
+  .instructions .instructionsContent .instructionsContentInner .column:nth-child(3) .columnInner {
+    width: 50%;
+  }
+  .instructions .instructionsContent .instructionsContentInner .column:nth-child(3) .columnInner:last-child {
+    margin-top: 0;
+  }
+}
+
+@media only screen and (max-width: 1379px) {
+  .instructions .instructionsContent .instructionsContentInner .column:nth-child(3) {
+    flex-direction: column;
+    width: 100%;
+  }
+  .instructions .instructionsContent .instructionsContentInner .column:nth-child(3) .columnInner {
+    width: 100%;
+  }
+  .instructions .instructionsContent .instructionsContentInner .column:nth-child(3) .columnInner:last-child {
+    margin-top: 30px;
+  }
+}
+
+.instructions .instructionsContent .instructionsContentInner .column h3 {
+  font-size: 24px;
+}
+
+.instructions .instructionsContent .instructionsContentInner .column table {
+  margin-bottom: 50px;
+}
+
+.instructions .instructionsContent .instructionsContentInner .column table.compact, .instructions .instructionsContent .instructionsContentInner .column table:last-child {
+  margin-bottom: 0;
+}
+
+.instructions .instructionsContent .instructionsContentInner .column table tbody td {
+  font-size: 20px;
+}
+
+.instructions .instructionsContent .instructionsContentInner .column table tbody td:first-child {
+  width: 72px;
+}
+
+.instructions .instructionsContent .instructionsContentInner .column table tbody td.wide {
+  width: 180px;
+}
+
+.instructions .instructionsContent .instructionsContentInner .column table tbody td.ultrawide {
+  width: 400px;
+}
+
+.instructions .instructionsContent .instructionsContentInner .column table tbody + tbody tr:first-child td {
+  padding-top: 20px;
+}
+
+.instructions .instructionsContent .instructionsContentInner .column p {
+  font-size: 22px;
+}
+
+.instructions .instructionsContent .instructionsContentInner .column kbd {
+  display: inline-block;
+  min-width: 50px;
+  border: 1px solid #ffffff;
+  text-align: center;
+  padding: 3px;
+  font-family: "Teletext2", "Arial", "Helvetica", sans-serif;
+  font-size: 20px;
+  font-weight: 400;
+}
+
 .instructions .instructionsContent p {
   margin: 18px 0;
 }
 
-.instructions .instructionsContent p a {
+.instructions .instructionsContent a {
   color: #ffffff;
 }
 
-.instructions .instructionsContent p a:hover, .instructions .instructionsContent p a:focus {
+.instructions .instructionsContent a:hover, .instructions .instructionsContent a:focus {
   color: #ffff00;
 }
 
 .instructions--visible {
   display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
 }
 
 .instructions--visible .instructionsContent {

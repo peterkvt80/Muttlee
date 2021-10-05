@@ -918,20 +918,20 @@ button {
     .instructionsContent {
         display: none;
         position: fixed;
-        width: 864px;
-        height: 682px;
-        top: calc(50% - (682px / 2));
-        left: calc(50% - (864px / 2));
         background: $colour--blue;
         padding: 40px;
         box-sizing: border-box;
 
-        @media only screen and (max-width: 900px) {
+        @media only screen and (max-width: 1800px) {
             width: 100vw;
             height: 100vh;
             top: 0;
             left: 0;
             z-index: 1000;
+        }
+
+        @media only screen and (max-width: 1379px) {
+            overflow: auto;
         }
 
         header {
@@ -942,6 +942,10 @@ button {
             h2 {
                 margin: -6px 0 16px 0;
                 font-size: 42px;
+
+                a {
+                    font-size: 22px;
+                }
             }
 
             #instructionsCloseButton {
@@ -1013,16 +1017,147 @@ button {
             }
         }
 
+        .instructionsContentInner {
+            display: flex;
+            flex-direction: row;
+
+            @media only screen and (max-width: 1800px) {
+                flex-wrap: wrap;
+            }
+
+            .column {
+                width: 33.3%;
+
+                &:nth-child(1) {
+                    width: 440px;
+
+                    @media only screen and (max-width: 1800px) {
+                        width: 50%;
+                    }
+
+                    @media only screen and (max-width: 1379px) {
+                        width: 100%;
+                    }
+                }
+
+                &:nth-child(2) {
+                    width: 660px;
+
+                    @media only screen and (max-width: 1800px) {
+                        width: 50%;
+                    }
+
+                    @media only screen and (max-width: 1379px) {
+                        width: 100%;
+                    }
+                }
+
+                &:nth-child(3) {
+                    width: 580px;
+
+                    .columnInner {
+                        &:last-child {
+                            margin-top: 50px;
+                        }
+                    }
+
+                    @media only screen and (max-width: 1800px) {
+                        display: flex;
+                        flex-direction: row;
+                        width: 100%;
+                        margin-top: 20px;
+
+                        .columnInner {
+                            width: 50%;
+
+                            &:last-child {
+                                margin-top: 0;
+                            }
+                        }
+                    }
+
+                    @media only screen and (max-width: 1379px) {
+                        flex-direction: column;
+                        width: 100%;
+
+                        .columnInner {
+                            width: 100%;
+
+                            &:last-child {
+                                margin-top: 30px;
+                            }
+                        }
+                    }
+                }
+
+                h3 {
+                    font-size: 24px;
+                }
+
+                table {
+                    margin-bottom: 50px;
+
+                    &.compact,
+                    &:last-child {
+                        margin-bottom: 0;
+                    }
+
+                    tbody {
+                        td {
+                            font-size: 20px;
+
+                            &:first-child {
+                                width: 72px;
+                            }
+
+                            &.wide {
+                                width: 180px;
+                            }
+
+                            &.ultrawide {
+                                width: 400px;
+                            }
+                        }
+
+                        + tbody {
+                            tr {
+                                &:first-child {
+                                    td {
+                                        padding-top: 20px;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                p {
+                    font-size: 22px;
+                }
+
+                kbd {
+                    display: inline-block;
+                    min-width: 50px;
+                    border: 1px solid $colour--white;
+                    text-align: center;
+                    padding: 3px;
+                    font-family: $font-family--teletext2;
+                    font-size: 20px;
+                    font-weight: 400;
+                }
+            }
+        }
+
         p {
             margin: 18px 0;
+        }
 
-            a {
-                color: $colour--white;
+        a {
+            color: $colour--white;
 
-                &:hover,
-                &:focus {
-                    color: $colour--yellow;
-                }
+            &:hover,
+            &:focus {
+                color: $colour--yellow;
             }
         }
     }
@@ -1031,6 +1166,9 @@ button {
     // interaction states
     &--visible {
         display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1001;
 
         .instructionsContent {
             display: flex;
