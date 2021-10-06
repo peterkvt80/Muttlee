@@ -284,10 +284,14 @@ TTXPAGE = function() {
         cpos = this.cursor.x;
       }
 
-      // Single pages tend to have subpage 0000. carousels start from 0001. So subtract 1 unless it is already 0.
-      //      let v=this.subPageList[this.subPage>0?this.subPage-1:0]
+      // Single pages tend to have subpage 0000, carousels start from 0001
       if (this.subPage >= this.subPageList.length) { // This shouldn't happen much but it does during start up
         this.subPage = this.subPageList.length - 1;
+      }
+
+      // don't allow subpage to be less than 0
+      if (this.subPage < 0) {
+        this.subPage = 0;
       }
 
       let v = this.subPageList[this.subPage];
