@@ -1420,6 +1420,16 @@ button:focus, button:hover {
   opacity: 0;
 }
 
+#menu #manifestSelect,
+.settingsRow--autoplay {
+  display: none;
+}
+
+[data-service-manifest="true"] #menu #manifestSelect,
+[data-service-manifest="true"] .settingsRow--autoplay {
+  display: flex;
+}
+
 #menu #gridSelect {
   display: none;
 }
@@ -1442,7 +1452,7 @@ button:focus, button:hover {
 }
 
 [data-service-editable="true"] #menu .settingsRow--autoplay {
-  display: none;
+  display: none !important;
 }
 
 [data-service-editable="true"][data-grid="true"] #menu #gridSelect .controlsButton .gridSelectButtonText--show {

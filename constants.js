@@ -18,8 +18,10 @@ const CONST = {
 
   // custom HTML attributes
   ATTR_DATA_SERVICE: 'data-service',
-  ATTR_DATA_READY: 'data-ready',
+  ATTR_DATA_SERVICE_MANIFEST: 'data-service-manifest',
   ATTR_DATA_SERVICE_EDITABLE: 'data-service-editable',
+  ATTR_DATA_READY: 'data-ready',
+
   ATTR_DATA_CONTROLS: 'data-controls',
   ATTR_DATA_DISPLAY: 'data-display',
   ATTR_DATA_SCALE: 'data-scale',

@@ -1813,6 +1813,11 @@ function loadManifestData() {
       .then((response) => response.json())
       .then((data) => {
         serviceManifests[service] = data;
+
+        if (data && data.pages) {
+          // update custom attribute on body element
+          document.body.setAttribute(CONST.ATTR_DATA_SERVICE_MANIFEST, 'true');
+        }
       });
   }
 }
