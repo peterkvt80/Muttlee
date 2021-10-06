@@ -1,6 +1,6 @@
 {
   "name": "muttlee",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Teletext live on the web",
   "main": "teletextserver.js",
   "repository": "https://github.com/peterkvt80/Muttlee",
