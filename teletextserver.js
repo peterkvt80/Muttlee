@@ -113,15 +113,58 @@ env.addFilter(
   }
 );
 
+env.addFilter(
+  'isArray',
+  function(obj) {
+    return Array.isArray(obj);
+  }
+);
+
 
 // define shared template variables
 let templateVars = {
   IS_DEV: CONFIG[CONST.CONFIG.IS_DEV],
 
   TITLE: CONFIG[CONST.CONFIG.TITLE],
-
-  SERVICES_AVAILABLE: CONFIG[CONST.CONFIG.SERVICES_AVAILABLE],
 };
+
+if (CONFIG[CONST.CONFIG.SERVICES_AVAILABLE]) {
+  templateVars.SERVICES_AVAILABLE = {};
+
+  // process non-group services
+  for (let serviceName in CONFIG[CONST.CONFIG.SERVICES_AVAILABLE]) {
+    let serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][serviceName];
+
+    if (!serviceData.group) {
+      templateVars.SERVICES_AVAILABLE[serviceName] = serviceData;
+    }
+  }
+
+  // process service groups...
+  let serviceGroups = {};
+
+  for (let serviceName in CONFIG[CONST.CONFIG.SERVICES_AVAILABLE]) {
+    let serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][serviceName];
+    let groupName = serviceData.group;
+
+    if (groupName) {
+      if (typeof serviceGroups[groupName] !== 'object') {
+        serviceGroups[groupName] = [];
+      }
+
+      serviceData.id = serviceName;
+
+      serviceGroups[groupName].push(serviceData);
+    }
+  }
+
+  // add service groups at end of services list
+  templateVars.SERVICES_AVAILABLE = {
+    ...templateVars.SERVICES_AVAILABLE,
+
+    ...serviceGroups,
+  };
+}
 
 if (CONFIG[CONST.CONFIG.SHOW_CONSOLE_LOGO] === true) {
   templateVars.LOGO_CHARS = renderLogo();
@@ -161,6 +204,7 @@ app.use(
               url: configKeyData[i].url,
               port: configKeyData[i].port,
               isEditable: configKeyData[i].isEditable || false,
+              credit: configKeyData[i].credit,
             };
           }
         }

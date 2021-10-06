@@ -71,11 +71,15 @@ const CONFIG = {
 
   // service definitions, in the following format:
   //   [id_of_service]: {
+  //     // (optional) group name of service
+  //     group: str,
   //     // display name of service
   //     name: str,
+  //     // (optional) service credit
+  //     credit: str,
   //
   //     // url should be protocol independent (start with //), so that http and https can both be accommodated)
-  //
+  //     //
   //     // To use this local teletext server, set `url` to '//localhost'
   //     // (also ensure that `port` matches one of the enabled
   //     //  TELETEXT_VIEWER_SERVE_HTTPS_PORT or TELETEXT_VIEWER_SERVE_HTTPS_PORT above)
@@ -169,6 +173,129 @@ const CONFIG = {
       port: 80,
 
       isEditable: true,
+    },
+
+
+    // NMS Ceefax services
+    [CONST.SERVICE_NMS_CEEFAX__WORLDWIDE]: {
+      group: 'NMS Ceefax',
+      name: 'Worldwide',
+      credit: 'Pages via <a href="https://www.nathanmediaservices.co.uk/teletext-viewer/">NMS Ceefax</a>',
+      url: '//www.xenoxxx.com',
+      port: 80,
+
+      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/Worldwide',
+      updateInterval: 30,
+    },
+
+    [CONST.SERVICE_NMS_CEEFAX__NATIONAL]: {
+      group: 'NMS Ceefax',
+      name: 'National',
+      credit: 'Pages via <a href="https://www.nathanmediaservices.co.uk/teletext-viewer/">NMS Ceefax</a>',
+      url: '//www.xenoxxx.com',
+      port: 80,
+
+      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/national',
+      updateInterval: 30,
+    },
+
+    [CONST.SERVICE_NMS_CEEFAX__EAST]: {
+      group: 'NMS Ceefax',
+      name: 'East',
+      credit: 'Pages via <a href="https://www.nathanmediaservices.co.uk/teletext-viewer/">NMS Ceefax</a>',
+      url: '//www.xenoxxx.com',
+      port: 80,
+
+      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/East',
+      updateInterval: 30,
+    },
+
+    [CONST.SERVICE_NMS_CEEFAX__EASTMIDLANDS]: {
+      group: 'NMS Ceefax',
+      name: 'East Midlands',
+      credit: 'Pages via <a href="https://www.nathanmediaservices.co.uk/teletext-viewer/">NMS Ceefax</a>',
+      url: '//www.xenoxxx.com',
+      port: 80,
+
+      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/EastMidlands',
+      updateInterval: 30,
+    },
+
+    [CONST.SERVICE_NMS_CEEFAX__LONDON]: {
+      group: 'NMS Ceefax',
+      name: 'London',
+      credit: 'Pages via <a href="https://www.nathanmediaservices.co.uk/teletext-viewer/">NMS Ceefax</a>',
+      url: '//www.xenoxxx.com',
+      port: 80,
+
+      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/London',
+      updateInterval: 30,
+    },
+
+    [CONST.SERVICE_NMS_CEEFAX__NORTHERNIRELAND]: {
+      group: 'NMS Ceefax',
+      name: 'Northern Ireland',
+      credit: 'Pages via <a href="https://www.nathanmediaservices.co.uk/teletext-viewer/">NMS Ceefax</a>',
+      url: '//www.xenoxxx.com',
+      port: 80,
+
+      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/NorthernIreland',
+      updateInterval: 30,
+    },
+
+    [CONST.SERVICE_NMS_CEEFAX__SCOTLAND]: {
+      group: 'NMS Ceefax',
+      name: 'Scotland',
+      credit: 'Pages via <a href="https://www.nathanmediaservices.co.uk/teletext-viewer/">NMS Ceefax</a>',
+      url: '//www.xenoxxx.com',
+      port: 80,
+
+      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/Scotland',
+      updateInterval: 30,
+    },
+
+    [CONST.SERVICE_NMS_CEEFAX__SOUTH]: {
+      group: 'NMS Ceefax',
+      name: 'South',
+      credit: 'Pages via <a href="https://www.nathanmediaservices.co.uk/teletext-viewer/">NMS Ceefax</a>',
+      url: '//www.xenoxxx.com',
+      port: 80,
+
+      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/South',
+      updateInterval: 30,
+    },
+
+    [CONST.SERVICE_NMS_CEEFAX__SOUTHWEST]: {
+      group: 'NMS Ceefax',
+      name: 'South West',
+      credit: 'Pages via <a href="https://www.nathanmediaservices.co.uk/teletext-viewer/">NMS Ceefax</a>',
+      url: '//www.xenoxxx.com',
+      port: 80,
+
+      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/SouthWest',
+      updateInterval: 30,
+    },
+
+    [CONST.SERVICE_NMS_CEEFAX__WEST]: {
+      group: 'NMS Ceefax',
+      name: 'West',
+      credit: 'Pages via <a href="https://www.nathanmediaservices.co.uk/teletext-viewer/">NMS Ceefax</a>',
+      url: '//www.xenoxxx.com',
+      port: 80,
+
+      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/West',
+      updateInterval: 30,
+    },
+
+    [CONST.SERVICE_NMS_CEEFAX__YORKSLINCS]: {
+      group: 'NMS Ceefax',
+      name: 'Yorks & Lincs',
+      credit: 'Pages via <a href="https://www.nathanmediaservices.co.uk/teletext-viewer/">NMS Ceefax</a>',
+      url: '//www.xenoxxx.com',
+      port: 80,
+
+      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/Yorks&Lincs',
+      updateInterval: 30,
     },
   },
 

@@ -156,7 +156,9 @@ async function updateServices() {
         if (!fs.existsSync(serviceTargetDir)) {
           if (!options.silent) {
             console.log(
-              `First time checkout of '${serviceId}' service page files (to ${serviceTargetDir})...`
+              colorette.blueBright(
+                `First time checkout of '${serviceId}' service page files (to ${serviceTargetDir})...`
+              )
             );
           }
 

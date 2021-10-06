@@ -199,6 +199,10 @@ function setup() {
   );
 
 
+  // preload service manifest data
+  loadManifestData();
+
+
   // font metrics
   textFont(ttxFont);
   textSize(gTtxFontSize);
@@ -320,6 +324,16 @@ function setup() {
 
   if (displaySelector) {
     displaySelector.value = display;
+  }
+
+
+  // show service credit?
+  if (serviceData.credit) {
+    const credit = document.querySelector('#credit');
+
+    if (credit) {
+      credit.innerHTML = serviceData.credit.replace('<a ', '<a target="_blank" rel="noopener noreferrer" ');
+    }
   }
 
 
@@ -1684,21 +1698,24 @@ function renderManifestData(data) {
 }
 
 
+function loadManifestData() {
+  if (!serviceManifests[service]) {
+    fetch(`/manifest.json?service=${service}`)
+      .then((response) => response.json())
+      .then((data) => {
+        serviceManifests[service] = data;
+      });
+  }
+}
+
+
 function toggleManifest() {
   if (manifestModal) {
     manifestModal.classList.toggle('manifest--visible');
 
-    // load manifest data
-    if (!serviceManifests[service]) {
-      fetch(`/manifest.json?service=${service}`)
-        .then((response) => response.json())
-        .then(renderManifestData);
-
-    } else {
-      renderManifestData(
-        serviceManifests[service]
-      );
-    }
+    renderManifestData(
+      serviceManifests[service]
+    );
   }
 }
 
