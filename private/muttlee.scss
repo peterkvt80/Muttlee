@@ -363,6 +363,10 @@ button {
         color: $colour--white;
         border-top: 8px solid $colour--white;
         border-bottom: 8px solid $colour--white;
+
+        @media only screen and (max-height: 900px) {
+            padding: 20px 40px;
+        }
     }
 
     &::before,
@@ -516,6 +520,10 @@ button {
         button {
             width: $menu-button-width;
             min-height: 100px;
+
+            @media only screen and (max-height: 900px) {
+                min-height: 80px;
+            }
         }
     }
 
@@ -710,6 +718,51 @@ button {
     font-size: 100%;
     text-align: left;
     font-family: $font-family--teletext4;
+}
+
+
+#credit {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    margin-right: -500px;
+    font-family: $font-family--teletext4;
+    color: $colour--white;
+    opacity: 0.2;
+
+    transition: margin-right 0.5s ease-in-out 0.1s,
+        opacity 0.2s ease-in-out;
+
+    a {
+        color: $colour--white;
+    }
+
+    &:hover,
+    &:focus {
+        opacity: 1;
+    }
+
+    @at-root {
+        [data-menu-open="true"] & {
+            display: block;
+            margin-right: 0;
+        }
+    }
+
+    @media only screen and (max-height: 900px) {
+        position: relative;
+        bottom: 0;
+        right: 0;
+        margin-top: 60px;
+        opacity: 1;
+
+        text-shadow: 0 0 4px $colour--black,
+            0 0 8px $colour--black,
+            0 0 16px $colour--black,
+            0 0 24px $colour--yellow,
+            0 0 32px $colour--yellow,
+            0 0 48px $colour--yellow;
+    }
 }
 
 

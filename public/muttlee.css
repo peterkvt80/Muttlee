@@ -217,6 +217,12 @@ button:focus, button:hover {
   border-bottom: 8px solid #ffffff;
 }
 
+@media only screen and (max-height: 900px) {
+  .controlsButton > span {
+    padding: 20px 40px;
+  }
+}
+
 .controlsButton::before, .controlsButton::after,
 .controlsButton > span::before,
 .controlsButton > span::after {
@@ -359,6 +365,12 @@ button:focus, button:hover {
 #menu .menuSection button {
   width: 240px;
   min-height: 100px;
+}
+
+@media only screen and (max-height: 900px) {
+  #menu .menuSection button {
+    min-height: 80px;
+  }
 }
 
 #menu #instructionsSelect button {
@@ -525,6 +537,41 @@ button:focus, button:hover {
   font-size: 100%;
   text-align: left;
   font-family: "Teletext4", "Arial", "Helvetica", sans-serif;
+}
+
+#credit {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  margin-right: -500px;
+  font-family: "Teletext4", "Arial", "Helvetica", sans-serif;
+  color: #ffffff;
+  opacity: 0.2;
+  transition: margin-right 0.5s ease-in-out 0.1s, opacity 0.2s ease-in-out;
+}
+
+#credit a {
+  color: #ffffff;
+}
+
+#credit:hover, #credit:focus {
+  opacity: 1;
+}
+
+[data-menu-open="true"] #credit {
+  display: block;
+  margin-right: 0;
+}
+
+@media only screen and (max-height: 900px) {
+  #credit {
+    position: relative;
+    bottom: 0;
+    right: 0;
+    margin-top: 60px;
+    opacity: 1;
+    text-shadow: 0 0 4px #000000, 0 0 8px #000000, 0 0 16px #000000, 0 0 24px #ffff00, 0 0 32px #ffff00, 0 0 48px #ffff00;
+  }
 }
 
 .manifest {

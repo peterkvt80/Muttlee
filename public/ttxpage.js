@@ -36,7 +36,7 @@ TTXPAGE = function() {
   this.cyanLink = CONST.PAGE_MIN;
   this.indexLink = CONST.PAGE_MIN;
   this.editMode = CONST.EDITMODE_NORMAL;
-  this.description = 'none';
+  this.description = '';
   this.showGrid = false;
 
   // this.timer=7 // This is global. Replaced by a per page timer
@@ -162,7 +162,7 @@ TTXPAGE = function() {
   this.setSubPage = function(s) {
     s = parseInt(s);
 
-    if (s < 0 || s > 79) {
+    if ((s < 0) || (s > 79)) {
       s = 0; // Single page
     } else {
       s = s - 1; // Carousel (because carousels start at 1, but our array always starts at 0
@@ -170,7 +170,15 @@ TTXPAGE = function() {
 
     // @todo Check that s is in a subpage that exists and add it if needed.
     if (this.subPageList.length <= s) {
-      this.addPage(this.pageNumber);
+      if (this.subPageList.length >= (s - 1)) {
+        // requested subpage is in bounds, add it to subpage list
+        this.addPage(this.pageNumber);
+
+      } else {
+        // requested subpage is out of bounds, reset it to 0
+        // (fixes Teefax p630 having invalid PN,63030 = subpage 30, but no actual subpages defined)
+        s = 0;
+      }
     }
 
     this.subPage = s;
@@ -180,7 +188,8 @@ TTXPAGE = function() {
    * Note that this is the page level setrow.
    */
   this.setRow = function (r, txt) {
-    if (r >= 0 && r <= 24) {
+    if ((r >= 0) && (r <= 24)) {
+      // don't allow subpage to be less than 0
       if (this.subPage < 0) {
         this.subPage = 0;
       }
@@ -192,15 +201,17 @@ TTXPAGE = function() {
           `oh noes. v is undefined`,
           LOG.LOG_LEVEL_ERROR,
         );
-      }
 
-      v[r].setrow(txt);
+      } else {
+        v[r].setrow(txt);
+      }
     }
   };
 
   // Return the text of row r on the current subpage
   this.getRow = function (r) {
-    if (r >= 0 && r <= 24) {
+    if ((r >= 0) && (r <= 24)) {
+      // don't allow subpage to be less than 0
       if (this.subPage < 0) {
         this.subPage = 0;
       }
@@ -231,6 +242,7 @@ TTXPAGE = function() {
   this.prevSubpage = function () {
     if (this.subPage > 0) {
       this.subPage--;
+
     } else {
       this.subPage = this.subPageList.length - 1;
     }
@@ -238,6 +250,7 @@ TTXPAGE = function() {
 
   this.addSubPage = function () {
     this.addPage(this.pageNumber);
+
     this.setSubPage(this.subPageList.length - 1);
   };
 
@@ -286,7 +299,7 @@ TTXPAGE = function() {
 
       // Single pages tend to have subpage 0000, carousels start from 0001
       if (this.subPage >= this.subPageList.length) { // This shouldn't happen much but it does during start up
-        this.subPage = this.subPageList.length - 1;
+        this.subPage = (this.subPageList.length - 1);
       }
 
       // don't allow subpage to be less than 0

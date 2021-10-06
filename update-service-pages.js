@@ -156,7 +156,9 @@ async function updateServices() {
         if (!fs.existsSync(serviceTargetDir)) {
           if (!options.silent) {
             console.log(
-              `First time checkout of '${serviceId}' service page files (to ${serviceTargetDir})...`
+              colorette.blueBright(
+                `First time checkout of '${serviceId}' service page files (to ${serviceTargetDir})...`
+              )
             );
           }
 
@@ -247,9 +249,6 @@ async function updateServices() {
 
           if (fileContentLines[i].startsWith('PN,')) {
             pageNumber = fileContentLines[i].slice(3, 6);
-
-            // assuming that the .tti file is correctly ordered, we do not need to process any further lines
-            break;
           }
         }
 

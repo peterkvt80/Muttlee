@@ -199,6 +199,10 @@ function setup() {
   );
 
 
+  // preload service manifest data
+  loadManifestData();
+
+
   // font metrics
   textFont(ttxFont);
   textSize(gTtxFontSize);
@@ -323,6 +327,16 @@ function setup() {
   }
 
 
+  // show service credit?
+  if (serviceData.credit) {
+    const credit = document.querySelector('#credit');
+
+    if (credit) {
+      credit.innerHTML = serviceData.credit.replace('<a ', '<a target="_blank" rel="noopener noreferrer" ');
+    }
+  }
+
+
   // set the initial canvas scale
   updateScale();
 
@@ -442,7 +456,9 @@ function setSubPage(data) {
     return;
   }
 
-  myPage.setSubPage(parseInt(data.line))
+  myPage.setSubPage(
+    parseInt(data.line)
+  );
 }
 
 /** We MUST be sent the connection ID or we won't be able to display anything
@@ -780,7 +796,12 @@ function setRow(r) {
 function setBlank(data) {   // 'blank'
   if (!matchpage(data)) return;
   if (data.id !== gClientID && gClientID !== null) return;  // Not for us?
+
   myPage.setBlank();
+
+  // clear the description too
+  data.desc = '';
+  setDescription(data);
 }
 
 function inputNumber() {
@@ -1684,21 +1705,24 @@ function renderManifestData(data) {
 }
 
 
+function loadManifestData() {
+  if (!serviceManifests[service]) {
+    fetch(`/manifest.json?service=${service}`)
+      .then((response) => response.json())
+      .then((data) => {
+        serviceManifests[service] = data;
+      });
+  }
+}
+
+
 function toggleManifest() {
   if (manifestModal) {
     manifestModal.classList.toggle('manifest--visible');
 
-    // load manifest data
-    if (!serviceManifests[service]) {
-      fetch(`/manifest.json?service=${service}`)
-        .then((response) => response.json())
-        .then(renderManifestData);
-
-    } else {
-      renderManifestData(
-        serviceManifests[service]
-      );
-    }
+    renderManifestData(
+      serviceManifests[service]
+    );
   }
 }
 

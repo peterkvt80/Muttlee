@@ -113,15 +113,58 @@ env.addFilter(
   }
 );
 
+env.addFilter(
+  'isArray',
+  function(obj) {
+    return Array.isArray(obj);
+  }
+);
+
 
 // define shared template variables
 let templateVars = {
   IS_DEV: CONFIG[CONST.CONFIG.IS_DEV],
 
   TITLE: CONFIG[CONST.CONFIG.TITLE],
-
-  SERVICES_AVAILABLE: CONFIG[CONST.CONFIG.SERVICES_AVAILABLE],
 };
+
+if (CONFIG[CONST.CONFIG.SERVICES_AVAILABLE]) {
+  templateVars.SERVICES_AVAILABLE = {};
+
+  // process non-group services
+  for (let serviceName in CONFIG[CONST.CONFIG.SERVICES_AVAILABLE]) {
+    let serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][serviceName];
+
+    if (!serviceData.group) {
+      templateVars.SERVICES_AVAILABLE[serviceName] = serviceData;
+    }
+  }
+
+  // process service groups...
+  let serviceGroups = {};
+
+  for (let serviceName in CONFIG[CONST.CONFIG.SERVICES_AVAILABLE]) {
+    let serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][serviceName];
+    let groupName = serviceData.group;
+
+    if (groupName) {
+      if (typeof serviceGroups[groupName] !== 'object') {
+        serviceGroups[groupName] = [];
+      }
+
+      serviceData.id = serviceName;
+
+      serviceGroups[groupName].push(serviceData);
+    }
+  }
+
+  // add service groups at end of services list
+  templateVars.SERVICES_AVAILABLE = {
+    ...templateVars.SERVICES_AVAILABLE,
+
+    ...serviceGroups,
+  };
+}
 
 if (CONFIG[CONST.CONFIG.SHOW_CONSOLE_LOGO] === true) {
   templateVars.LOGO_CHARS = renderLogo();
@@ -161,6 +204,7 @@ app.use(
               url: configKeyData[i].url,
               port: configKeyData[i].port,
               isEditable: configKeyData[i].isEditable || false,
+              credit: configKeyData[i].credit,
             };
           }
         }
@@ -593,7 +637,7 @@ function doLoad(data) {
       filename = path.join(
         CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],
         service,
-          serviceManifest.pages[data.p.toString(16)].f,
+        serviceManifest.pages[data.p.toString(16)].f,
       );
 
     } else {
@@ -656,7 +700,6 @@ function doLoad(data) {
       ...data,
 
       ...{
-        y: data.p,                          // Save the page number, we will ask the user if they want to create the page
         p: data.p,
         x: CONST.SIGNAL_PAGE_NOT_FOUND,     // Signal a 404 error
         S: connectionList[data.id],         // How do we lose the service type? This hack shouldn't be needed
@@ -698,6 +741,7 @@ function doLoad(data) {
     if (line.indexOf('PN') === 0) {
       // Need to implement carousels    @todo
       data.line = line.substring(6);
+
       io.sockets.emit('subpage', data);
 
     } else if (line.indexOf('DE,') === 0) {   // Detect a description row
@@ -705,7 +749,7 @@ function doLoad(data) {
 
       // if page has page not found signal set, append the failed page number to the page description display
       if (data.x === CONST.SIGNAL_PAGE_NOT_FOUND) {
-        missingPage = data.y.toString(16);
+        missingPage = data.p.toString(16);
 
         data.desc += ` - page ${missingPage}`;
       }
