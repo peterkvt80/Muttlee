@@ -249,9 +249,6 @@ async function updateServices() {
 
           if (fileContentLines[i].startsWith('PN,')) {
             pageNumber = fileContentLines[i].slice(3, 6);
-
-            // assuming that the .tti file is correctly ordered, we do not need to process any further lines
-            break;
           }
         }
 
