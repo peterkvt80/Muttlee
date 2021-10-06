@@ -411,8 +411,18 @@ function newConnection(socket) {
   const socketUrl = new URL(socket.handshake.url, 'http://example.com');
   const socketSearchParams = new URLSearchParams(socketUrl.search);
 
-  const service = socketSearchParams.get('service');
+  let service = socketSearchParams.get('service');
   const page = viewerSearchParams.get('page');
+
+  // ensure service name is valid
+  const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE];
+
+  if (!service || !serviceData[service]) {
+    service = CONFIG[CONST.CONFIG.DEFAULT_SERVICE];
+  }
+
+  // register that this user is linked to this service
+  connectionList[socket.id] = service;
 
   LOG.fn(
     ['teletextserver', 'newConnection'],
@@ -429,8 +439,6 @@ function newConnection(socket) {
   } else {
     p = parseInt(`0x${page}`, 16);
   }
-
-  connectionList[socket.id] = service;     // Register that this user is linked to this service.
 
   // If there is no page=nnn in the URL then default to CONST.PAGE_MIN
   if ((p >= CONST.PAGE_MIN) && (p <= CONST.PAGE_MAX)) {
@@ -469,20 +477,20 @@ function newConnection(socket) {
   });
 
 
-  const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE];
-
   // for editable services...
-  if (service !== null) {
-    if (serviceData[service].isEditable) {
-      // ...every minute autosave the edits
-      console.log ("THIS SERVICE IS EDITABLE "+service);
-      setInterval(
-        autosave,
-        60000,
-      );
-    }
-  }
+  if (service && serviceData[service] && serviceData[service].isEditable) {
+    LOG.fn(
+      ['teletextserver', 'newConnection'],
+      `This service is editable, service=${service}`,
+      LOG.LOG_LEVEL_VERBOSE,
+    );
 
+    // ...every minute autosave the edits
+    setInterval(
+      autosave,
+      60000,
+    );
+  }
 }
 
 /** Clear the current page to blank

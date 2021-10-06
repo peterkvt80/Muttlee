@@ -172,9 +172,14 @@ function setup() {
     display = CONST.DISPLAY_FITSCREEN;
   }
 
+  // ensure service name is valid
+  if (!service || !CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][service]) {
+    service = CONFIG[CONST.CONFIG.DEFAULT_SERVICE];
+  }
 
   const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][service];
 
+  // determine socket server URL
   let serviceUrl = serviceData.url + ':' + serviceData.port;
   if ((window.location.protocol === 'http:') && (serviceData.port === 443)) {
     // if viewer is being served over http and requests a https service, prefix its URL with 'https'

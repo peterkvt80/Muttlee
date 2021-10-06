@@ -82,7 +82,7 @@ const CONFIG = {
   //     url: str,
   //     port: int,
   //
-  //     // (optional) whether the service is considered editable
+  //     // (optional) whether the service is considered editable - false if not defined
   //     isEditable: bool,
   //
   //     // (optional) a SVN repository containing the service's pages
@@ -95,7 +95,7 @@ const CONFIG = {
       name: 'Teefax',
       url: '//www.xenoxxx.com',
       port: 80,
-      isEditable: false,
+
       updateUrl: 'http://teastop.plus.com/svn/teletext/',
       updateInterval: 60,
     },
