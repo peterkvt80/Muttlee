@@ -801,9 +801,20 @@ function inputNumber() {
 
     // Now load the page
     if (pageValue.length === 3) {
-      processKey(pageValue.charAt(0));
-      processKey(pageValue.charAt(1));
-      processKey(pageValue.charAt(2));
+      const pageNumberHex = parseInt(pageValue, 16);
+
+      myPage.setPage(pageNumberHex);
+
+      const data = {
+        S: myPage.service,
+        p: pageNumberHex,
+        s: 0,
+        y: 0,
+        rowText: '',
+        id: gClientID
+      };
+
+      socket.emit('load', data);
 
       inputPage.elt.blur();
     }
