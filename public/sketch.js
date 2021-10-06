@@ -3,6 +3,7 @@ let service = CONFIG[CONST.CONFIG.DEFAULT_SERVICE];
 let controls = CONFIG[CONST.CONFIG.DEFAULT_CONTROLS];
 let display = CONFIG[CONST.CONFIG.DEFAULT_DISPLAY];
 let scale = CONFIG[CONST.CONFIG.DEFAULT_SCALE];
+let autoplay = CONFIG[CONST.CONFIG.DEFAULT_AUTOPLAY];
 let menuOpen = CONFIG[CONST.CONFIG.DEFAULT_MENU_OPEN];
 
 // remember current state values
@@ -12,7 +13,7 @@ let currentPixelDensity;
 let editMode = CONST.EDITMODE_NORMAL;
 
 // teletext
-let myPage, ttxFont;
+let myPage, ttxFont, ttxFontDH;
 
 // metrics
 let gTtxW, gTtxH;
@@ -31,10 +32,16 @@ let gClientID = null; // Our unique connection id
 // fetched service manifests
 let serviceManifests = {};
 
+// autoplay interval
+let autoplayInterval;
+
+// array of manifest page numbers, which can be reduced in random autoplay mode so that we don't repeat pages
+let manifestPageNumbers = [];
+
 // DOM
 let inputPage;
 let menuButton;
-let serviceSelector, serviceSelector2, scaleSelector, controlsSelector, displaySelector;
+let serviceSelector, serviceSelector2, scaleSelector, controlsSelector, displaySelector, autoplaySelector;
 let manifestModal, instructionsModal, aboutModal;
 
 // timer for expiring incomplete keypad entries
@@ -121,6 +128,54 @@ function startTimer() {
 }
 
 
+function autoplayChangePage() {
+  if (
+    (autoplay === CONST.AUTOPLAY_NONE) ||
+    (!serviceManifests[service] || (typeof serviceManifests[service].pages !== 'object'))
+  ) {
+    return;
+  }
+
+  // refresh manifest page numbers store?
+  if (manifestPageNumbers.length === 0) {
+    manifestPageNumbers = Object.keys(serviceManifests[service].pages);
+  }
+
+  const currentPageNumber = hex(myPage.pageNumber, 3);
+
+  let newPageNumber;
+
+  if (autoplay === CONST.AUTOPLAY_SEQUENTIAL) {
+    const currentPageNumberManifestIndex = manifestPageNumbers.indexOf(currentPageNumber);
+
+    if (currentPageNumberManifestIndex !== -1) {
+      // get next page from manifest
+      if (currentPageNumberManifestIndex >= (manifestPageNumbers.length - 1)) {
+        newPageNumber = CONST.PAGE_MIN.toString(16);
+      } else {
+        newPageNumber = manifestPageNumbers[(currentPageNumberManifestIndex + 1)];
+      }
+
+      // change to the new page number
+      changePage(newPageNumber);
+    }
+
+  } else if (autoplay === CONST.AUTOPLAY_RANDOM) {
+    // get random page from manifest
+    const randomIndex = (manifestPageNumbers.length * Math.random() | 0);
+
+    newPageNumber = manifestPageNumbers[randomIndex];
+
+    // remove chosen random page index from manifestPageNumbers store,
+    // so that we don't revisit the same page until exhaustion
+    manifestPageNumbers.splice(randomIndex, 1);
+
+    // change to the new page number
+    changePage(newPageNumber);
+  }
+}
+
+
 function preload() {
   // load font files
   ttxFont = loadFont('assets/teletext2.ttf'); // Normal
@@ -146,6 +201,9 @@ function setup() {
 
     } else if (key === 'display') {
       display = value;
+
+    } else if (key === 'autoplay') {
+      autoplay = value;
 
     } else if (key === 'page') {
       page = value;
@@ -300,6 +358,7 @@ function setup() {
   scaleSelector = document.querySelector('#scaleSelector');
   controlsSelector = document.querySelector('#controlsSelector');
   displaySelector = document.querySelector('#displaySelector');
+  autoplaySelector = document.querySelector('#autoplaySelector');
 
   manifestModal = document.querySelector('#manifest');
   instructionsModal = document.querySelector('#instructions');
@@ -326,6 +385,10 @@ function setup() {
     displaySelector.value = display;
   }
 
+  if (autoplaySelector) {
+    autoplaySelector.value = autoplay;
+  }
+
 
   // show service credit?
   if (serviceData.credit) {
@@ -346,6 +409,18 @@ function setup() {
 
   // update custom attribute on body element, indicating that rendering setup has complete
   document.body.setAttribute(CONST.ATTR_DATA_READY, true);
+
+
+  // initialise autoplay?
+  if (
+    !serviceData.isEditable &&
+    [CONST.AUTOPLAY_SEQUENTIAL, CONST.AUTOPLAY_RANDOM].includes(autoplay)
+  ) {
+    autoplayInterval = window.setInterval(
+      autoplayChangePage,
+      ((CONFIG[CONST.CONFIG.DEFAULT_AUTOPLAY_INTERVAL] || 35) * 1000),
+    );
+  }
 }
 
 
@@ -441,6 +516,34 @@ function scaleChange() {
 
     // update canvas scale
     updateScale();
+  }
+}
+
+
+function autoplayChange() {
+  if (autoplaySelector) {
+    const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][myPage.service];
+
+    autoplay = autoplaySelector.value;
+
+    if (autoplay === CONST.AUTOPLAY_NONE) {
+      // cancel currently-active autoplay
+      window.clearInterval(autoplayInterval);
+      autoplayInterval = undefined;
+
+    } else if (!serviceData.isEditable && [CONST.AUTOPLAY_SEQUENTIAL, CONST.AUTOPLAY_RANDOM].includes(autoplay)) {
+      // initialise autoplay
+      autoplayInterval = window.setInterval(
+        autoplayChangePage,
+        ((CONFIG[CONST.CONFIG.DEFAULT_AUTOPLAY_INTERVAL] || 35) * 1000),
+      );
+    }
+
+    // update custom attribute on body element
+    document.body.setAttribute(CONST.ATTR_DATA_AUTOPLAY, autoplay);
+
+    // update the URL with the current autoplay (without reloading the page)
+    updateLocationUrl('autoplay', autoplay);
   }
 }
 
@@ -601,6 +704,7 @@ function fastext(index) {
 
     if (createPage) {   // Special case
       socket.emit('create', data);
+
     } else {
       socket.emit('load', data);
     }
@@ -804,6 +908,7 @@ function setBlank(data) {   // 'blank'
   setDescription(data);
 }
 
+
 function inputNumber() {
   LOG.fn(
     ['sketch', 'inputNumber'],
@@ -820,33 +925,22 @@ function inputNumber() {
       LOG.LOG_LEVEL_INFO,
     );
 
-    // Now load the page
+    // if a 3 digit page number has been entered...
     if (pageValue.length === 3) {
-      const pageNumberHex = parseInt(pageValue, 16);
+      // change to the new page number
+      changePage(pageValue);
 
-      myPage.setPage(pageNumberHex);
-
-      const data = {
-        S: myPage.service,
-        p: pageNumberHex,
-        s: 0,
-        y: 0,
-        rowText: '',
-        id: gClientID
-      };
-
-      socket.emit('load', data);
-
+      // blur the page number input DOM element
       inputPage.elt.blur();
     }
   }
 }
 
+
 /** built in function.
- *  Fires on all key presses
+ *  Fires on all key presses - This is called before keyTyped
  */
-function keyPressed() // This is called before keyTyped
-{
+function keyPressed() {
   LOG.fn(
     ['sketch', 'keyPressed'],
     `k=${keyCode}`,
@@ -1621,6 +1715,24 @@ function toggleMenu() {
 }
 
 
+function changePage(pageNumber) {
+  const pageNumberHex = parseInt(pageNumber, 16);
+
+  myPage.setPage(pageNumberHex);
+
+  const data = {
+    S: myPage.service,
+    p: pageNumberHex,
+    s: 0,
+    y: 0,
+    rowText: '',
+    id: gClientID
+  };
+
+  socket.emit('load', data);
+}
+
+
 function selectManifestPage(event) {
   event.preventDefault();
 
@@ -1635,21 +1747,11 @@ function selectManifestPage(event) {
       }
     }
 
+    // get selected page number
     const pageNumber = target.getAttribute('data-page');
-    const pageNumberHex = parseInt(pageNumber, 16);
 
-    myPage.setPage(pageNumberHex);
-
-    const data = {
-      S: myPage.service,
-      p: pageNumberHex,
-      s: 0,
-      y: 0,
-      rowText: '',
-      id: gClientID
-    };
-
-    socket.emit('load', data);
+    // change to selected new page number
+    changePage(pageNumber);
 
     // unfocus the clicked DOM link element
     event.target.blur();
@@ -1747,7 +1849,7 @@ function reloadService(event) {
   const params = new URLSearchParams(location.search);
   params.delete('page');      // don't carry current page number over when changing service
 
-  window.location.href = `${location.pathname}?${params}`;
+  window.location.href = `${location.pathname}${params.toString() ? `?${params}` : ''}`;
 
   return false;
 }

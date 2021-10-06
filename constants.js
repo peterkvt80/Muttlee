@@ -23,6 +23,7 @@ const CONST = {
   ATTR_DATA_CONTROLS: 'data-controls',
   ATTR_DATA_DISPLAY: 'data-display',
   ATTR_DATA_SCALE: 'data-scale',
+  ATTR_DATA_AUTOPLAY: 'data-autoplay',
   ATTR_DATA_GRID: 'data-grid',
   ATTR_DATA_MENU_OPEN: 'data-menu-open',
 
@@ -46,6 +47,11 @@ const CONST = {
   CONTROLS_ZAPPER: 'zapper',
   CONTROLS_MINIMAL: 'minimal',
   CONTROLS_BIGSCREEN: 'bigscreen',
+
+  // autoplay modes
+  AUTOPLAY_NONE: 'none',
+  AUTOPLAY_SEQUENTIAL: 'sequential',
+  AUTOPLAY_RANDOM: 'random',
 
   // services
   // (these ID's are also the name of the subdirectories of
@@ -117,6 +123,10 @@ const CONST = {
     DEFAULT_DISPLAY: 'DEFAULT_DISPLAY',
     DEFAULT_MENU_OPEN: 'DEFAULT_MENU_OPEN',
     DEFAULT_SCALE: 'DEFAULT_SCALE',
+    DEFAULT_AUTOPLAY: 'DEFAULT_AUTOPLAY',
+
+    DEFAULT_AUTOPLAY_INTERVAL: 'DEFAULT_AUTOPLAY_INTERVAL',
+    DEFAULT_AUTOSAVE_INTERVAL: 'DEFAULT_AUTOSAVE_INTERVAL',
 
     OPEN_SERVICE_IN_NEW_WINDOW: 'OPEN_SERVICE_IN_NEW_WINDOW',
 

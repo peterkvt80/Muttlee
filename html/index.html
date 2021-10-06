@@ -145,6 +145,21 @@
               <option value="2">2x</option>
             </select>
           </div>
+
+          <div class="settingsRow settingsRow--autoplay">
+            <label for="autoplaySelector">
+              Autoplay
+            </label>
+            <select
+                id="autoplaySelector"
+                class="select select--autoplay"
+                onchange="autoplayChange();"
+            >
+              <option value="none">No Autoplay</option>
+              <option value="sequential">Sequential</option>
+              <option value="random">Random</option>
+            </select>
+          </div>
         </div>
 
         <div id="gridSelect" class="menuSection">

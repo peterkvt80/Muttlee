@@ -1654,7 +1654,7 @@ button {
             flex-direction: column;
         }
 
-        // edit mode grid
+        // show edit mode grid select
         #gridSelect {
             display: flex;
 
@@ -1667,6 +1667,11 @@ button {
                     display: none;
                 }
             }
+        }
+
+        // hide autoplay select
+        .settingsRow--autoplay {
+            display: none;
         }
     }
 

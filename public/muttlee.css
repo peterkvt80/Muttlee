@@ -1441,6 +1441,10 @@ button:focus, button:hover {
   display: none;
 }
 
+[data-service-editable="true"] #menu .settingsRow--autoplay {
+  display: none;
+}
+
 [data-service-editable="true"][data-grid="true"] #menu #gridSelect .controlsButton .gridSelectButtonText--show {
   display: none;
 }

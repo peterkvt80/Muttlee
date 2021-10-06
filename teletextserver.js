@@ -532,7 +532,7 @@ function newConnection(socket) {
     // ...every minute autosave the edits
     setInterval(
       autosave,
-      60000,
+      ((CONFIG[CONST.CONFIG.DEFAULT_AUTOSAVE_INTERVAL] || 60) * 1000),
     );
   }
 }
