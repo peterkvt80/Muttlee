@@ -456,7 +456,9 @@ function setSubPage(data) {
     return;
   }
 
-  myPage.setSubPage(parseInt(data.line))
+  myPage.setSubPage(
+    parseInt(data.line)
+  );
 }
 
 /** We MUST be sent the connection ID or we won't be able to display anything
