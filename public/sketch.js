@@ -794,7 +794,12 @@ function setRow(r) {
 function setBlank(data) {   // 'blank'
   if (!matchpage(data)) return;
   if (data.id !== gClientID && gClientID !== null) return;  // Not for us?
+
   myPage.setBlank();
+
+  // clear the description too
+  data.desc = '';
+  setDescription(data);
 }
 
 function inputNumber() {

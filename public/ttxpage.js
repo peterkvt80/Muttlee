@@ -36,7 +36,7 @@ TTXPAGE = function() {
   this.cyanLink = CONST.PAGE_MIN;
   this.indexLink = CONST.PAGE_MIN;
   this.editMode = CONST.EDITMODE_NORMAL;
-  this.description = 'none';
+  this.description = '';
   this.showGrid = false;
 
   // this.timer=7 // This is global. Replaced by a per page timer
