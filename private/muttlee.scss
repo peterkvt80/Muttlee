@@ -1641,6 +1641,22 @@ button {
 
 
 
+// service manifest available...
+#menu #manifestSelect,
+.settingsRow--autoplay {
+    display: none;
+}
+
+[data-service-manifest="true"] {
+    #menu #manifestSelect,
+    .settingsRow--autoplay {
+        display: flex;
+    }
+}
+
+
+
+
 // editable services...
 #menu #gridSelect {
     display: none;
@@ -1654,7 +1670,7 @@ button {
             flex-direction: column;
         }
 
-        // edit mode grid
+        // show edit mode grid select
         #gridSelect {
             display: flex;
 
@@ -1667,6 +1683,11 @@ button {
                     display: none;
                 }
             }
+        }
+
+        // hide autoplay select
+        .settingsRow--autoplay {
+            display: none !important;
         }
     }
 
