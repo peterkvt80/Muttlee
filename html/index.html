@@ -151,9 +151,9 @@
               Autoplay
             </label>
             <select
-                id="autoplaySelector"
-                class="select select--autoplay"
-                onchange="autoplayChange();"
+              id="autoplaySelector"
+              class="select select--autoplay"
+              onchange="autoplayChange();"
             >
               <option value="none">No Autoplay</option>
               <option value="sequential">Sequential</option>
@@ -279,6 +279,12 @@
               value="100"
               onchange="inputNumber();"
             />
+
+            <button id="randomPage" onclick="randomPage(event);" title="Random page [d]">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80">
+                <path d="M0 0v16h64V0H0zm64 16v16h16V16H64zm0 16H16v32h16V48h32V32zM32 64v16h16V64H32z"/>
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -312,7 +318,10 @@
       <div class="manifestContent">
         <header>
           <h2>
-            Manifest
+            <span>
+              Manifest
+            </span>
+            <span id="lastUpdated"></span>
           </h2>
 
           <button id="manifestCloseButton" onclick="toggleManifest();">

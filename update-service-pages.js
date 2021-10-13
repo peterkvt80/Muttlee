@@ -200,7 +200,7 @@ async function updateServices() {
     // copy service pages to serve directory, renamed to be compatible with server expectations
     if (!options.silent) {
       console.log(
-        `\nCopying and renaming '${serviceId}' service page files...`
+        `\nChecking '${serviceId}' for updates...`
       );
     }
 
@@ -271,7 +271,7 @@ async function updateServices() {
           if (recalculatedManifestPages[pageNumber]) {
             console.log(
               colorette.redBright(
-                `p${pageNumber} already defined (${recalculatedManifestPages[pageNumber].f}), will not overwrite with this file (${filename})`
+                `ERROR: p${pageNumber} already defined in ${recalculatedManifestPages[pageNumber].f}, please fix this in ${filename} (change to an unused page number)`
               )
             );
 
