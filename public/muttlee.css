@@ -1,11 +1,11 @@
 @font-face {
   font-family: 'Teletext2';
-  src: url("/assets/teletext2.ttf") format("truetype");
+  src: url("/assets/teletext2.woff2") format("woff2"), url("/assets/teletext2.woff") format("woff"), url("/assets/teletext2.otf") format("opentype"), url("/assets/teletext2.ttf") format("truetype");
 }
 
 @font-face {
   font-family: 'Teletext4';
-  src: url("/assets/teletext4.ttf") format("truetype");
+  src: url("/assets/teletext4.woff2") format("woff2"), url("/assets/teletext4.woff") format("woff"), url("/assets/teletext4.otf") format("opentype"), url("/assets/teletext4.ttf") format("truetype");
 }
 
 html, body {
@@ -507,9 +507,39 @@ button:focus, button:hover {
   margin: 40px 0;
 }
 
+#controlsRow label {
+  margin-right: 16px;
+}
+
 #controlsRow .select--service {
   box-sizing: content-box;
   height: 50px;
+}
+
+[data-scale="1"] #controlsRow .select--service {
+  max-width: 172px;
+}
+
+#controlsRow #pageNumberControls,
+#controlsRow #serviceSelectorControls {
+  display: flex;
+  align-items: center;
+}
+
+#controlsRow #randomPage {
+  width: 58px;
+  height: 58px;
+  padding: 14px 0 14px 14px;
+  background: transparent;
+}
+
+#controlsRow #randomPage svg {
+  width: 100%;
+  height: 100%;
+}
+
+#controlsRow #randomPage svg path {
+  fill: #ffffff;
 }
 
 #keypadControls {
@@ -537,6 +567,19 @@ button:focus, button:hover {
   font-size: 100%;
   text-align: left;
   font-family: "Teletext4", "Arial", "Helvetica", sans-serif;
+  line-height: 1.3;
+}
+
+[data-scale="1"] #description {
+  max-width: 576px;
+}
+
+[data-scale="1.5"] #description {
+  max-width: 864px;
+}
+
+[data-scale="1.5"] #description {
+  max-width: 1152px;
 }
 
 #credit {
@@ -602,6 +645,7 @@ button:focus, button:hover {
     height: 100vh;
     top: 0;
     left: 0;
+    padding: 20px;
     z-index: 1000;
   }
 }
@@ -613,8 +657,35 @@ button:focus, button:hover {
 }
 
 .manifest .manifestContent header h2 {
-  margin: -6px 0 16px 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin: -6px 32px 16px 0;
   font-size: 42px;
+}
+
+@media only screen and (max-width: 900px) {
+  .manifest .manifestContent header h2 {
+    flex-direction: column;
+    align-items: initial;
+  }
+}
+
+.manifest .manifestContent header h2 span {
+  display: inline-flex;
+}
+
+.manifest .manifestContent header h2 span#lastUpdated {
+  font-size: 24px;
+  font-weight: 400;
+}
+
+@media only screen and (max-width: 900px) {
+  .manifest .manifestContent header h2 span#lastUpdated {
+    margin: 10px 0;
+  }
 }
 
 .manifest .manifestContent header #manifestCloseButton {
@@ -708,6 +779,12 @@ button:focus, button:hover {
   text-decoration: none;
 }
 
+@media only screen and (max-width: 900px) {
+  .manifest .manifestContent .manifestContentInner ul li a {
+    margin-left: 32px;
+  }
+}
+
 .manifest .manifestContent .manifestContentInner ul li a:before {
   content: '\0025AB';
   position: absolute;
@@ -751,6 +828,7 @@ button:focus, button:hover {
 
 .manifest--visible {
   display: flex;
+  z-index: 1000;
 }
 
 .manifest--visible .manifestContent {
@@ -1421,6 +1499,7 @@ button:focus, button:hover {
 }
 
 #menu #manifestSelect,
+#randomPage,
 .settingsRow--autoplay {
   display: none;
 }
@@ -1428,6 +1507,10 @@ button:focus, button:hover {
 [data-service-manifest="true"] #menu #manifestSelect,
 [data-service-manifest="true"] .settingsRow--autoplay {
   display: flex;
+}
+
+[data-service-manifest="true"] #randomPage {
+  display: inline-block;
 }
 
 #menu #gridSelect {

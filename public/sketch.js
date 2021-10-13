@@ -470,6 +470,27 @@ function serviceChange(event) {
 }
 
 
+function randomPage(event) {
+  if (event) {
+    event.preventDefault();
+  }
+
+  if (serviceManifests[service] && serviceManifests[service].pages) {
+    const manifestPageNumbers = Object.keys(serviceManifests[service].pages);
+
+    // get random page from manifest
+    const randomIndex = (manifestPageNumbers.length * Math.random() | 0);
+
+    // change to the new page number
+    changePage(
+      manifestPageNumbers[randomIndex]
+    );
+  }
+
+  return false;
+}
+
+
 function controlsChange() {
   if (controlsSelector) {
     controls = controlsSelector.value;
@@ -1212,6 +1233,11 @@ function processKey(keyPressed)
       // forward one page
       kfwd();
       return;
+
+    } else if (keyPressed === 'd') {
+      // random page
+      randomPage();
+      return;
     }
 
     // Numbers are used for the page selection
@@ -1772,6 +1798,41 @@ function selectManifestPage(event) {
 
 function renderManifestData(data) {
   if (data.pages) {
+    // update header lastUpdated timestamp display
+    const manifestLastUpdated = manifestModal.querySelector('#lastUpdated');
+
+    if (data.lastUpdated && manifestLastUpdated) {
+      const lastUpdatedDate = new Date(data.lastUpdated);
+      let displayLastUpdated = '';
+
+      if (Intl && Intl.RelativeTimeFormat) {
+        const deltaDays = Math.ceil((lastUpdatedDate.getTime() - Date.now()) / (1000 * 3600 * 24));
+
+        const rtf = new Intl.RelativeTimeFormat(
+          'en',
+          {
+            localeMatcher: 'best fit',
+            numeric: 'auto',
+            style: 'long',
+          }
+        );
+
+        displayLastUpdated = rtf.format(deltaDays, 'day');
+
+      } else {
+        const lastUpdatedDateDay = lastUpdatedDate.getDate().toString().padStart(2, '0');
+        const lastUpdatedDateMonth = (lastUpdatedDate.getMonth() + 1).toString().padStart(2, '0');
+        const lastUpdatedDateYear = lastUpdatedDate.getFullYear().toString();
+
+        displayLastUpdated = `${lastUpdatedDateDay}/${lastUpdatedDateMonth}/${lastUpdatedDateYear}`;
+      }
+
+      manifestLastUpdated.innerText = `@ ${displayLastUpdated}`;
+      manifestLastUpdated.setAttribute('title', `lastUpdated: ${data.lastUpdated}`);
+    }
+
+
+    // update main modal content...
     const manifestContentInner = manifestModal.querySelector('.manifestContentInner');
 
     if (manifestContentInner) {
