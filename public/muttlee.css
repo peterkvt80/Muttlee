@@ -578,7 +578,7 @@ button:focus, button:hover {
   max-width: 864px;
 }
 
-[data-scale="1.5"] #description {
+[data-scale="2"] #description {
   max-width: 1152px;
 }
 
