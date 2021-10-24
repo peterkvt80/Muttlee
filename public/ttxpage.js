@@ -290,7 +290,7 @@ TTXPAGE = function() {
 
     if (!(this.holdMode || this.editMode !== CONST.EDITMODE_NORMAL) && carouselReady) {     // Only cycle if we are not in hold mode or edit
       // carousel timing
-      if (tickCounter % ((1 + round(this.metadata[this.subPage].timer)) * 2) == 0) {    // Times 2 because the tick is 2Hz.
+      if (tickCounter % ((1 + Math.round(this.metadata[this.subPage].timer)) * 2) == 0) {    // Times 2 because the tick is 2Hz.
         this.nextSubpage();
 
         LOG.fn(
@@ -754,8 +754,10 @@ function Row(ttxpage, page, y, str) {
           );
         }
 
-      } else {    // If editing, then show the page/row number
-        // txt=replace(txt,'E'+this.pagetext+'    ',0)            // Show the page/subpage being edited
+      } else {
+        // If editing, then show the page/row number
+        // txt=replace(txt,'E'+this.pagetext+'    ',0)
+        // Show the page/subpage being edited
         let highlight = '\003'; // Edit mode is yellow
         if (editMode === CONST.EDITMODE_ESCAPE) {
           highlight = '\002'; // Escape mode is green
@@ -924,7 +926,7 @@ function Row(ttxpage, page, y, str) {
       if (printable && (flashState || !flashMode) && !concealed) {
         fill(fgColor);          // Normal
 
-        if (textmode || (ch.charCodeAt() >= 0x40 && ch.charCodeAt() < 0x60)) {
+        if (textmode || (ch.charCodeAt(0) >= 0x40 && ch.charCodeAt(0) < 0x60)) {
           ch = this.mapchar(ch);
 
           if (changed[i]) {

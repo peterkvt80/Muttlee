@@ -385,7 +385,7 @@ app.get(
 var initialPage;
 
 // Associative array links user id to service: connectionList['/#NODc31jxxFTSm_SaAAAC']=CONST.SERVICE_DIGITISER
-var connectionList = new Object();
+var connectionList = {};
 
 var missingPage = 0;
 
@@ -463,9 +463,9 @@ function newConnection(socket) {
   const page = viewerSearchParams.get('page');
 
   // ensure service name is valid
-  const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE];
+  const servicesData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE];
 
-  if (!service || !serviceData[service]) {
+  if (!service || !servicesData[service]) {
     service = CONFIG[CONST.CONFIG.DEFAULT_SERVICE];
   }
 
@@ -526,7 +526,7 @@ function newConnection(socket) {
 
 
   // for editable services...
-  if (service && serviceData[service] && serviceData[service].isEditable) {
+  if (service && servicesData[service] && servicesData[service].isEditable) {
     LOG.fn(
       ['teletextserver', 'newConnection'],
       `This service is editable, service=${service}`,
@@ -540,6 +540,7 @@ function newConnection(socket) {
     );
   }
 }
+
 
 /** Clear the current page to blank
  */
@@ -557,6 +558,7 @@ function doClearPage(data) {
 
   io.sockets.emit('blank', data); // Clear down the old data on te clients
 }
+
 
 /** Create the page and load it
  */
@@ -576,6 +578,7 @@ function doCreate(data) {
   );
 }
 
+
 function doInitialLoad(data) {
   LOG.fn(
     ['teletextserver', 'doInitialLoad'],
@@ -587,6 +590,123 @@ function doInitialLoad(data) {
 
   doLoad(data);
 }
+
+
+function processServicePageLine(serviceData, data, line) {
+  let ix;
+  let row;
+
+  if (line.indexOf('PN') === 0) {
+    // @todo: Need to implement carousels
+    data.line = line.substring(6);
+
+    io.sockets.emit('subpage', data);
+
+  } else if (line.indexOf('DE,') === 0) {   // Detect a description row
+    data.desc = line.substring(3);
+
+    // if page has page not found signal set, append the failed page number to the page description display
+    if (data.x === CONST.SIGNAL_PAGE_NOT_FOUND) {
+      missingPage = data.p.toString(16);
+
+      data.desc += ` - page ${missingPage}`;
+    }
+
+    io.sockets.emit('description', data);
+
+    LOG.fn(
+      ['teletextserver', 'processServicePageLine'],
+      `Sending desc=${data.desc}`,
+      LOG.LOG_LEVEL_VERBOSE,
+    );
+
+  } else if (line.indexOf('FL,') === 0) {    // Detect a Fastext link
+    let ch;
+
+    ix = 3;
+    data.fastext = [];
+
+    for (let link = 0; link < 4; link++) {
+      let flink = '';
+      for (ch = line.charAt(ix++); ch !== ',';) {
+        flink = flink + ch;
+        ch = line.charAt(ix++);
+      }
+
+      data.fastext[link] = flink;
+    }
+
+    // if page has page not found signal set...
+    if (data.x === CONST.SIGNAL_PAGE_NOT_FOUND) {
+      // ...and service is editable, change the yellow fastext link to allow creating of a new page at this page number
+      if (serviceData && serviceData.isEditable) {
+        data.fastext[2] = `1${missingPage}`;
+      }
+    }
+
+    io.sockets.emit('fastext', data);
+
+    return data;
+
+  } else if (line.indexOf('CT,') === 0) {     // Counter timer
+    // Hack: Send the time in Fastext[0]
+    data.fastext = [];
+    data.fastext[0] = line[3];  // @todo: Need allow numbers greater than 9!
+
+    io.sockets.emit('timer', data);
+
+    return data;
+
+  } else if (line.indexOf('OL,') === 0) {    // Detect a teletext row
+    const arr = (new RegExp(/^[0-9]{1,2}/)).exec(line.slice(3, 5));
+
+    row = parseInt(arr[0], 10);
+    ix = (4 + arr[0].length);
+
+  } else {
+    return data; // Not a row. Not interested
+  }
+
+  data.y = row;
+
+  // Here is a line at a time
+  let result = line.substring(ix); // snip out the row data
+
+  // Pad strings shorter than 40 characters
+  if (result.length < 40) {
+    result = result.padEnd(CONFIG[CONST.CONFIG.NUM_COLUMNS]);
+  }
+
+  // Special hack for 404 page. Replace this field with the missing page number
+  // @todo Different services need different permissions
+  if (
+    (data.S === CONST.SERVICE_WIKI) &&
+    (data.p === CONST.PAGE_404) &&
+    (row === 22)
+  ) {
+    const first = result.substring(0, 32);
+    const second = result.substr(35);
+
+    result = first + missingPage + second;
+  }
+
+  data.k = '?'; // @todo Not sure what these values should be, if anything
+  data.x = -1;
+  data.y = row; // The row that we are sending out
+
+  if ((!serviceData || !serviceData.forceServiceHeader) || (row !== 0)) {
+    result = DeEscapePrestel(result); // remove Prestel escapes
+
+    data.rowText = result;
+  }
+
+  //
+  io.sockets.emit('row', data);
+
+  return data;
+}
+
+
 
 function doLoad(data) {
   if (typeof data.p !== 'number') {
@@ -613,7 +733,7 @@ function doLoad(data) {
 
 
   // shorthand service data object
-  const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE];
+  const servicesData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE];
 
 
   // determine what to serve...
@@ -623,10 +743,8 @@ function doLoad(data) {
     // determine 404 page file to serve...
     filename = CONFIG[CONST.CONFIG.PAGE_404_PATH];
 
-    const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE];
-
     // if service is editable, serve editable 404 page
-    if (serviceData[data.S] && serviceData[data.S].isEditable) {
+    if (servicesData[service] && servicesData[service].isEditable) {
       filename = CONFIG[CONST.CONFIG.PAGE_404_EDITABLE_PATH];
     }
 
@@ -746,117 +864,11 @@ function doLoad(data) {
   });
 
   rl.on('line', function (line) {
-    let ix;
-    let row;
-
-    if (line.indexOf('PN') === 0) {
-      // Need to implement carousels    @todo
-      data.line = line.substring(6);
-
-      io.sockets.emit('subpage', data);
-
-    } else if (line.indexOf('DE,') === 0) {   // Detect a description row
-      data.desc = line.substring(3);
-
-      // if page has page not found signal set, append the failed page number to the page description display
-      if (data.x === CONST.SIGNAL_PAGE_NOT_FOUND) {
-        missingPage = data.p.toString(16);
-
-        data.desc += ` - page ${missingPage}`;
-      }
-
-      io.sockets.emit('description', data);
-
-      LOG.fn(
-        ['teletextserver', 'doLoad'],
-        `Sending desc=${data.desc}`,
-        LOG.LOG_LEVEL_VERBOSE,
-      );
-
-    } else if (line.indexOf('FL,') === 0) {    // Detect a Fastext link
-      let ch;
-
-      ix = 3;
-      data.fastext = [];
-
-      for (let link = 0; link < 4; link++) {
-        let flink = '';
-        for (ch = line.charAt(ix++); ch !== ',';) {
-          flink = flink + ch;
-          ch = line.charAt(ix++);
-        }
-
-        data.fastext[link] = flink;
-      }
-
-      // if page has page not found signal set...
-      if (data.x === CONST.SIGNAL_PAGE_NOT_FOUND) {
-        // ...and service is editable, change the yellow fastext link to allow creating of a new page at this page number
-        const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE];
-
-        if (serviceData[data.S] && serviceData[data.S].isEditable) {
-          data.fastext[2] = `1${missingPage}`;
-        }
-      }
-
-      io.sockets.emit('fastext', data);
-
-      return;
-
-    } else if (line.indexOf('CT,') === 0) {     // Counter timer
-      // Hack: Send the time in Fastext[0]
-      data.fastext = [];
-      data.fastext[0] = line[3];  // @todo: Need allow numbers greater than 9!
-
-      io.sockets.emit('timer', data);
-
-      return;
-
-    } else if (line.indexOf('OL,') === 0) {    // Detect a teletext row
-      // const pageLineContent = line.slice(3);
-      const arr = (new RegExp(/^[0-9]{1,2}/)).exec(line.slice(3, 5));
-
-      row = parseInt(arr[0], 10);
-      ix = (4 + arr[0].length);
-
-    } else {
-      return; // Not a row. Not interested
-    }
-
-    data.y = row;
-
-    // Here is a line at a time
-    let result = line.substring(ix); // snip out the row data
-
-    // Pad strings shorter than 40 characters
-    if (result.length < 40) {
-      result = result.padEnd(CONFIG[CONST.CONFIG.NUM_COLUMNS]);
-    }
-
-    // Special hack for 404 page. Replace this field with the missing page number
-    // @todo Different services need different permissions
-    if (
-      (data.S === CONST.SERVICE_WIKI) &&
-      (data.p === CONST.PAGE_404) &&
-      (row === 22)
-    ) {
-      const first = result.substring(0, 32);
-      const second = result.substr(35);
-
-      result = first + missingPage + second;
-    }
-
-    data.k = '?'; // @todo Not sure what these values should be, if anything
-    data.x = -1;
-    data.y = row; // The row that we are sending out
-
-    if ((!serviceData[service] || !serviceData[service].forceServiceHeader) || (row !== 0)) {
-      result = DeEscapePrestel(result); // remove Prestel escapes
-
-      data.rowText = result;
-    }
-
-    io.sockets.emit('row', data);
+    data = processServicePageLine(
+      servicesData[service],
+      data,
+      line,
+    );
   });
 
   rl.on(
@@ -874,6 +886,7 @@ function doLoad(data) {
     }
   );
 }
+
 
 /** Finds the service with the required name.
 * @return Index of service, or false
@@ -896,10 +909,10 @@ function findService(name) {
 /** Create a page from template number data.p
  */
 function createPage(data, callback) {
-  const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE];
+  const servicesData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE];
 
   // don't create page if service is not defined, or is not a known service
-  if (!data.S || !serviceData[data.S]) {
+  if (!data.S || !servicesData[data.S]) {
     LOG.fn(
       ['teletextserver', 'createPage'],
       `Error: Could not create page, service=${data.S} unknown`,
@@ -910,7 +923,7 @@ function createPage(data, callback) {
   }
 
   // don't create page if service is not editable
-  if (!serviceData[data.S].isEditable) {
+  if (!servicesData[data.S].isEditable) {
     LOG.fn(
       ['teletextserver', 'createPage'],
       `Error: Could not create page, service=${data.S} is not editable`,
