@@ -2,6 +2,7 @@
 // page class defines a page and subpages.
 // row class defines a teletext row.
 
+
 // Timer for flashing cursor and text
 let flashState = false;
 let tickCounter = 0; // For timing carousels (in steps of half a second)
@@ -22,12 +23,18 @@ function MetaData(displayTiming) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+// cache shorthand reference to services data
+const servicesData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE];
+
+
 TTXPAGE = function() {
   // Basic page properties
   this.pageNumber = CONST.PAGE_MIN;
   this.subPage = 0; // This is the integer to index the current sub page
   this.cursor = new TTXCURSOR();
   this.service = undefined;
+  this.serviceData = {};
 
   // Misc page properties
   this.redLink = 0x900;
@@ -65,10 +72,19 @@ TTXPAGE = function() {
     this.cursor.hide = (mode === CONST.EDITMODE_NORMAL);
   };
 
+  this.getServiceHeader = function () {
+    // allow a custom header title (as defined in config.js)
+    const titleStr = CONFIG[CONST.CONFIG.HEADER_TITLE].toUpperCase().padStart(10, ' ');
+
+    return `Pnn ${titleStr} mpp DAY dd MTH  hh:nn.ss`;
+  };
+
   // @todo check range
   this.init = function (number, service) {
     this.pageNumber = number;
+
     this.service = service;
+    this.serviceData = servicesData[service];
 
     this.addPage(number);
   };
@@ -138,17 +154,14 @@ TTXPAGE = function() {
   this.addPage = function(number) {
     this.rows = [];
 
-    // allow a custom header title (as defined in config.js)
-    const titleStr = CONFIG[CONST.CONFIG.HEADER_TITLE].toUpperCase().padStart(10, ' ');
-
     // As rows go from 0 to 31 and pages start at 100, we can use the same parameter for both
     this.rows.push(
-      new Row(number, 0, 'Pnn ' + titleStr + ' mpp DAY dd MTH   hh:nn.ss')
+      new Row(this, number, 0, this.getServiceHeader())
     );
 
     for (let i = 1; i < 26; i++) {
       this.rows.push(
-        new Row(number, i, ''.padStart(CONFIG[CONST.CONFIG.NUM_COLUMNS]))
+        new Row(this, number, i, ''.padStart(CONFIG[CONST.CONFIG.NUM_COLUMNS]))
       );
     }
 
@@ -492,10 +505,6 @@ TTXPAGE = function() {
     this.metadata = [];
 
     this.addPage(this.pageNumber);
-
-//    for (let y=1;y<this.rows.length;y++)
-    //this.rows[y].setrow('                                        ')
-    //this.rows[0].setrow('Pnn     CEEFAX 1 100 Sun 08 Jan 12:58/57') // @todo Add proper header control
   };
 
   /**
@@ -573,14 +582,16 @@ TTXPAGE = function() {
 
 /** \return true if while in graphics mode it is a graphics character */
 function isMosaic(ch) {
-  ch = ch.charCodeAt() & 0x7f;
+  ch = ch.charCodeAt(0) & 0x7f;
 
   return (ch >= 0x20 && ch < 0x40) || ch >= 0x60;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-function Row(page, y, str) {
+function Row(ttxpage, page, y, str) {
+  this.ttxpage = ttxpage;
+
   this.page = page;
   this.row = y;
   this.txt = str;
@@ -609,6 +620,11 @@ function Row(page, y, str) {
     // Special treatment for row 0
     if (this.row === 0) {
       if ((cpos < 0) && (editMode === CONST.EDITMODE_NORMAL)) {
+        // force render service header (overriding page header)?
+        if (this.ttxpage.serviceData.forceServiceHeader) {
+          txt = this.ttxpage.getServiceHeader();
+        }
+
         // This is the header row and we are NOT editing
         let leftSpacing = 4;
 
@@ -644,6 +660,7 @@ function Row(page, y, str) {
           txt = replace(txt, 'P' + this.pagetext + ''.padStart(leftSpacing, ' '), 0);
         }
 
+
         // Substitute mpp for the page number
         let ix = txt.indexOf('%%#');
         if (ix < 0) {
@@ -653,13 +670,20 @@ function Row(page, y, str) {
           txt = replace(txt, this.page.toString(16), ix);
         }
 
+
+        // determine the seconds separator to display
+        const secondsSeparator = this.ttxpage.serviceData.secondsSeparator || '.';
+
+        // put the current date / time into the header
+        const currentDateObj = new Date();
+
         // Substitute dd for the day 1..31 (or %d)
         ix = txt.indexOf('%d');
         if (ix < 0) {
           ix = txt.indexOf('dd');
         }
         if (ix > 0) {
-          txt = replace(txt, nf(day(), 2), ix);
+          txt = replace(txt, currentDateObj.getDate().toString().padStart(2, '0'), ix);
         }
 
         // Substitute DAY for the three letter abbreviated day
@@ -669,7 +693,7 @@ function Row(page, y, str) {
         }
         if (ix > 0) {
           let week = new Date().getDay();
-          let str = "MonTueWedThuFriSatSun".substr((week - 1) * 3, 3);
+          let str = 'MonTueWedThuFriSatSun'.substr((week - 1) * 3, 3);
           txt = replace(txt, str, ix);
         }
 
@@ -680,21 +704,21 @@ function Row(page, y, str) {
           ix = txt.indexOf('MTH');
         }
         if (ix > 0) {
-          let str = "JanFebMarAprMayJunJulAugSepOctNovDec".substr((month() - 1) * 3, 3);
+          let str = 'JanFebMarAprMayJunJulAugSepOctNovDec'.substr((currentDateObj.getMonth() * 3), 3);
           txt = replace(txt, str, ix);
         }
 
         // Substitute %m for two digit month
         ix = txt.indexOf('%m');
         if (ix > 0) {
-          txt = replace(txt, nf(month(), 2), ix);
+          txt = replace(txt, (currentDateObj.getMonth() + 1).toString().padStart(2, '0'), ix);
         }
 
         // Substitute %y for two digit year
         ix = txt.indexOf('%y');
 
         if (ix > 0) {
-          let y = nf(year() % 100, 2);
+          let y = (currentDateObj.getFullYear() % 100).toString().padStart(2, '0');
           txt = replace(txt, y, ix);
         }
 
@@ -704,7 +728,7 @@ function Row(page, y, str) {
           ix = txt.indexOf('hh');
         }
         if (ix > 0) {
-          txt = replace(txt, nf(hour(), 2), ix);
+          txt = replace(txt, currentDateObj.getHours().toString().padStart(2, '0'), ix);
         }
 
         // Substitute nn for the two digit minutes
@@ -714,7 +738,7 @@ function Row(page, y, str) {
         }
 
         if (ix > 0) {
-          txt = replace(txt, nf(minute(), 2), ix);
+          txt = replace(txt, currentDateObj.getMinutes().toString().padStart(2, '0'), ix);
         }
 
         // Substitute ss for the two digit seconds
@@ -723,7 +747,11 @@ function Row(page, y, str) {
           ix = txt.indexOf('ss');
         }
         if (ix > 0) {
-          txt = replace(txt, nf(second(), 2), ix);
+          txt = replace(
+            txt,
+            `${secondsSeparator}${currentDateObj.getSeconds().toString().padStart(2, '0')}`,
+            (ix - 1),
+          );
         }
 
       } else {    // If editing, then show the page/row number
@@ -753,7 +781,7 @@ function Row(page, y, str) {
             m = (m + offset * 30) % 60;
           }
 
-          txt = replace(txt, nf(h, 2) + ':' + nf(m, 2), ix);
+          txt = replace(txt, `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`, ix);
         }
       }
     }
@@ -789,6 +817,7 @@ function Row(page, y, str) {
 
     for (let i = 0; i < CONFIG[CONST.CONFIG.NUM_COLUMNS]; i++) {
       let ch = txt.charAt(i);
+
       let ic = txt.charCodeAt(i) & 0x7f;
       let printable = false;
 

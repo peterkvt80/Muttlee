@@ -203,6 +203,10 @@ app.use(
               name: configKeyData[i].name,
               url: configKeyData[i].url,
               port: configKeyData[i].port,
+
+              secondsSeparator: configKeyData[i].secondsSeparator || false,
+              forceServiceHeader: configKeyData[i].forceServiceHeader || false,
+
               isEditable: configKeyData[i].isEditable || false,
               credit: configKeyData[i].credit,
             };
@@ -608,6 +612,10 @@ function doLoad(data) {
   }
 
 
+  // shorthand service data object
+  const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE];
+
+
   // determine what to serve...
   let filename;
 
@@ -738,6 +746,9 @@ function doLoad(data) {
   });
 
   rl.on('line', function (line) {
+    let ix;
+    let row;
+
     if (line.indexOf('PN') === 0) {
       // Need to implement carousels    @todo
       data.line = line.substring(6);
@@ -763,8 +774,9 @@ function doLoad(data) {
       );
 
     } else if (line.indexOf('FL,') === 0) {    // Detect a Fastext link
-      var ch;
-      var ix = 3;
+      let ch;
+
+      ix = 3;
       data.fastext = [];
 
       for (let link = 0; link < 4; link++) {
@@ -794,32 +806,18 @@ function doLoad(data) {
     } else if (line.indexOf('CT,') === 0) {     // Counter timer
       // Hack: Send the time in Fastext[0]
       data.fastext = [];
-      data.fastext[0] = line[3];  // Need allow numbers greater than 9!
+      data.fastext[0] = line[3];  // @todo: Need allow numbers greater than 9!
 
       io.sockets.emit('timer', data);
 
       return;
 
     } else if (line.indexOf('OL,') === 0) {    // Detect a teletext row
-      var p = 0;
-      var ix = 3;
-      var row = 0;
+      // const pageLineContent = line.slice(3);
+      const arr = (new RegExp(/^[0-9]{1,2}/)).exec(line.slice(3, 5));
 
-      var ch = line.charAt(ix);
-      if (ch !== ',') {
-        row = ch;
-      }
-
-      ix++;
-
-      ch = line.charAt(ix);
-      if (ch !== ',') {
-        row = row + ch; // haha. Strange maths
-        ix++;
-      }
-
-      row = parseInt(row);
-      ix++; // Should be pointing to the first character now
+      row = parseInt(arr[0], 10);
+      ix = (4 + arr[0].length);
 
     } else {
       return; // Not a row. Not interested
@@ -828,12 +826,11 @@ function doLoad(data) {
     data.y = row;
 
     // Here is a line at a time
-    var result = line.substring(ix); // snip out the row data
+    let result = line.substring(ix); // snip out the row data
 
     // Pad strings shorter than 40 characters
     if (result.length < 40) {
-      result += "                                        ";
-      result = result.substring(0, 40);
+      result = result.padEnd(CONFIG[CONST.CONFIG.NUM_COLUMNS]);
     }
 
     // Special hack for 404 page. Replace this field with the missing page number
@@ -849,12 +846,15 @@ function doLoad(data) {
       result = first + missingPage + second;
     }
 
-    result = DeEscapePrestel(result); // remove Prestel escapes
-
     data.k = '?'; // @todo Not sure what these values should be, if anything
     data.x = -1;
     data.y = row; // The row that we are sending out
-    data.rowText = result;
+
+    if ((!serviceData[service] || !serviceData[service].forceServiceHeader) || (row !== 0)) {
+      result = DeEscapePrestel(result); // remove Prestel escapes
+
+      data.rowText = result;
+    }
 
     io.sockets.emit('row', data);
   });

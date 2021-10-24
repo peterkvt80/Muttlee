@@ -10,21 +10,24 @@
  * plus 0x40.
  * \param str - Prestel encoded string
  */
-DeEscapePrestel=function (str)
-{
-  var result=''
-  for (var i=0;i<str.length;i++)
-  {
-    var ch=str.charAt(i)
-    if (ch=='\u001b') // Prestel escape
-    {
-      ch=str.charAt(++i).charCodeAt()-0x40;// - 0x40
-      ch=String.fromCharCode(ch & 0x7f)
+DeEscapePrestel = function (str) {
+  let result = '';
+
+  for (let i = 0; i < str.length; i++) {
+    let ch = str.charAt(i);
+
+    // Prestel escape
+    if (ch === '\u001b') {
+      ch = str.charAt(++i).charCodeAt(0) - 0x40;
+      ch = String.fromCharCode(ch & 0x7f);
     }
-    result+=ch
+
+    result += ch;
   }
+
   return result;
-} // DeEscapePrestel
+};
+
 
 /**< Escape Prestel style 7 bit encoding.
  * A Prestel encoded string is escaped so that
@@ -32,22 +35,19 @@ DeEscapePrestel=function (str)
  * are written as <esc> followed by the code plus 0x40.
  * \param str - Raw teletext string
  */
-EscapePrestel=function (str)
-{
-  console.log("encoding <"+str+">")
-  var result=''
-  for (var x=0; x<str.length; x++)
-  {
-    var ch=str.charAt(x)
-    if (ch.charCodeAt()<32)
-    {
-      result=result+'\u001b'+String.fromCharCode((ch.charCodeAt() & 0x7f) | 0x40)
-    }
-    else
-    {
-      result+=ch
+EscapePrestel = function (str) {
+  let result = '';
+  
+  for (let x = 0; x < str.length; x++) {
+    let ch = str.charAt(x);
+    
+    if (ch.charCodeAt(0) < 32) {
+      result = result + '\u001b' + String.fromCharCode((ch.charCodeAt(0) & 0x7f) | 0x40);
+      
+    } else {
+      result += ch;
     }
   }
+  
   return result;
-} // EscapePrestel
-
+};
