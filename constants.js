@@ -72,7 +72,6 @@ const CONST = {
   SERVICE_WIKI: 'wtf',
 
   SERVICE_NMS_CEEFAX__WORLDWIDE: 'nms_cf_worldwide',
-  SERVICE_NMS_CEEFAX__NATIONAL: 'nms_cf_national',
   SERVICE_NMS_CEEFAX__EAST: 'nms_cf_east',
   SERVICE_NMS_CEEFAX__EASTMIDLANDS: 'nms_cf_eastmidlands',
   SERVICE_NMS_CEEFAX__LONDON: 'nms_cf_london',
@@ -80,6 +79,7 @@ const CONST = {
   SERVICE_NMS_CEEFAX__SCOTLAND: 'nms_cf_scotland',
   SERVICE_NMS_CEEFAX__SOUTH: 'nms_cf_south',
   SERVICE_NMS_CEEFAX__SOUTHWEST: 'nms_cf_southwest',
+  SERVICE_NMS_CEEFAX__WALES: 'nms_cf_wales',
   SERVICE_NMS_CEEFAX__WEST: 'nms_cf_west',
   SERVICE_NMS_CEEFAX__YORKSLINCS: 'nms_cf_yorkslincs',
 

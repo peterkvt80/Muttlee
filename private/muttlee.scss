@@ -768,7 +768,7 @@ button {
             max-width: #{576px * 1.5};
         }
 
-        [data-scale="1.5"] & {
+        [data-scale="2"] & {
             max-width: #{576px * 2};
         }
     }

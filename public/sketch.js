@@ -781,14 +781,14 @@ function newCharFromServer(data) {
   newChar(data, false);
 }
 
-/** AlphaInGraphics
+/** alphaInGraphics
  *  \param key - Key to test
  * \return - true if it is a printable character when in graphics mode
  * Note that this is only valid for the England character set
  * When processKey translates keys, we probably don't need to alter this?
  */
-function AlphaInGraphics(key) {
-  return (key.charCodeAt() >= 0x40 && key.charCodeAt() < 0x60);
+function alphaInGraphics(key) {
+  return ((key.charCodeAt(0) >= 0x40) && (key.charCodeAt(0) < 0x60));
 }
 
 // Message handlers....
@@ -830,11 +830,10 @@ function newChar(data, local = true) // 'keystroke'
   // At (x,y) on subpage s, place the character k
   let graphicsMode = myPage.IsGraphics(data); // what about the subpage???
   let advanceCursor = local; // Cursor advances, unless it is a remote user or a graphics twiddle
-  let alphaInGraphics = AlphaInGraphics(key); // Graphics but not a twiddle key?
 
   if (local) {
     // Do the graphics, unless this an edit tf escape. Or an upper case letter.
-    if (graphicsMode && editMode !== CONST.EDITMODE_INSERT && !alphaInGraphics) {     // Take the original pixel and xor our selected bit
+    if (graphicsMode && editMode !== CONST.EDITMODE_INSERT && !alphaInGraphics(key)) {     // Take the original pixel and xor our selected bit
       key = data.k.toUpperCase(); // @todo. Do we need to consider subpages and services? Maybe just subpages.
       let bit = 0;
       advanceCursor = false;
@@ -1167,7 +1166,7 @@ function keyTyped() {
 function processKey(keyPressed)
 {
   // @todo need to map codes to national options at this point.
-  // @todo Also need to fix AlphaInGraphics when I do this
+  // @todo Also need to fix alphaInGraphics when I do this
   if (editMode === CONST.EDITMODE_ESCAPE) {
     editMode = CONST.EDITMODE_INSERT;
     myPage.editSwitch(editMode);

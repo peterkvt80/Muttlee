@@ -245,7 +245,7 @@ ServiceList = function (callback) {     // This callback is used to send a page
         for (var i = 0; i < 40; i++) {
           var ch = line.charAt(ix++);
           if (ch === '\u001b') { // Prestel escape
-            ch = line.charAt(ix++).charCodeAt() - 0x40;// - 0x40;
+            ch = line.charAt(ix++).charCodeAt(0) - 0x40;// - 0x40;
             ch = String.fromCharCode(ch);
           }
 

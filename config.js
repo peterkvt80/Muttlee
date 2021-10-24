@@ -86,6 +86,11 @@ const CONFIG = {
   //     url: str,
   //     port: int,
   //
+  //     // (optional) the character used to separate seconds in the page header display - use ':' or '/'
+  //     secondsSeparator: str,
+  //     // (optional) whether to force render a service header overriding the page-specific header - false if not defined
+  //     forceServiceHeader: bool,
+  //
   //     // (optional) whether the service is considered editable - false if not defined
   //     isEditable: bool,
   //
@@ -99,6 +104,14 @@ const CONFIG = {
       name: 'Teefax',
       url: '//www.xenoxxx.com',
       port: 80,
+
+      secondsSeparator: '/',
+      forceServiceHeader: false,
+
+      autoplaySkip: [
+        [741, 759],
+        [769, 799],
+      ],
 
       updateUrl: 'http://teastop.plus.com/svn/teletext/',
       updateInterval: 60,
@@ -117,6 +130,9 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
+      updateUrl: 'https://github.com/teletexx/service-artfax.git',
+      updateInterval: 1440,
+
       isEditable: true,
     },
 
@@ -124,6 +140,9 @@ const CONFIG = {
       name: 'BBC 1980',
       url: '//www.xenoxxx.com',
       port: 80,
+
+      updateUrl: 'https://github.com/teletexx/service-bbc1980.git',
+      updateInterval: 1440,
     },
 
     // [CONST.SERVICE_CHANNEL19]: {
@@ -145,32 +164,44 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
-      updateUrl: 'http://teastop.plus.com/svn/digitiser2k/',
-      updateInterval: 60,
+      updateUrl: 'https://github.com/teletexx/service-digitiser2k.git',
+      updateInterval: 1440,
     },
 
     [CONST.SERVICE_KINDIE]: {
       name: 'Kindie',
       url: '//www.xenoxxx.com',
       port: 80,
+
+      updateUrl: 'https://github.com/teletexx/service-kindie.git',
+      updateInterval: 1440,
     },
 
     [CONST.SERVICE_ARCHIVE]: {
       name: 'Archive',
       url: '//www.xenoxxx.com',
       port: 80,
+
+      updateUrl: 'https://github.com/teletexx/service-archive.git',
+      updateInterval: 1440,
     },
 
     [CONST.SERVICE_TURNER]: {
       name: 'Turner the Worm',
       url: '//www.xenoxxx.com',
       port: 80,
+
+      updateUrl: 'https://github.com/teletexx/service-turner.git',
+      updateInterval: 1440,
     },
 
     [CONST.SERVICE_WIKI]: {
       name: 'Wiki',
       url: '//www.xenoxxx.com',
       port: 80,
+
+      updateUrl: 'https://github.com/teletexx/service-wiki.git',
+      updateInterval: 1440,
 
       isEditable: true,
     },
@@ -184,18 +215,7 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
-      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/Worldwide',
-      updateInterval: 30,
-    },
-
-    [CONST.SERVICE_NMS_CEEFAX__NATIONAL]: {
-      group: 'NMS Ceefax',
-      name: 'National',
-      credit: 'Pages via <a href="https://www.nathanmediaservices.co.uk/teletext-viewer/">NMS Ceefax</a>',
-      url: '//www.xenoxxx.com',
-      port: 80,
-
-      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/national',
+      updateUrl: 'https://github.com/teletexx/service-nms-i--worldwide.git',
       updateInterval: 30,
     },
 
@@ -206,7 +226,7 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
-      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/East',
+      updateUrl: 'https://github.com/teletexx/service-nms-i--east.git',
       updateInterval: 30,
     },
 
@@ -217,7 +237,7 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
-      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/EastMidlands',
+      updateUrl: 'https://github.com/teletexx/service-nms-i--eastmidlands.git',
       updateInterval: 30,
     },
 
@@ -228,7 +248,7 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
-      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/London',
+      updateUrl: 'https://github.com/teletexx/service-nms-i--london.git',
       updateInterval: 30,
     },
 
@@ -239,7 +259,7 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
-      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/NorthernIreland',
+      updateUrl: 'https://github.com/teletexx/service-nms-i--northernireland.git',
       updateInterval: 30,
     },
 
@@ -250,7 +270,7 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
-      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/Scotland',
+      updateUrl: 'https://github.com/teletexx/service-nms-i--scotland.git',
       updateInterval: 30,
     },
 
@@ -261,7 +281,7 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
-      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/South',
+      updateUrl: 'https://github.com/teletexx/service-nms-i--south.git',
       updateInterval: 30,
     },
 
@@ -272,7 +292,18 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
-      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/SouthWest',
+      updateUrl: 'https://github.com/teletexx/service-nms-i--southwest.git',
+      updateInterval: 30,
+    },
+
+    [CONST.SERVICE_NMS_CEEFAX__WALES]: {
+      group: 'NMS Ceefax',
+      name: 'Wales',
+      credit: 'Pages via <a href="https://www.nathanmediaservices.co.uk/teletext-viewer/">NMS Ceefax</a>',
+      url: '//localhost',
+      port: 8080,
+
+      updateUrl: 'https://github.com/teletexx/service-nms-i--wales.git',
       updateInterval: 30,
     },
 
@@ -283,20 +314,20 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
-      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/West',
+      updateUrl: 'https://github.com/teletexx/service-nms-i--west.git',
       updateInterval: 30,
     },
 
-    [CONST.SERVICE_NMS_CEEFAX__YORKSLINCS]: {
-      group: 'NMS Ceefax',
-      name: 'Yorks & Lincs',
-      credit: 'Pages via <a href="https://www.nathanmediaservices.co.uk/teletext-viewer/">NMS Ceefax</a>',
-      url: '//www.xenoxxx.com',
-      port: 80,
-
-      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/Yorks&Lincs',
-      updateInterval: 30,
-    },
+    // [CONST.SERVICE_NMS_CEEFAX__YORKSLINCS]: {
+    //   group: 'NMS Ceefax',
+    //   name: 'Yorks & Lincs',
+    //   credit: 'Pages via <a href="https://www.nathanmediaservices.co.uk/teletext-viewer/">NMS Ceefax</a>',
+    //   url: '//www.xenoxxx.com',
+    //   port: 80,
+    //
+    //   updateUrl: 'https://github.com/teletexx/service-nms-i--yorkslincs.git',
+    //   updateInterval: 30,
+    // },
   },
 
 

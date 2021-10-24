@@ -359,7 +359,7 @@ async function updateServices() {
             );
           }
 
-        } catch {}
+        } catch (err) {}
       }
 
       // update the last modified timestamp
