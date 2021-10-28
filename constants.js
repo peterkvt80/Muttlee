@@ -70,6 +70,7 @@ const CONST = {
   SERVICE_ARCHIVE: 'readback',
   SERVICE_TURNER: 'turner',
   SERVICE_WIKI: 'wtf',
+  SERVICE_SPARK: 'spark',
 
   SERVICE_NMS_CEEFAX__WORLDWIDE: 'nms_cf_worldwide',
   SERVICE_NMS_CEEFAX__EAST: 'nms_cf_east',

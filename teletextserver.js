@@ -201,6 +201,7 @@ app.use(
           for (let i in configKeyData) {
             configKeyData[i] = {
               name: configKeyData[i].name,
+              headerTitle: configKeyData[i].headerTitle,
               url: configKeyData[i].url,
               port: configKeyData[i].port,
 

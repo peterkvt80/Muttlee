@@ -75,6 +75,8 @@ const CONFIG = {
   //     group: str,
   //     // display name of service
   //     name: str,
+  //     // (optional) header display name of service
+  //     headerTitle: str
   //     // (optional) service credit
   //     credit: str,
   //
@@ -114,6 +116,20 @@ const CONFIG = {
       ],
 
       updateUrl: 'http://teastop.plus.com/svn/teletext/',
+      updateInterval: 60,
+    },
+
+    [CONST.SERVICE_SPARK]: {
+      name: 'TVARK Spark',
+      headerTitle: 'SPARK',
+      credit: 'Pages via <a href="https://www.tvark.org/?page=spark">TVARK</a>',
+      url: '//www.xenoxxx.com',
+      port: 80,
+
+      secondsSeparator: '/',
+      forceServiceHeader: true,
+
+      updateUrl: 'https://github.com/spark-teletext/spark-teletext.git',
       updateInterval: 60,
     },
 
