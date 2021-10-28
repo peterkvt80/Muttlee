@@ -117,6 +117,19 @@ const CONFIG = {
       updateInterval: 60,
     },
 
+    [CONST.SERVICE_SPARK]: {
+      name: 'TVARK Spark',
+      headerTitle: 'SPARK',
+      url: '//www.xenoxxx.com',
+      port: 80,
+
+      secondsSeparator: '/',
+      forceServiceHeader: true,
+
+      updateUrl: 'https://github.com/spark-teletext/spark-teletext.git',
+      updateInterval: 60,
+    },
+
     // [CONST.SERVICE_AMIGAROB]: {
     //   name: 'Amiga Rob',
     //   url: '//www.xenoxxx.com',

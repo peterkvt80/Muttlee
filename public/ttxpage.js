@@ -58,6 +58,16 @@ TTXPAGE = function() {
   this.revealMode = false;
   this.holdMode = false;
 
+  // @todo check range
+  this.init = function (number, service) {
+    this.pageNumber = number;
+
+    this.service = service;
+    this.serviceData = servicesData[service];
+
+    this.addPage(number);
+  };
+
   // timer
   this.setTimer = function (t) {
     // this.timer=t
@@ -73,20 +83,14 @@ TTXPAGE = function() {
   };
 
   this.getServiceHeader = function () {
+    const headerTitle = this.serviceData.headerTitle ?
+      this.serviceData.headerTitle :
+      CONFIG[CONST.CONFIG.HEADER_TITLE].toUpperCase();
+
     // allow a custom header title (as defined in config.js)
-    const titleStr = CONFIG[CONST.CONFIG.HEADER_TITLE].toUpperCase().padStart(10, ' ');
+    const titleStr = headerTitle.padStart(10, ' ');
 
     return `Pnn ${titleStr} mpp DAY dd MTH  hh:nn.ss`;
-  };
-
-  // @todo check range
-  this.init = function (number, service) {
-    this.pageNumber = number;
-
-    this.service = service;
-    this.serviceData = servicesData[service];
-
-    this.addPage(number);
   };
 
   this.toggleReveal = function () {
@@ -137,6 +141,7 @@ TTXPAGE = function() {
 
   this.setService = function (S) {
     this.service = S;
+    this.serviceData = servicesData[S];
   };
 
   this.getService = function () {
