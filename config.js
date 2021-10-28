@@ -75,6 +75,8 @@ const CONFIG = {
   //     group: str,
   //     // display name of service
   //     name: str,
+  //     // (optional) header display name of service
+  //     headerTitle: str
   //     // (optional) service credit
   //     credit: str,
   //
@@ -120,6 +122,7 @@ const CONFIG = {
     [CONST.SERVICE_SPARK]: {
       name: 'TVARK Spark',
       headerTitle: 'SPARK',
+      credit: 'Pages via <a href="https://www.tvark.org/?page=spark">TVARK</a>',
       url: '//www.xenoxxx.com',
       port: 80,
 
