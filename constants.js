@@ -1,3 +1,4 @@
+"use strict";
 const CONST = {
   // page numbers
   PAGE_MIN: 0x100,
@@ -60,29 +61,31 @@ const CONST = {
   //  CONFIG.SERVICE_PAGES_DIR and CONFIG.SERVICE_PAGES_SERVE_DIR
   //  that contains the service's pages)
   SERVICE_TEEFAX: 'teefax',
-  SERVICE_AMIGAROB: 'amigarob',
+  SERVICE_SPARK: 'spark',
+  SERVICE_ARTFAX: 'artfax',
+  SERVICE_NEMETEXT: 'nemetext',
+  // SERVICE_AMIGAROB: 'amigarob',
   SERVICE_ARTFAX: 'artfax',
   SERVICE_BBC1980: 'bbc1980',
-  SERVICE_CHANNEL19: 'channel19',
-  SERVICE_CHRISLUCA: 'chrisluca',
   SERVICE_DIGITISER: 'd2k',
   SERVICE_KINDIE: 'kindie',
   SERVICE_ARCHIVE: 'readback',
   SERVICE_TURNER: 'turner',
   SERVICE_WIKI: 'wtf',
-  SERVICE_SPARK: 'spark',
+  //SERVICE_CHANNEL19: 'channel19',
+  //SERVICE_CHRISLUCA: 'chrisluca',
 
-  SERVICE_NMS_CEEFAX__WORLDWIDE: 'nms_cf_worldwide',
-  SERVICE_NMS_CEEFAX__EAST: 'nms_cf_east',
-  SERVICE_NMS_CEEFAX__EASTMIDLANDS: 'nms_cf_eastmidlands',
-  SERVICE_NMS_CEEFAX__LONDON: 'nms_cf_london',
-  SERVICE_NMS_CEEFAX__NORTHERNIRELAND: 'nms_cf_northernireland',
-  SERVICE_NMS_CEEFAX__SCOTLAND: 'nms_cf_scotland',
-  SERVICE_NMS_CEEFAX__SOUTH: 'nms_cf_south',
-  SERVICE_NMS_CEEFAX__SOUTHWEST: 'nms_cf_southwest',
-  SERVICE_NMS_CEEFAX__WALES: 'nms_cf_wales',
-  SERVICE_NMS_CEEFAX__WEST: 'nms_cf_west',
-  SERVICE_NMS_CEEFAX__YORKSLINCS: 'nms_cf_yorkslincs',
+  SERVICE_NMS_CEEFAX_NATIONAL: 'nms_cf_national',
+  //SERVICE_NMS_CEEFAX__EAST: 'nms_cf_east',
+  //SERVICE_NMS_CEEFAX__EASTMIDLANDS: 'nms_cf_eastmidlands',
+  //SERVICE_NMS_CEEFAX__LONDON: 'nms_cf_london',
+  //SERVICE_NMS_CEEFAX__NORTHERNIRELAND: 'nms_cf_northernireland',
+  //SERVICE_NMS_CEEFAX__SCOTLAND: 'nms_cf_scotland',
+  //SERVICE_NMS_CEEFAX__SOUTH: 'nms_cf_south',
+  //SERVICE_NMS_CEEFAX__SOUTHWEST: 'nms_cf_southwest',
+  //SERVICE_NMS_CEEFAX__WALES: 'nms_cf_wales',
+  //SERVICE_NMS_CEEFAX__WEST: 'nms_cf_west',
+  //SERVICE_NMS_CEEFAX__YORKSLINCS: 'nms_cf_yorkslincs',
 
   // config keys
   CONFIG: {

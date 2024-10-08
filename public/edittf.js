@@ -1,3 +1,4 @@
+"use strict";
 /** This code adapted from Simon Rawles
  *  by Peter Kwan
  *  with contributions from Alistair Cree.
@@ -134,7 +135,7 @@ function load_from_hash(TTXPage* page, char* str)
  * \param encoding
  */ 
 // function save_to_hash(int cset, char* encoding, uint8_t cc[25][40], const char* website, TTXPage* page)
-save_to_hash=function(cset, website, page)
+let save_to_hash=function(cset, website, page)
 {
 
 	// Construct the metadata as described above.

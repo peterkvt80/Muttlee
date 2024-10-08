@@ -1,3 +1,4 @@
+"use strict";
 /** Cursor class for teletext
  */
 class TTXCURSOR

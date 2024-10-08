@@ -2,7 +2,7 @@
 * Encapsulate a teletext page object.
 * Used to load, edit and save a tti file (MRG format teletext file)
 */
-
+"use strict";
 // io stream stuff
 const fs = require('fs');
 const readline = require('readline');
@@ -15,7 +15,7 @@ require('./utils.js'); // Prestel and other string handling
 // import logger
 const LOG = require('./log.js');
 
-Page = function () {
+global.Page = function () {
   // basic properties
   this.pageNumber = 0x100;
   this.subpageNumber = 0;

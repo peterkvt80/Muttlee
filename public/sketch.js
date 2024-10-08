@@ -1,3 +1,5 @@
+"use strict";
+
 // current state values (initialize to defaults)
 let service = CONFIG[CONST.CONFIG.DEFAULT_SERVICE];
 let controls = CONFIG[CONST.CONFIG.DEFAULT_CONTROLS];

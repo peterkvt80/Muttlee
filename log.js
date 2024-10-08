@@ -1,3 +1,4 @@
+"use strict";
 const colorette = require('colorette');
 
 const CONST = require('./constants.js');

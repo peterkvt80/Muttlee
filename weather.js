@@ -1,9 +1,9 @@
 /**--/Weather Stuff from Darren Storer /--**/
-
+"use strict";
 var request=require('request');
 
 
-Weather = function(callBack) {
+global.Weather = function(callBack) {
 
 var fs = require('fs');
 

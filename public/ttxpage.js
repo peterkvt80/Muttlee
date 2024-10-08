@@ -1,7 +1,7 @@
 // Defines a teletext page
 // page class defines a page and subpages.
 // row class defines a teletext row.
-
+"use strict";
 
 // Timer for flashing cursor and text
 let flashState = false;
@@ -28,7 +28,7 @@ function MetaData(displayTiming) {
 const servicesData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE];
 
 
-TTXPAGE = function() {
+window.TTXPAGE = function() {
   // Basic page properties
   this.pageNumber = CONST.PAGE_MIN;
   this.subPage = 0; // This is the integer to index the current sub page
@@ -763,12 +763,12 @@ function Row(ttxpage, page, y, str) {
         // If editing, then show the page/row number
         // txt=replace(txt,'E'+this.pagetext+'    ',0)
         // Show the page/subpage being edited
-        let highlight = '\003'; // Edit mode is yellow
+        let highlight = '\x03'; // Edit mode is yellow
         if (editMode === CONST.EDITMODE_ESCAPE) {
-          highlight = '\002'; // Escape mode is green
+          highlight = '\x02'; // Escape mode is green
         }
 
-        txt = replace(txt, highlight + this.pagetext + '.' + nf(subPage, 2) + '\007', 0);            // Show the page/subpage being edited
+        txt = replace(txt, highlight + this.pagetext + '.' + nf(subPage, 2) + '\x07', 0);            // Show the page/subpage being edited
       }
     }
 
@@ -776,7 +776,8 @@ function Row(ttxpage, page, y, str) {
     if (this.row > 0 && this.row < CONFIG[CONST.CONFIG.NUM_ROWS] && cpos < 0) {    // This is NOT the header row NOR in edit mode.
       // World time. (two values allowed per line)
       for (let i = 0; i < 2; i++) {
-        if ((ix = txt.indexOf('%t')) > 0) {
+        let ix = txt.indexOf('%t');
+        if (ix > 0) {
           // Read the half hour offsets
           let offset = txt.substring(ix + 2, ix + 5);
 

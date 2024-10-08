@@ -3,7 +3,7 @@
  *  Environment: node.js server side script
  *  @brief A service is a service name and a set of pages.
  */
-
+"use strict";
 // import logger
 const LOG = require('./log.js');
 
@@ -11,7 +11,7 @@ const LOG = require('./log.js');
 /** Constructor
  * @param serviceName - a Service name such as BBCONE_2007_06_19
  */
-Service = function (serviceName) {
+global.Service = function (serviceName) {
   // member variables
   this.name = serviceName;
   this.pages = [];

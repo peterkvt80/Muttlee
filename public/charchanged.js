@@ -1,3 +1,4 @@
+"use strict";
 /** charchanged.js
  *  Class to indicate which keys have changed and have not been processed by the server.
  * This is an array 24 x 40 flags, one per character.
@@ -6,7 +7,7 @@
  * @todo Range checking
  */
 
-CHARCHANGED=function()
+let CHARCHANGED=function()
 {
   // Create 24 rows of 40 characters
   this.rows = new Array(26)

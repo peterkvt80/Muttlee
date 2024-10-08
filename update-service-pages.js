@@ -9,6 +9,8 @@ const commandLineUsage = require('command-line-usage');
 const colorette = require('colorette');
 
 const svn = require('@taiyosen/easy-svn');
+const git = require('simple-git');
+git().clean(git.CleanOptions.FORCE)
 
 const deletedDiff = require('deep-object-diff').deletedDiff;
 const xxhash = require('@pacote/xxhash');
@@ -98,6 +100,7 @@ const hasher = xxhash.xxh64(2654435761);
 
 async function updateServices() {
   for (let serviceId in CONFIG[CONST.CONFIG.SERVICES_AVAILABLE]) {
+    console.log("Service id = " + serviceId);
     const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][serviceId];
 
     const serviceTargetDir = path.join(
@@ -147,7 +150,7 @@ async function updateServices() {
       }
 
       if (shouldUpdate || options.force) {
-        // ...use Subversion to checkout / update pages...
+        // ...use Subversion (or git) to checkout / update pages...
         let svnClient = new svn.SVNClient();
         svnClient.setConfig({
           silent: !options.verbose,
@@ -161,24 +164,37 @@ async function updateServices() {
               )
             );
           }
-
-          // checkout service pages...
-          await svnClient.checkout(
-            serviceData.updateUrl,
-            serviceTargetDir,
-          );
+          if (serviceData.repoType == "svn") {
+            // checkout svn service pages...
+            await svnClient.checkout(
+              serviceData.updateUrl,
+              serviceTargetDir,
+            );
+          } else {
+            // checkout git service pages...
+            await git().clone(
+              serviceData.updateUrl,
+              serviceTargetDir,
+            );
+          }
 
         } else {
           if (!options.silent) {
             console.log(
               `Updating '${serviceId}' service page files...`
             );
+
+          }
+          // update service pages...
+          if (serviceData.repoType == "svn") {
+            await svnClient.update(
+              serviceTargetDir,
+            );
+          } else {
+            await git().pull(
+            );
           }
 
-          // update service pages...
-          await svnClient.update(
-            serviceTargetDir,
-          );
         }
       }
     }

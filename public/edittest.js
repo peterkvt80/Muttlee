@@ -1,5 +1,5 @@
 // Run this unit test under node
-
+"use strict";
 const EDITMODE_NORMAL=0 // normal viewing
 const EDITMODE_EDIT=1   // edit mode
 const EDITMODE_ESCAPE=2 // expect next character to be either an edit.tf function or Escape again to exit.

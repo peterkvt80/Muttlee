@@ -96,11 +96,15 @@ const CONFIG = {
   //     // (optional) whether the service is considered editable - false if not defined
   //     isEditable: bool,
   //
-  //     // (optional) a SVN repository containing the service's pages
+  //     // (optional) the type of repo - Can be 'git' or 'svn' if not defined
+  //     repoType: str,
+  //
+  //     // (optional) SVN or GIT repository containing the service's pages
   //     updateUrl: str,
   //     // (optional) number of minutes to wait before checking for updates
   //     updateInterval: int,
   //   }
+  // [!] When adding or removing items, constants.js also needs to be updated
   [CONST.CONFIG.SERVICES_AVAILABLE]: {
     [CONST.SERVICE_TEEFAX]: {
       name: 'Teefax',
@@ -114,7 +118,7 @@ const CONFIG = {
         [741, 759],
         [769, 799],
       ],
-
+      repoType: 'svn',
       updateUrl: 'http://teastop.plus.com/svn/teletext/',
       updateInterval: 60,
     },
@@ -129,27 +133,34 @@ const CONFIG = {
       secondsSeparator: '/',
       forceServiceHeader: true,
 
+      repoType: 'git',
       updateUrl: 'https://github.com/spark-teletext/spark-teletext.git',
       updateInterval: 60,
     },
 
-    // [CONST.SERVICE_AMIGAROB]: {
-    //   name: 'Amiga Rob',
-    //   url: '//www.xenoxxx.com',
-    //   port: 80,
-    //
-    //   isEditable: true,
-    // },
-
     [CONST.SERVICE_ARTFAX]: {
       name: 'Artfax',
+      credit: 'Teletext Sofa Club',
       url: '//www.xenoxxx.com',
       port: 80,
 
+      repoType: 'git',
       updateUrl: 'https://github.com/teletexx/service-artfax.git',
       updateInterval: 1440,
 
       isEditable: true,
+    },
+
+    [CONST.SERVICE_NEMETEXT]: {
+      name: 'Nemetext',
+      credit: 'Jamie Nemeth',
+      url: '//www.xenoxxx.com',
+      port: 80,
+
+      repoType: 'git',
+      updateUrl: 'https://github.com/JamieNemeth/nemetext.git',
+      updateInterval: 500,
+      isEditable: false,
     },
 
     [CONST.SERVICE_BBC1980]: {
@@ -157,29 +168,17 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
+      repoType: 'git',
       updateUrl: 'https://github.com/teletexx/service-bbc1980.git',
       updateInterval: 1440,
     },
-
-    // [CONST.SERVICE_CHANNEL19]: {
-    //   name: 'Channel 19',
-    //   url: '//www.xenoxxx.com',
-    //   port: 80,
-    //
-    //   isEditable: true,
-    // },
-
-    // [CONST.SERVICE_CHRISLUCA]: {
-    //   name: 'Chris Luca',
-    //   url: '//www.xenoxxx.com',
-    //   port: 80,
-    // },
 
     [CONST.SERVICE_DIGITISER]: {
       name: 'Digitiser2000',
       url: '//www.xenoxxx.com',
       port: 80,
 
+      repoType: 'git',
       updateUrl: 'https://github.com/teletexx/service-digitiser2k.git',
       updateInterval: 1440,
     },
@@ -189,6 +188,7 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
+      repoType: 'git',
       updateUrl: 'https://github.com/teletexx/service-kindie.git',
       updateInterval: 1440,
     },
@@ -198,6 +198,7 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
+      repoType: 'git',
       updateUrl: 'https://github.com/teletexx/service-archive.git',
       updateInterval: 1440,
     },
@@ -207,6 +208,7 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
+      repoType: 'git',
       updateUrl: 'https://github.com/teletexx/service-turner.git',
       updateInterval: 1440,
     },
@@ -216,6 +218,7 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
+      repoType: 'git',
       updateUrl: 'https://github.com/teletexx/service-wiki.git',
       updateInterval: 1440,
 
@@ -224,17 +227,19 @@ const CONFIG = {
 
 
     // NMS Ceefax services
-    [CONST.SERVICE_NMS_CEEFAX__WORLDWIDE]: {
-      group: 'NMS Ceefax',
-      name: 'Worldwide',
+    [CONST.SERVICE_NMS_CEEFAX_NATIONAL]: {
+      // group: 'NMS Ceefax',
+      name: 'Ceefax (National)',
       credit: 'Pages via <a href="https://www.nathanmediaservices.co.uk/teletext-viewer/">NMS Ceefax</a>',
       url: '//www.xenoxxx.com',
       port: 80,
 
-      updateUrl: 'https://github.com/teletexx/service-nms-i--worldwide.git',
-      updateInterval: 30,
+      repoType: 'svn',
+      updateUrl: 'https://feeds.nmsni.co.uk/svn/ceefax/national',
+      updateInterval: 99,
+      isEditable: false,
     },
-
+/*
     [CONST.SERVICE_NMS_CEEFAX__EAST]: {
       group: 'NMS Ceefax',
       name: 'East',
@@ -242,6 +247,7 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
+      repoType: 'git',
       updateUrl: 'https://github.com/teletexx/service-nms-i--east.git',
       updateInterval: 30,
     },
@@ -253,6 +259,7 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
+      repoType: 'git',
       updateUrl: 'https://github.com/teletexx/service-nms-i--eastmidlands.git',
       updateInterval: 30,
     },
@@ -264,6 +271,7 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
+      repoType: 'git',
       updateUrl: 'https://github.com/teletexx/service-nms-i--london.git',
       updateInterval: 30,
     },
@@ -275,6 +283,7 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
+      repoType: 'git',
       updateUrl: 'https://github.com/teletexx/service-nms-i--northernireland.git',
       updateInterval: 30,
     },
@@ -286,6 +295,7 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
+      repoType: 'git',
       updateUrl: 'https://github.com/teletexx/service-nms-i--scotland.git',
       updateInterval: 30,
     },
@@ -297,6 +307,7 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
+      repoType: 'git',
       updateUrl: 'https://github.com/teletexx/service-nms-i--south.git',
       updateInterval: 30,
     },
@@ -308,7 +319,8 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
-      updateUrl: 'https://github.com/teletexx/service-nms-i--southwest.git',
+      repoType: 'svn',
+      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/SouthWest',
       updateInterval: 30,
     },
 
@@ -319,6 +331,7 @@ const CONFIG = {
       url: '//localhost',
       port: 8080,
 
+      repoType: 'git',
       updateUrl: 'https://github.com/teletexx/service-nms-i--wales.git',
       updateInterval: 30,
     },
@@ -330,7 +343,8 @@ const CONFIG = {
       url: '//www.xenoxxx.com',
       port: 80,
 
-      updateUrl: 'https://github.com/teletexx/service-nms-i--west.git',
+      repoType: 'svn',
+      updateUrl: 'https://internal.nathanmediaservices.co.uk/svn/ceefax/West',
       updateInterval: 30,
     },
 
@@ -341,12 +355,13 @@ const CONFIG = {
     //   url: '//www.xenoxxx.com',
     //   port: 80,
     //
+    //   repoType: 'git',
     //   updateUrl: 'https://github.com/teletexx/service-nms-i--yorkslincs.git',
     //   updateInterval: 30,
     // },
-  },
-
-
+  */
+},
+  
   // defaults
   [CONST.CONFIG.DEFAULT_SERVICE]: CONST.SERVICE_TEEFAX,
   [CONST.CONFIG.OPEN_SERVICE_IN_NEW_WINDOW]: false,

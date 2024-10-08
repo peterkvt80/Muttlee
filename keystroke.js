@@ -12,7 +12,7 @@
  *
  & @todo Move all the file stuff out of here!
  */
-
+"use strict";
 const path = require('path');
 
 // import constants and config for use server-side
@@ -27,7 +27,7 @@ const LOG = require('./log.js');
 
 const page = new Page();
 
-KeyStroke = function () {
+global.KeyStroke = function () {
   var that = this;  // Make the parent available in the nested functions. Probably 100 reasons why you shouldn't do this.
   this.sourceFile = '';
   this.destFile = '';

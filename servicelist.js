@@ -8,7 +8,7 @@
  *  Find service
  *  doLoad should find the relevant service, then let service find the page, then the page will load the
  */
-
+"use strict";
 var fs = require('fs');
 var readline = require('readline');
 

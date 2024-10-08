@@ -1,7 +1,7 @@
 /**< Miscellaneous utilities for teletext
  * \author Peter Kwan 2018.
  */
-
+"use strict";
 /**< De-escape Prestel style 7 bit encoding.
  * A Prestel encoded string is escaped so that
  * it only needs 7 bit characters.
@@ -10,7 +10,7 @@
  * plus 0x40.
  * \param str - Prestel encoded string
  */
-DeEscapePrestel = function (str) {
+global.DeEscapePrestel = function (str) {
   let result = '';
 
   for (let i = 0; i < str.length; i++) {
@@ -35,7 +35,7 @@ DeEscapePrestel = function (str) {
  * are written as <esc> followed by the code plus 0x40.
  * \param str - Raw teletext string
  */
-EscapePrestel = function (str) {
+global.EscapePrestel = function (str) {
   let result = '';
   
   for (let x = 0; x < str.length; x++) {

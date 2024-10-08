@@ -1,4 +1,5 @@
 // Unit test for Page.js
+"use strict";
 require('./page.js')
 
 var pageName

@@ -74,7 +74,7 @@ Express is used to serve static http from the `public` folder.
 
 
 ## Installation
-Install the project depedencies via the Node package manager:
+Install the project dependencies via the Node package manager:
 
 `npm install`
 
