@@ -1,6 +1,9 @@
 // update-service-pages.js
 //   - Fetches / updates teletext services pages from remote repositories to a local location (as defined in config.js)
+// How to auto run this...
+// pm2 start update-service-pages.js --no-autorestart --instances 1 --cron "*/5 * * * *
 // by Danny Allen (me@dannya.com)
+"use strict";
 const fs = require('fs');
 const path = require('path');
 
@@ -100,7 +103,7 @@ const hasher = xxhash.xxh64(2654435761);
 
 async function updateServices() {
   for (let serviceId in CONFIG[CONST.CONFIG.SERVICES_AVAILABLE]) {
-    console.log("Service id = " + serviceId);
+    // console.log("Service id = " + serviceId);
     const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][serviceId];
 
     const serviceTargetDir = path.join(
@@ -136,17 +139,25 @@ async function updateServices() {
       serviceManifest.pages = {};
     }
 
+    let shouldUpdate = false
 
     // if service has an update URL...
     if (serviceData.updateUrl) {
       // ...and was last updated outside of its updateInterval...
-      let shouldUpdate = (
+      shouldUpdate = (
         !serviceData.updateInterval ||
         !serviceManifest.lastUpdated
       );
 
       if (serviceManifest.lastUpdated) {
         shouldUpdate = ((Date.parse(serviceManifest.lastUpdated) + (serviceData.updateInterval * 1000 * 60)) < Date.now());
+          if (options.verbose) {
+            console.log(
+              "Service id = " + serviceId +
+              " shouldUpdate = " + shouldUpdate +
+              " mins to next update = " + parseInt(((Date.parse(serviceManifest.lastUpdated) + (serviceData.updateInterval * 1000 * 60)) - Date.now()) / 60000)  // minutes to next update
+            );
+          }
       }
 
       if (shouldUpdate || options.force) {
@@ -195,9 +206,12 @@ async function updateServices() {
             );
           }
 
-        }
-      }
-    }
+        } // update or pull repo
+      } // if shouldupdate
+    } // if has updateURL
+    
+    // The repos have now been updated
+    // Now update the service folders
 
 
     // ensure service serve directory exists
@@ -223,8 +237,14 @@ async function updateServices() {
     let recalculatedManifestPages = {};
 
     const servicePageFiles = fs.readdirSync(serviceTargetDir);
+    let manifestChanged = false; // Flag if the manifest needs rewriting
 
     for (const filename of servicePageFiles) {
+      if (options.verbose && false) {
+        console.log(
+          `\nChecking 'file ${filename}' for updates...`
+        );
+      }
       if (filename.endsWith(PAGE_FILE_EXT)) {
         // determine full source filepath
         const sourceFilePath = path.join(
@@ -291,7 +311,7 @@ async function updateServices() {
               )
             );
 
-            continue;
+            continue; // next service page file
           }
 
           // if no changes to this page file, no further processing needed...
@@ -299,8 +319,9 @@ async function updateServices() {
             // add unmodified manifest page object into processed data structure
             recalculatedManifestPages[pageNumber] = serviceManifest.pages[pageNumber];
 
-            continue;
+            continue; // next service page file
           }
+          manifestChanged = true; // something changed
 
           // if changes have been made to this page file, freshly recreate its manifest page object
           let manifestPageEntry = {
@@ -318,7 +339,6 @@ async function updateServices() {
           }
 
           recalculatedManifestPages[pageNumber] = manifestPageEntry;
-
 
           // determine new filename and target file path
           const targetFilePath = path.join(
@@ -347,7 +367,7 @@ async function updateServices() {
           }
 
           // update the last modified timestamp
-          serviceManifest.lastModified = new Date();
+          serviceManifest.lastModified = new Date(); // [!] Not sure if we need to do something with manifestChanged at this point
 
         } else {
           // page number could not be extracted
@@ -356,7 +376,7 @@ async function updateServices() {
           }
         }
       }
-    }
+    } // for all servicePageFiles  (continue resumes here)  
 
 
     // if pages have been removed from the repository since the last run, also delete them from the target directory
@@ -380,29 +400,37 @@ async function updateServices() {
 
       // update the last modified timestamp
       serviceManifest.lastModified = new Date();
+      manifestChanged = true;
     }
-
 
     // update manifest fields
-    serviceManifest.systemName = PACKAGE_JSON.name;
-    serviceManifest.systemVersion = PACKAGE_JSON.version;
-    serviceManifest.lastUpdated = new Date();
+    if (manifestChanged) {
+      serviceManifest.systemName = PACKAGE_JSON.name;
+      serviceManifest.systemVersion = PACKAGE_JSON.version;
+      serviceManifest.lastUpdated = new Date();
+      if (options.verbose) {
+        console.log(
+          "Manifest updated - lastUpdated = " + serviceManifest.lastUpdated
+        );
+      }
 
-    if (serviceData.updateInterval) {
-      serviceManifest.updateInterval = serviceData.updateInterval;
+      if (serviceData.updateInterval) {
+        serviceManifest.updateInterval = serviceData.updateInterval;
+      }
+
+      serviceManifest.pages = recalculatedManifestPages;
+
+      // write out updated service file manifest
+      fs.writeFileSync(
+        serviceManifestFile,
+        JSON.stringify(
+          serviceManifest,
+        ),
+      ); // write out manifest
     }
-
-    serviceManifest.pages = recalculatedManifestPages;
-
-    // write out updated service file manifest
-    fs.writeFileSync(
-      serviceManifestFile,
-      JSON.stringify(
-        serviceManifest,
-      ),
-    );
-  }
-}
+    
+  } // for each service (contnue here if there are no manifest updates)
+} // updateServices
 
 
 // run update function

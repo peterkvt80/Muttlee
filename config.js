@@ -146,7 +146,7 @@ const CONFIG = {
 
       repoType: 'git',
       updateUrl: 'https://github.com/teletexx/service-artfax.git',
-      updateInterval: 1440,
+      updateInterval: 60,
 
       isEditable: true,
     },
@@ -159,7 +159,7 @@ const CONFIG = {
 
       repoType: 'git',
       updateUrl: 'https://github.com/JamieNemeth/nemetext.git',
-      updateInterval: 500,
+      updateInterval: 60,
       isEditable: false,
     },
 
@@ -236,7 +236,7 @@ const CONFIG = {
 
       repoType: 'svn',
       updateUrl: 'https://feeds.nmsni.co.uk/svn/ceefax/national',
-      updateInterval: 99,
+      updateInterval: 5,
       isEditable: false,
     },
 /*
