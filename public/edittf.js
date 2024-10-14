@@ -1,4 +1,4 @@
-"use strict";
+'use strict'
 /** This code adapted from Simon Rawles
  *  by Peter Kwan
  *  with contributions from Alistair Cree.
@@ -20,7 +20,7 @@
 // section 4, provided you include this license notice and a URL
 // through which recipients can access the Corresponding Source.
  */
- 
+
 /* @todo load from edit.tf
 function load_from_hash(TTXPage* page, char* str)
 {
@@ -54,7 +54,6 @@ function load_from_hash(TTXPage* page, char* str)
                   std::cout << "can not find character " << ch << std::endl;
               }
               uint32_t code=(pos-base64) &0xff;
-
 
               for (uint8_t b=0x20;b>0;b>>=1) // Source bit mask
               {
@@ -133,75 +132,65 @@ function load_from_hash(TTXPage* page, char* str)
  * \param cset A character set 0-Eng 1-Ger 2-Swe 3-Ita 4-Bel 5-ASCII 6=Heb 7=Cyr
  * \param website The website prefix eg. "http://edit.tf"
  * \param encoding
- */ 
-// function save_to_hash(int cset, char* encoding, uint8_t cc[25][40], const char* website, TTXPage* page)
-let save_to_hash=function(cset, website, page)
-{
+ */
+// function saveToHash(int cset, char* encoding, uint8_t cc[25][40], const char* website, TTXPage* page)
+const saveToHash = function (cset, website, page) {
+  // Construct the metadata as described above.
+  const metadata = '/#' + cset + ':'
 
-	// Construct the metadata as described above.
-	var metadata = "/#"+cset+":"
+  let encoding = website + metadata
 
-	var encoding=website+metadata;
-
-	// Construct a base-64 array by iterating over each character
-	// in the frame.
-	var b64=[]  // was 1300 long
-	for (var i=0;i<1300;i++)
-  {
-    b64[i]=0
+  // Construct a base-64 array by iterating over each character
+  // in the frame.
+  const b64 = [] // was 1300 long
+  for (let i = 0; i < 1300; i++) {
+    b64[i] = 0
   }
-	var framebit=0;
-  console.log(page)  
-  var p=page.subPageList[page.subPage] // This is the page that we are sending
-	for (var r=0; r<25; r++) // Now include fastext
-	{
-    var txt=p[r].txt // This is the text of the row that we are sending
-    console.log("row="+txt)
-		for (var c=0; c<40; c++)
-		{
-      var ch=txt.charCodeAt(c)
-			for (var b=0; b<7; b++) // 7 bits per teletext character
-      {
-				// Read a bit and write a bit.
-				var bitval = ch & ( 1 << ( 6 - b ));
-				if (bitval)
-        {
+  let framebit = 0
+  console.log(page)
+  const p = page.subPageList[page.subPage] // This is the page that we are sending
+  for (let r = 0; r < 25; r++) { // Now include fastext
+    const txt = p[r].txt // This is the text of the row that we are sending
+    console.log('row=' + txt)
+    for (let c = 0; c < 40; c++) {
+      const ch = txt.charCodeAt(c)
+      for (let b = 0; b < 7; b++) { // 7 bits per teletext character
+        // Read a bit and write a bit.
+        const bitval = ch & (1 << (6 - b))
+        if (bitval) {
           // Work out the position of the character in the
           // base-64 encoding and the bit in that position.
-          var b64bitoffset = framebit % 6;
-          var b64charoffset = ( framebit - b64bitoffset ) / 6;
-          b64[b64charoffset] |= 1 << ( 5 - b64bitoffset );
+          const b64bitoffset = framebit % 6
+          const b64charoffset = (framebit - b64bitoffset) / 6
+          b64[b64charoffset] |= 1 << (5 - b64bitoffset)
         }
-				framebit++;
-			}
-		}
-	}
-
-	// Encode bit-for-bit.
-	var sz=encoding.length
-	var base64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
-	for (var i = 0; i < 1167; i++)
-  {
-		encoding+=base64[b64[i]]
-	}
-	// metadata (@todo for zxnet )
-	  var pageNumber=page.pageNumber
-	  var subcode=page.subPage
-	  //var status="0x8000" // page.GetPageStatus()
-	  encoding+=":PN="+(pageNumber.toString(16)) // 3
-    encoding+=":SC="+ subcode // 4
-    encoding+=":X270="+page.redLink.toString(16)+"0000"+ // The six Fastext links
-           page.greenLink.toString(16)+"0000"+
-           page.yellowLink.toString(16)+"0000"+
-           page.cyanLink.toString(16)+"0000"+
-           "8ff0000"+
-           page.indexLink+"0000"
-    if (page.redLink!=0x900)
-    {
-      encoding+="F" // If we got a Fastext FL line, display it.
+        framebit++
+      }
     }
+  }
+
+  // Encode bit-for-bit.
+  // const sz = encoding.length
+  const base64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
+  for (let i = 0; i < 1167; i++) {
+    encoding += base64[b64[i]]
+  }
+  // metadata (@todo for zxnet )
+  const pageNumber = page.pageNumber
+  const subcode = page.subPage
+  // var status="0x8000" // page.GetPageStatus()
+  encoding += ':PN=' + (pageNumber.toString(16)) // 3
+  encoding += ':SC=' + subcode // 4
+  encoding += ':X270=' + page.redLink.toString(16) + '0000' + // The six Fastext links
+    page.greenLink.toString(16) + '0000' +
+    page.yellowLink.toString(16) + '0000' +
+    page.cyanLink.toString(16) + '0000' +
+    '8ff0000' +
+    page.indexLink + '0000'
+  if (page.redLink !== 0x900) {
+    encoding += 'F' // If we got a Fastext FL line, display it.
+  }
   //   encoding+=":X270=12300008FF00008FF000070000008FF00008FF0000" // @todo
-	// encoding[1167+sz]=0;
+  // encoding[1167+sz]=0;
   return encoding
 }
-

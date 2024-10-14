@@ -1,70 +1,57 @@
-"use strict";
+'use strict'
+/* global constrain */
 /** Cursor class for teletext
  */
-class TTXCURSOR
-{
-  constructor()
-  {
-    this.x=0
-    this.y=0
-    this.hide=true
+class TTXCURSOR {
+  constructor () {
+    this.x = 0
+    this.y = 0
+    this.hide = true
   }
-  
-  right()
-  {
+
+  right () {
     this.x++
-    if (this.x>39)
-    {
-        this.x=39
+    if (this.x > 39) {
+      this.x = 39
     }
-    this.dump("R")
+    this.dump('R')
     return this.x
   }
-  
-  left()
-  {
+
+  left () {
     this.x--
-    if (this.x<0)
-    {
-        this.x=0
+    if (this.x < 0) {
+      this.x = 0
     }
-    this.dump("L")
+    this.dump('L')
     return this.x
   }
-  
-  up()
-  {
+
+  up () {
     this.y--
-    if (this.y<0)
-    {
-        this.y=0
+    if (this.y < 0) {
+      this.y = 0
     }
-    this.dump("U")    
+    this.dump('U')
     return this.y
   }
-  
-  down()
-  {
+
+  down () {
     this.y++
-    if (this.y>24)
-    {
-        this.y=24
+    if (this.y > 24) {
+      this.y = 24
     }
-    this.dump("D")    
+    this.dump('D')
     return this.y
   }
-  
-  moveTo(x,y)
-  {    
-    this.x=constrain(x,0,39)
-    this.y=constrain(y,0,24)
-    this.dump("M")    
+
+  moveTo (x, y) {
+    this.x = constrain(x, 0, 39)
+    this.y = constrain(y, 0, 24)
+    this.dump('M')
   }
-  
-  dump(ch)
-  {
-    // console.log("cursor="+ch+" ("+this.x+","+this.y+")")    
+
+  dump (ch) {
+    // console.log("cursor="+ch+" ("+this.x+","+this.y+")")
   }
 } // TTXCursor
-
-

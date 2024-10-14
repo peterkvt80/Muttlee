@@ -145,7 +145,7 @@ const CONFIG = {
       port: 80,
 
       repoType: 'git',
-      updateUrl: 'https://github.com/teletexx/service-artfax.git',
+      updateUrl: 'git@github.com:peterkvt80/service-artfax.git',
       updateInterval: 60,
 
       isEditable: true,
@@ -380,9 +380,10 @@ const CONFIG = {
   [CONST.CONFIG.NUM_COLUMNS]: 40,
   [CONST.CONFIG.NUM_ROWS]: 25,
 
-  [CONST.CONFIG.CANVAS_WIDTH]: 562,
+  [CONST.CONFIG.CANVAS_WIDTH]: 600,
   [CONST.CONFIG.CANVAS_HEIGHT]: 510,
   [CONST.CONFIG.CANVAS_PADDING_RIGHT_SINGLE_COLUMN]: true,
+  [CONST.CONFIG.TELETEXT_FONT_SIZE]: 20,
 
 
   // explicitly whitelist config values that are available in the frontend
@@ -420,6 +421,7 @@ const CONFIG = {
     CONST.CONFIG.CANVAS_WIDTH,
     CONST.CONFIG.CANVAS_HEIGHT,
     CONST.CONFIG.CANVAS_PADDING_RIGHT_SINGLE_COLUMN,
+    CONST.CONFIG.TELETEXT_FONT_SIZE,
   ],
 };
 
