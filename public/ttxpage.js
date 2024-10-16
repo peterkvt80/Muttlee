@@ -6,11 +6,14 @@
 /* global TTXCURSOR */ // external classes
 /* global history, inputPage, line, gTtxW, gTtxH, gridOffsetVertical, ttxFont, ttxFontDH */ // my externals
 /* global nf, hour, minute, int, color, stroke, textFont, textSize, noStroke, fill, red, green, blue, stroke, char, text  */ // externals (p5js)
+
 // Timer for flashing cursor and text
 let flashState = false
 let tickCounter = 0 // For timing carousels (in steps of half a second)
 
 setInterval(toggle, 500)
+
+let allocation_count = 0
 
 function toggle () {
   tickCounter++
@@ -48,7 +51,7 @@ window.TTXPAGE = function () {
 
   // this.timer=7 // This is global. Replaced by a per page timer
 
-  // subPageList contains the rows. metadata contains other data like timing.
+  // subPageList contains the pages of rows. metadata contains other data like timing.
   // if subPageList is modified, then metadata must be done at the same time
   this.subPageList = [] // Subpage just contains rows.
   this.metadata = [] // Metadata contains other things that a subpage needs, just the timer at the moment
@@ -116,7 +119,21 @@ window.TTXPAGE = function () {
     this.subPage = 0
     this.pageNumber = p /// @todo Convert this to do all sub pages
     this.pageNumberEntry = p.toString(16)
-    this.subPageList = []
+    
+    ///////// DEVELOPMENT START
+    // What may be the problem is that we need to clear subPageList first
+    // or we get rows left behind out of reach of the garbage collector
+    // Clear all the old rows of the subPage.
+    // This doesn't have a noticeable effect
+    for (let page of this.subPageList) {
+      for (let row of page) {
+        row=null
+      }
+      page = []
+    }
+    console.log("subpages = " + this.subPageList)
+    ///////// DEVELOPMENT END
+    this.subPageList = [] // [!] todo Possibly run through the subpages and remove their rows
 
     this.addPage(this.pageNumber)
 
@@ -157,6 +174,15 @@ window.TTXPAGE = function () {
   /** @brief Add a page to the sub page list
    */
   this.addPage = function (number) {
+    allocation_count++ // wsfn
+    console.log(" pages = " + allocation_count) // wsfn
+    
+    // clear out data from previous page
+    if (this.rows !== undefined) {
+      for (let row of this.rows) {
+        row = null
+      }
+    }
     this.rows = []
 
     // As rows go from 0 to 31 and pages start at 100, we can use the same parameter for both
@@ -497,6 +523,12 @@ window.TTXPAGE = function () {
    * @brief Clear all rows to blank spaces
    */
   this.setBlank = function () {
+     for (let page of this.subPageList) {
+      for (let row of page) {
+        row=null
+      }
+      page = []
+    }
     this.subPageList = []
     this.metadata = []
 

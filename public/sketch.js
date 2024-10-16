@@ -326,7 +326,7 @@ function setup () {
   inputPage = select('#pageNumber')
 
   // set frame rate
-  frameRate(10)
+  frameRate(4) // Low because Muttlee chews CPU
 
   // set specific initial state values as a custom attribute on the body element (for CSS targeting)
   document.body.setAttribute(CONST.ATTR_DATA_SERVICE, service)
@@ -632,6 +632,7 @@ function fastextIndex () {
  */
 function fastext (index) {
   let createPage = false // Special case. If yellow link is >0x0fff then create a page
+  let page = 0
 
   switch (index) {
     case 1:
@@ -1257,36 +1258,51 @@ function khold () {
 */
 function touchStarted (event) {
   // only start block if touch event is within the page canvas, and is not on an overlaid non-canvas elment
+  // Assume it is a mouse click
+  let xLoc = mouseX
+  let yLoc = mouseY
+  // unless we have touches
+  if (touches.length > 0) {
+    xLoc = touches[0].x
+    yLoc = touches[0].y
+  }
   if (
     (event.target !== canvasElement) ||
-    (touchX > (CONFIG[CONST.CONFIG.CANVAS_WIDTH] * currentPixelDensity)) ||
-    (touchY > (CONFIG[CONST.CONFIG.CANVAS_HEIGHT] * currentPixelDensity))
+    (xLoc > (CONFIG[CONST.CONFIG.CANVAS_WIDTH] * currentPixelDensity)) ||
+    (yLoc > (CONFIG[CONST.CONFIG.CANVAS_HEIGHT] * currentPixelDensity))
   ) {
     // touch event not within canvas
     return
   }
 
-  blockStart = createVector(touchX, touchY)
+  blockStart = createVector(xLoc, yLoc)
 
   return false
 }
 
 function touchEnded () {
-  const blockEnd = createVector(touchX, touchY)
+  // Assume it is a mouse click
+  let xLoc = mouseX
+  let yLoc = mouseY
+  if (touches.length > 0) {
+    xLoc = touches.at(-1).x
+    yLoc = touches.at(-1).y
+  }
+  const blockEnd = createVector(xLoc, yLoc)
   blockEnd.sub(blockStart)
   blockStart = null // Need this to be null in case we return!
 
   // only start block if touch event is within the page canvas, and is not on an overlaid non-canvas elment
   if (
     (event.target !== canvasElement) ||
-    (touchX > (CONFIG[CONST.CONFIG.CANVAS_WIDTH] * currentPixelDensity)) ||
-    (touchY > (CONFIG[CONST.CONFIG.CANVAS_HEIGHT] * currentPixelDensity))
+    (xLoc > (CONFIG[CONST.CONFIG.CANVAS_WIDTH] * currentPixelDensity)) ||
+    (yLoc > (CONFIG[CONST.CONFIG.CANVAS_HEIGHT] * currentPixelDensity))
   ) {
     // touch event not within canvas
     return
   }
 
-  // Block needs to be a minimum distance (& possibly velocity?
+  // Block needs to be a minimum distance (& possibly velocity)?
   const mag = blockEnd.mag()
   if (mag < CONFIG[CONST.CONFIG.NUM_COLUMNS]) {
     return

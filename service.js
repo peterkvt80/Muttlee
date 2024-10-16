@@ -3,18 +3,17 @@
  *  Environment: node.js server side script
  *  @brief A service is a service name and a set of pages.
  */
-"use strict";
+'use strict'
 // import logger
-const LOG = require('./log.js');
-
+const LOG = require('./log.js')
 
 /** Constructor
  * @param serviceName - a Service name such as BBCONE_2007_06_19
  */
 global.Service = function (serviceName) {
   // member variables
-  this.name = serviceName;
-  this.pages = [];
+  this.name = serviceName
+  this.pages = []
 
   // What do we want to do with a service?
   // 1) Keep pages in numerical order
@@ -26,9 +25,9 @@ global.Service = function (serviceName) {
    */
   this.addPage = function (page) {
     if (this.findPage(page.pageNumber) === false) {
-      this.pages.push(page);
+      this.pages.push(page)
     }
-  };
+  }
 
   /** Seek the three digit page number that we are looking for
    * This is a part of a cacheing scheme so a missing page is not an errot
@@ -38,23 +37,23 @@ global.Service = function (serviceName) {
     LOG.fn(
       ['service', 'findPage'],
       `Looking for page=${mpp}`,
-      LOG.LOG_LEVEL_VERBOSE,
-    );
+      LOG.LOG_LEVEL_VERBOSE
+    )
 
     // Page out of range?
     if (mpp < 0x100 || mpp > 0x7ff) {
-      return false;
+      return false
     }
 
     // For each page in the service...
-    for (var p = 0; p < this.pages.length; p++) {
+    for (let p = 0; p < this.pages.length; p++) {
       if (this.pages[p].pageNumber === mpp) {
-        return this.pages[p];
+        return this.pages[p]
       }
     }
 
-    return false;
-  };
+    return false
+  }
 
   /** Switcher.
    *  If the message is for this service, send it to the pages
@@ -63,20 +62,20 @@ global.Service = function (serviceName) {
     LOG.fn(
       ['service', 'keyMessage'],
       `Got a keymessage, name=${this.name}, data=${key.s}`,
-      LOG.LOG_LEVEL_INFO,
-    );
+      LOG.LOG_LEVEL_INFO
+    )
 
     LOG.fn(
       ['service', 'keyMessage'],
       `key data=${JSON.stringify(key, null, 4)}`,
-      LOG.LOG_LEVEL_VERBOSE,
-    );
-  };
+      LOG.LOG_LEVEL_VERBOSE
+    )
+  }
 
   /** Match the given name with the service name
    * @return true if the service name matches
    */
   this.matchName = function (name) {
-    return this.name === name;
-  };
-};
+    return this.name === name
+  }
+}
