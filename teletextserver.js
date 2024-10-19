@@ -23,6 +23,8 @@ const PACKAGE_JSON = require('./package.json')
 // import logger
 const LOG = require('./log.js')
 
+let subPage = -1 // Used in doLoad to ensure that subpage numbers are logical
+
 function renderLogo (includeEndBlankLine = false) {
   // determine logo char array length
   const logoCharLength = CONFIG[CONST.CONFIG.CONSOLE_LOGO_CHAR_ARRAY].reduce(
@@ -376,13 +378,13 @@ let missingPage = 0
 const serviceManifests = {}
 
 function autosave () {
-  LOG.fn(
-    ['teletextserver', 'autosave'],
-    'Autosave',
-    LOG.LOG_LEVEL_VERBOSE
-  )
-
-  keystroke.saveEdits()
+  if (keystroke.saveEdits()) {
+    LOG.fn(
+      ['teletextserver', 'autosave'],
+      'Autosave',
+      LOG.LOG_LEVEL_VERBOSE
+    )
+  }
 }
 
 function keyMessage (data) {
@@ -529,7 +531,7 @@ function doClearPage (data) {
 
   keystroke.clearPage(data) // Clear the page
 
-  io.sockets.emit('blank', data) // Clear down the old data on te clients
+  io.sockets.emit('blank', data) // Clear down old data on the clients
 }
 
 /** Create the page and load it
@@ -567,10 +569,13 @@ function processServicePageLine (serviceData, data, line) {
   let row
 
   if (line.indexOf('PN') === 0) {
+    // [!] @todo The PN page must match the actual page number and not inadvertently get set to page 100
     // @todo: Need to implement carousels
-    data.line = line.substring(6)
-
+    data.line = line.substring(6) // [!] @todo Don't know why we set line to the subpage. Should we delete this?
+    // [!] todo: If not greater than the last subpage, set to one greater than the last subpage
+    data.s = Number(line.substring(6))
     io.sockets.emit('subpage', data)
+    console.log(data)
   } else if (line.indexOf('DE,') === 0) { // Detect a description row
     data.desc = line.substring(3)
 
@@ -810,6 +815,7 @@ function doLoad (data) {
 
   instream.on('error', pageNotFound)
 
+  subPage = -1 // Make sure that subPage numbers are logical
   const rl = readline.createInterface({
     input: instream,
     terminal: false
@@ -823,9 +829,7 @@ function doLoad (data) {
     )
   })
 
-  rl.on(
-    'close',
-    function () {
+  rl.on('close', function () {
       LOG.fn(
         ['teletextserver', 'doLoad'],
         'end of file',

@@ -205,12 +205,12 @@ window.TTXPAGE = function () {
    */
   this.setSubPage = function (s) {
     s = parseInt(s)
-
+    // [!] Some carousels start at 1, not 0. I think we need to say that they can't
     if ((s < 0) || (s > 79)) {
       s = 0 // Single page
-    } else {
-      s = s - 1 // Carousel (because carousels start at 1, but our array always starts at 0
-    }
+    } //else {
+      //s = s - 1 // Carousel (because carousels start at 1, but our array always starts at 0. [!] BAD RULE!
+    //}
 
     // @todo Check that s is in a subpage that exists and add it if needed.
     if (this.subPageList.length <= s) {

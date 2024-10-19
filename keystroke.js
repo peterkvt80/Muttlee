@@ -167,18 +167,20 @@ global.KeyStroke = function () {
     )
   }
 
-  /* Write the edits back to file */
+  /** Write the edits back to file
+   * @return true if there are edits that were done
+   */
   this.saveEdits = function () {
+    // Are there any edits to save?
+    if (this.eventList.length === 0) {
+      return false
+    }
+    
     LOG.fn(
-      ['keystroke', 'saveEdit'],
+      ['keystroke', 'saveEdit events to save = ' + this.eventList.length],
       '',
       LOG.LOG_LEVEL_INFO
     )
-
-    // Are there any edits to save?
-    if (this.eventList.length === 0) {
-      return
-    }
 
     // Sort the event list by S(service name) p(page 100..8ff) s(subpage 0..99) y(row 0..24)
     this.eventList.sort(
@@ -253,6 +255,7 @@ global.KeyStroke = function () {
         }
       )
     }
+    return true // we have done edits
   }
 
   this.copyback = function () {
