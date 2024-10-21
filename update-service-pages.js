@@ -100,6 +100,55 @@ if (options.help) {
 // initialise hasher
 const hasher = xxhash.xxh64(2654435761);
 
+/** For editable services, write back the pages
+ */
+async function readBackServices() {
+  // For all the services
+  for (let serviceId in CONFIG[CONST.CONFIG.SERVICES_AVAILABLE]) {
+    const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][serviceId];
+    // Filter only the editable services
+    if (serviceData.isEditable) {
+      console.log("[readBackServices] editable Service id = " + serviceId);
+      // cd /var/www/teletext-services
+      // cp /var/www/private/onair/<service>/*.tti .
+
+      ////// copy changed onair pages back to teletext-service //////
+      const serviceRepoDir = path.join(
+        CONFIG[CONST.CONFIG.SERVICE_PAGES_DIR],
+        serviceId,
+      );
+
+      const serviceOnairDir = path.join(
+        CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],
+        serviceId,
+      );
+      console.log('from:' + serviceOnairDir + " to " + serviceRepoDir);
+      const util = require('util');
+      const exec = util.promisify(require('child_process').exec);
+
+      async function cp(src, dest) {
+        const { stdout, stderr } = await exec('cp -u ' + src + ' ' + dest);
+        //console.log('stdout:', stdout);
+        //console.log('stderr:', stderr);
+      }
+      cp(serviceOnairDir+'/*.tti', serviceRepoDir);
+                        
+      // Add pages to repo. Warning. Only Git repos can be made editable
+      console.log("Destination URL = " + serviceData.updateUrl)
+      git(serviceRepoDir)
+       .add('*.tti')
+       .commit('Muttlee auto commit v1', ['-a'])
+//       .addRemote('origin', serviceData.updateUrl)
+       .push();
+//       .push(['-u', 'origin', 'master'], () => console.log('done'));
+      // git add *.tti
+      // Commit pages
+      // git commit -a -m "Muttlee auto commit"
+      // push to repo
+      // git push
+    } // editable service
+  } // for each service
+} // readBackServices
 
 async function updateServices() {
   for (let serviceId in CONFIG[CONST.CONFIG.SERVICES_AVAILABLE]) {
@@ -432,6 +481,7 @@ async function updateServices() {
   } // for each service (contnue here if there are no manifest updates)
 } // updateServices
 
-
+// For editable pages, write them back to the repo
+readBackServices();
 // run update function
 updateServices();
