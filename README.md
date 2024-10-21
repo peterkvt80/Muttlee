@@ -80,15 +80,14 @@ Install the project dependencies via the Node package manager:
 
 
 ### Running the server
-The system stays alive by using PM2. The environment is Debian so this is what worked for me.
+The system stays alive by using PM2. update-service-pages.js is set to run every five minutes. The environment is Debian so this is what worked for me.
 
-`sudo npm install pm2@latest -g`
-
-`pm2 start teletextserver.js`
-
-`pm2 startup ubuntu`
-
-`pm2 save`
+```
+sudo npm install pm2@latest -g
+pm2 start teletextserver.js
+pm2 start update-service-pages.js --cron "*/5 * * * *"
+pm2 save
+```
 
 
 ## Development
