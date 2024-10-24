@@ -126,6 +126,7 @@ async function readBackServices() {
       const util = require('util');
       const exec = util.promisify(require('child_process').exec);
 
+      // Copy updated files
       async function cp(src, dest) {
         const { stdout, stderr } = await exec('cp -u ' + src + ' ' + dest);
         //console.log('stdout:', stdout);
@@ -133,19 +134,12 @@ async function readBackServices() {
       }
       cp(serviceOnairDir+'/*.tti', serviceRepoDir);
                         
-      // Add pages to repo. Warning. Only Git repos can be made editable
+      ////// Add pages to repo. Warning. Only Git repos can be made editable //////
       console.log("Destination URL = " + serviceData.updateUrl)
       git(serviceRepoDir)
        .add('*.tti')
        .commit('Muttlee auto commit v1', ['-a'])
-//       .addRemote('origin', serviceData.updateUrl)
        .push();
-//       .push(['-u', 'origin', 'master'], () => console.log('done'));
-      // git add *.tti
-      // Commit pages
-      // git commit -a -m "Muttlee auto commit"
-      // push to repo
-      // git push
     } // editable service
   } // for each service
 } // readBackServices

@@ -219,8 +219,8 @@ const CONFIG = {
       port: 80,
 
       repoType: 'git',
-      updateUrl: 'https://github.com/teletexx/service-wiki.git',
-      updateInterval: 1440,
+      updateUrl: 'https://github.com/peterkvt80/service-wiki.git',
+      updateInterval: 10,
 
       isEditable: true,
     },
