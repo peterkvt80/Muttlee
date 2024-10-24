@@ -100,6 +100,7 @@ const CONFIG = {
   //     repoType: str,
   //
   //     // (optional) SVN or GIT repository containing the service's pages
+  //     // If isEditable===true then you must use a git repo, not https
   //     updateUrl: str,
   //     // (optional) number of minutes to wait before checking for updates
   //     updateInterval: int,
@@ -219,7 +220,7 @@ const CONFIG = {
       port: 80,
 
       repoType: 'git',
-      updateUrl: 'https://github.com/peterkvt80/service-wiki.git',
+      updateUrl: 'git@github.com:peterkvt80/service-wiki.git',
       updateInterval: 10,
 
       isEditable: true,
