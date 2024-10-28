@@ -13,7 +13,7 @@ let tickCounter = 0 // For timing carousels (in steps of half a second)
 
 setInterval(toggle, 500)
 
-let allocation_count = 0
+let allocationCount = 0
 
 function toggle () {
   tickCounter++
@@ -24,6 +24,8 @@ function toggle () {
 // Not much of a class
 function MetaData (displayTiming) {
   this.timer = displayTiming
+  /// @todo Probably not a lot more that we need to add
+  /// unless we have the actual sub page number
 }
 
 /// /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -34,7 +36,8 @@ const servicesData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE]
 window.TTXPAGE = function () {
   // Basic page properties
   this.pageNumber = CONST.PAGE_MIN
-  this.subPage = 0 // This is the integer to index the current sub page
+  // Integer: The current sub page being shown or edited
+  this.subPage = undefined
   this.cursor = new TTXCURSOR()
   this.service = undefined
   this.serviceData = {}
@@ -48,6 +51,7 @@ window.TTXPAGE = function () {
   this.editMode = CONST.EDITMODE_NORMAL
   this.description = ''
   this.showGrid = false
+  this.subPageZeroBase = false
 
   // this.timer=7 // This is global. Replaced by a per page timer
 
@@ -76,6 +80,8 @@ window.TTXPAGE = function () {
     // this.timer=t
     if (this.metadata[this.subPage] !== undefined) {
       this.metadata[this.subPage].timer = t
+    } else {
+      console.log('[setTimer] This should not happen. subPage should have been defined by now')
     }
   }
 
@@ -116,23 +122,27 @@ window.TTXPAGE = function () {
   this.setPage = function (p) {
     tickCounter = 1
 
-    this.subPage = 0
+    this.subPage = undefined // This should be set soon
     this.pageNumber = p /// @todo Convert this to do all sub pages
     this.pageNumberEntry = p.toString(16)
-    
-    ///////// DEVELOPMENT START
+
+    /// ////// DEVELOPMENT START
     // What may be the problem is that we need to clear subPageList first
     // or we get rows left behind out of reach of the garbage collector
     // Clear all the old rows of the subPage.
     // This doesn't have a noticeable effect
     for (let page of this.subPageList) {
+    /* Suspect that this does nothing
       for (let row of page) {
         row=null
       }
+      */
       page = []
     }
-    console.log("subpages = " + this.subPageList)
-    ///////// DEVELOPMENT END
+    console.log('subpages = ' + this.subPageList)
+    /// ////// DEVELOPMENT END
+    this.subPageZeroBase = false
+
     this.subPageList = [] // [!] todo Possibly run through the subpages and remove their rows
 
     this.addPage(this.pageNumber)
@@ -174,14 +184,16 @@ window.TTXPAGE = function () {
   /** @brief Add a page to the sub page list
    */
   this.addPage = function (number) {
-    allocation_count++ // wsfn
-    console.log(" pages = " + allocation_count) // wsfn
-    
+    allocationCount++ // wsfn Won't need this.
+    console.log('[addPage] number = ' + number.toString(16) + ' ' + ' pages = ' + allocationCount) // wsfn Won't need this
+
     // clear out data from previous page
     if (this.rows !== undefined) {
+    /* Suspect tha this doesn't work
       for (let row of this.rows) {
         row = null
       }
+      */
     }
     this.rows = []
 
@@ -204,14 +216,13 @@ window.TTXPAGE = function () {
    * @param s Subpage number. All subsequent row/char updates go to this subpage.
    */
   this.setSubPage = function (s) {
+    // [!] @todo If there is an 'undefined' subpage, then replace it with this subpage.
     s = parseInt(s)
-    // [!] Some carousels start at 1, not 0. I think we need to say that they can't
-    if ((s < 0) || (s > 79)) {
+    console.log('Setting sub page = ' + s) // wsfn
+    // [!] Some carousels start at 1, not 0. We should cope with that
+    if ((s < 0) || (s > 79) || (s === undefined)) {
       s = 0 // Single page
-    } //else {
-      //s = s - 1 // Carousel (because carousels start at 1, but our array always starts at 0. [!] BAD RULE!
-    //}
-
+    }
     // @todo Check that s is in a subpage that exists and add it if needed.
     if (this.subPageList.length <= s) {
       if (this.subPageList.length >= (s - 1)) {
@@ -223,7 +234,6 @@ window.TTXPAGE = function () {
         s = 0
       }
     }
-
     this.subPage = s
   }
 
@@ -233,7 +243,7 @@ window.TTXPAGE = function () {
   this.setRow = function (r, txt) {
     if ((r >= 0) && (r <= 24)) {
       // don't allow subpage to be less than 0
-      if (this.subPage < 0) {
+      if (this.subPage < 0 || this.subPage === undefined) {
         this.subPage = 0
       }
 
@@ -254,7 +264,7 @@ window.TTXPAGE = function () {
   this.getRow = function (r) {
     if ((r >= 0) && (r <= 24)) {
       // don't allow subpage to be less than 0
-      if (this.subPage < 0) {
+      if (this.subPage < 0 || this.subPage === undefined) {
         this.subPage = 0
       }
 
@@ -277,12 +287,26 @@ window.TTXPAGE = function () {
 
   // Helpers for navigating subpages
   this.nextSubpage = function () {
-    this.subPage = (this.subPage + 1) % this.subPageList.length
+    // Cycle from 1 to n, or possibly from 0 to n-1
+    // Find out which way the carousel is numbered
+    console.log('carousel zero base = ' + this.subPageZeroBase)
+    if (this.subPageZeroBase) {
+      this.subPage = ((this.subPage + 1) % (this.subPageList.length)) // 0..n-1
+    } else {
+      this.subPage = 1 + (this.subPage % (this.subPageList.length - 1)) // 1..n
+    }
   }
 
   this.prevSubpage = function () {
+    // subPage might include subPage 0 so it needs to be handled carefully
     if (this.subPage > 0) {
       this.subPage--
+      /*
+      if (this.subPage === 0) { // wsfn
+        let x
+        x = this.subPage
+      }
+      */
     } else {
       this.subPage = this.subPageList.length - 1
     }
@@ -523,16 +547,19 @@ window.TTXPAGE = function () {
    * @brief Clear all rows to blank spaces
    */
   this.setBlank = function () {
-     for (let page of this.subPageList) {
+    for (let page of this.subPageList) {
+    /*
       for (let row of page) {
-        row=null
+        row = null
       }
+      */
       page = []
     }
     this.subPageList = []
     this.metadata = []
 
     this.addPage(this.pageNumber)
+    this.subPageZeroBase = false
   }
 
   /**

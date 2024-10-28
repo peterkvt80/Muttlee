@@ -259,7 +259,7 @@ function setup () {
   gTtxW = parseInt(textWidth('M'), 10) // ensure calculated character width is an int (not a float) for sharpest rendering quality
   gTtxH = CONFIG[CONST.CONFIG.TELETEXT_FONT_SIZE]
 
-  console.log("gTtxW = " + gTtxW + " gTtxH = " + gTtxH)
+  console.log('gTtxW = ' + gTtxW + ' gTtxH = ' + gTtxH)
 
   // create the p5 canvas, and move it into the #canvas DOM element
   cnv = createCanvas(
@@ -551,6 +551,14 @@ function setSubPage (data) {
     return
   }
 
+  if (!myPage.subPageZeroBase) {
+    myPage.subPageZeroBase = data.s === 0 // Subpages start from 0, not 1
+  }
+
+  // [!] TODO. If the first number we are given is not 00
+  // then we end up having a phantom blank 00 page in a carousel.
+  // We should ideally overwrite the blank subpage instead of creating a new subpage.
+  // Or less ideally, we should just get everything to ignore the blank 00.
   myPage.setSubPage(
     parseInt(data.line)
   )
@@ -679,7 +687,7 @@ function fastext (index) {
     const data = {
       S: myPage.service,
       p: page, // Page mpp
-      s: 0, // @ todo subpage
+      s: undefined, // subpage doesn't default to 0
       x: 0,
       y: 0,
       rowText: '',
