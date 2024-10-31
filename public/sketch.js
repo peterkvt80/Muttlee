@@ -280,8 +280,8 @@ function setup () {
     function () {
       if (editMode !== CONST.EDITMODE_NORMAL) {
         // Only need to do this in edit mode
-        const xLoc = int((mouseX / currentPixelDensity) / gTtxW)
-        const yLoc = int(((mouseY / currentPixelDensity) - gridOffsetVertical) / gTtxH)
+        const xLoc = int((mouseX) / gTtxW)
+        const yLoc = int(((mouseY) - gridOffsetVertical) / gTtxH)
 
         if (
           (xLoc >= 0) && (xLoc < CONFIG[CONST.CONFIG.NUM_COLUMNS]) &&
