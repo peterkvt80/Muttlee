@@ -146,7 +146,7 @@ const CONFIG = {
       port: 80,
 
       repoType: 'git',
-      updateUrl: 'git@github.com:peterkvt80/service-artfax.git',
+      updateUrl: 'git@github.com:teletexx/service-artfax.git',
       updateInterval: 60,
 
       isEditable: true,

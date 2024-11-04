@@ -495,6 +495,7 @@ function newConnection (socket) {
   socket.on('initialLoad', doInitialLoad)
   socket.on('create', doCreate)
   socket.on('clearPage', doClearPage)
+  socket.on('description', doSetDescription)
 
   // When this connection closes we remove the connection id
   socket.on('disconnect', function () {
@@ -515,6 +516,22 @@ function newConnection (socket) {
       ((CONFIG[CONST.CONFIG.DEFAULT_AUTOSAVE_INTERVAL] || 60) * 1000)
     )
   }
+}
+
+/** Set the description field
+ */
+function doSetDescription (data) {
+  LOG.fn(
+    ['teletextserver', 'doSetDescription'],
+    [
+      `Setting description = ${data.desc}` //,
+      // `keyMessage S=${data.S}, p=${data.p}, s=${data.s}`
+    ],
+    LOG.LOG_LEVEL_VERBOSE
+  )
+  // [!] TODO
+  // Write the description back to the original file
+  // Broadcast the message to all listeners
 }
 
 /** Clear the current page to blank
@@ -830,16 +847,16 @@ function doLoad (data) {
   })
 
   rl.on('close', function () {
-      LOG.fn(
-        ['teletextserver', 'doLoad'],
-        'end of file',
-        LOG.LOG_LEVEL_VERBOSE
-      )
+    LOG.fn(
+      ['teletextserver', 'doLoad'],
+      'end of file',
+      LOG.LOG_LEVEL_VERBOSE
+    )
 
-      // When the file has been read, we want to send any keystrokes that might have been added to this page
-      keystroke.replayEvents(io.sockets)
-      // How are we going to send this?
-    }
+    // When the file has been read, we want to send any keystrokes that might have been added to this page
+    keystroke.replayEvents(io.sockets)
+    // How are we going to send this?
+  }
   )
 }
 

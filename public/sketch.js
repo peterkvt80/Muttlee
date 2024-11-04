@@ -32,6 +32,9 @@ let digit1 = '1'
 let digit2 = '0'
 let digit3 = '0'
 
+// description
+let focusedDescription = false
+
 // comms
 let socket
 let gClientID = null // Our unique connection id
@@ -47,6 +50,7 @@ let manifestPageNumbers = []
 
 // DOM
 let inputPage
+let inputDescription
 let menuButton
 let serviceSelector, serviceSelector2, scaleSelector, controlsSelector, displaySelector, autoplaySelector
 let manifestModal, instructionsModal, aboutModal
@@ -287,8 +291,8 @@ function setup () {
           (xLoc >= 0) && (xLoc < CONFIG[CONST.CONFIG.NUM_COLUMNS]) &&
           (yLoc >= 0) && (yLoc < CONFIG[CONST.CONFIG.NUM_ROWS])
         ) {
+          focusedDescription = false // The description widget shouldn't block the canvas
           myPage.cursor.moveTo(xLoc, yLoc)
-
           LOG.fn(
             ['sketch', 'setup', 'mousePressed'],
             `The mouse was clicked at x=${xLoc}, y=${yLoc}`,
@@ -324,6 +328,7 @@ function setup () {
 
   // create page number input field
   inputPage = select('#pageNumber')
+  inputDescription = select('description')
 
   // set frame rate
   frameRate(4) // Low because Muttlee chews CPU
@@ -595,7 +600,11 @@ function setDescription (data) {
   }
 
   myPage.description = data.desc
-  document.getElementById('description').innerHTML = '<strong>Page info:</strong> ' + data.desc
+  // [!] probably what is wrong is that "description" is not unique. It is both the outer div and the input ID.
+  // Got to change that!
+  const inputHTML = '<input type="text" id="description" name="description" maxLength="40" value="' + data.desc + '" onchange="inputDescriptionText();" onfocus="focusDescription();" onblur="blurDescription();" </input>'
+  document.getElementById('descriptionDiv').innerHTML = '<strong> Page info:</strong> ' + inputHTML
+  inputDescription = document.getElementById('description')
 }
 
 function setPageNumber (data) {
@@ -921,6 +930,49 @@ function inputNumber () {
   }
 }
 
+/**
+ * When the description changes, send it back to the server
+ */
+function inputDescriptionText () {
+  LOG.fn(
+    ['sketch', 'inputDescription'],
+    'InputDescription changed',
+    LOG.LOG_LEVEL_VERBOSE
+  )
+  console.log('[sketch] inputDescription TRIGGERED')
+  // Get the new description
+  const newDescription = document.getElementById('description').value
+  myPage.description = newDescription
+  // Build the description message
+  const data = {
+    S: myPage.service, // The codename such as artfax or wtf
+    p: myPage.pageNumber, // Page mpp
+    desc: newDescription,
+    id: gClientID
+  }
+
+  // send it
+  socket.emit('description', data)
+}
+
+function focusDescription () {
+  LOG.fn(
+    ['sketch', 'focusDescription'],
+    'focusDescription triggered',
+    LOG.LOG_LEVEL_VERBOSE
+  )
+  console.log('[sketch] focusDescription TRIGGERED')
+  focusedDescription = true
+}
+
+function blurDescription () {
+  LOG.fn(
+    ['sketch', 'blurDescription'],
+    'blurDescription triggered',
+    LOG.LOG_LEVEL_VERBOSE
+  )
+  focusedDescription = false
+}
 /** built in function.
  *  Fires on all key presses - This is called before keyTyped
  */
@@ -933,8 +985,11 @@ function keyPressed () {
 
   let handled = true
 
-  if ((inputPage && inputPage.elt) && (document.activeElement === inputPage.elt)) {
-    // Don't prevent native event propagation on input element
+  if (
+    ((inputPage && inputPage.elt) && (document.activeElement === inputPage.elt)) ||
+    ((inputDescription && inputDescription.value) && (document.activeElement === inputDescription))
+  ) {
+    // Allow native event propagation on input elements. (ie. Make special keys work like cursor, backspace etc.)
     handled = false
   } else {
     // todo: Kill refresh cycles while the input is active.
@@ -955,7 +1010,8 @@ function keyPressed () {
         if (editMode === CONST.EDITMODE_EDIT) myPage.cursor.down()
         break
 
-      case ESCAPE:
+      case ESCAPE: {
+      
         const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][myPage.service]
 
         // Services that are editable
@@ -978,7 +1034,7 @@ function keyPressed () {
         }
 
         break
-
+      }
       case TAB: // Insert a space
         myPage.insertSpace() // Do our page
         insertSpace() // Any other clients
@@ -1112,6 +1168,16 @@ function keyTyped () {
       0
     )
 
+    return true // Don't prevent native event propagation on input element
+  } else if (focusedDescription) {
+    // keypress in the description input field...
+    console.log('[sketch, keyTyped] inputDescription happened. key = ' + key)
+    // If key is Enter we are done editing the description
+    // so blur the input
+    if (key === 'Enter') {
+      inputDescription.elt.blur()
+      blurDescription()
+    }
     return true // Don't prevent native event propagation on input element
   } else {
     // keypress anywhere else...
@@ -1316,9 +1382,10 @@ function touchEnded () {
     return
   }
 
+  /* Guess we aren't doing this yet. Stop "standard" from complaining
   const heading = blockEnd.heading()
   const dir = 4 * heading / PI
-
+  */ 
   return false
 }
 
