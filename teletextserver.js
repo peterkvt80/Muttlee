@@ -530,8 +530,20 @@ function doSetDescription (data) {
     LOG.LOG_LEVEL_VERBOSE
   )
   // [!] TODO
-  // Write the description back to the original file
-  // Broadcast the message to all listeners
+  // Push the description to the keystroke buffer
+  
+  const txt = {
+    S: data.S, // service number
+    p: data.p,  // page number
+    s: 0, // sub page
+    k: data.desc, // key
+    x: CONST.SIGNAL_DESCRIPTION_CHANGE,
+    y: 0,
+    id: data.id
+  }
+  keystroke.addEvent(txt)
+  // Broadcast the changed description to all listeners
+  // [!] @TODO
 }
 
 /** Clear the current page to blank

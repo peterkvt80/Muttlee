@@ -117,6 +117,18 @@ global.Page = function () {
         )
       }
 
+      if (code === 'DE') { // Description
+        LOG.fn(
+          ['page', 'keyMessage'],
+          `Parser in description=${line}`,
+          LOG.LOG_LEVEL_VERBOSE
+        )
+        // If new description comes in, it replaces this
+        if (key.x === CONST.SIGNAL_DESCRIPTION_CHANGE) {
+          this.ttiLines[i] = 'DE,' + key.k
+        }
+      }
+
       if (code === 'OL') { // Output Line
         let ix = 0
         let row = 0

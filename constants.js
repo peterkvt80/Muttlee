@@ -39,6 +39,7 @@ const CONST = {
   // state signals
   SIGNAL_PAGE_NOT_FOUND: -1,
   SIGNAL_INITIAL_LOAD: 2000,
+  SIGNAL_DESCRIPTION_CHANGE: 2001,
 
   // display modes
   DISPLAY_STANDARD: 'standard',

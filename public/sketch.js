@@ -282,25 +282,29 @@ function setup () {
   // observe mouse press events on p5 canvas
   cnv.mousePressed(
     function () {
-      if (editMode !== CONST.EDITMODE_NORMAL) {
-        // Only need to do this in edit mode
-        const xLoc = int((mouseX) / gTtxW)
-        const yLoc = int(((mouseY) - gridOffsetVertical) / gTtxH)
+      const xLoc = int((mouseX) / gTtxW)
+      const yLoc = int(((mouseY) - gridOffsetVertical) / gTtxH)
 
-        if (
-          (xLoc >= 0) && (xLoc < CONFIG[CONST.CONFIG.NUM_COLUMNS]) &&
-          (yLoc >= 0) && (yLoc < CONFIG[CONST.CONFIG.NUM_ROWS])
-        ) {
-          focusedDescription = false // The description widget shouldn't block the canvas
-          myPage.cursor.moveTo(xLoc, yLoc)
-          LOG.fn(
-            ['sketch', 'setup', 'mousePressed'],
-            `The mouse was clicked at x=${xLoc}, y=${yLoc}`,
-            LOG.LOG_LEVEL_VERBOSE
-          )
+      // Did we click on the canvas?
+      if (
+        (xLoc >= 0) && (xLoc < CONFIG[CONST.CONFIG.NUM_COLUMNS]) &&
+        (yLoc >= 0) && (yLoc < CONFIG[CONST.CONFIG.NUM_ROWS])
+      ) {
+        // Make sure the description input is not focussed
+        inputDescription.blur()
+        blurDescription()
+
+        // Move the cursor if we are in edit mode
+        if (editMode !== CONST.EDITMODE_NORMAL) {
+          // Only need to do this in edit mode
+            myPage.cursor.moveTo(xLoc, yLoc)
+            LOG.fn(
+              ['sketch', 'setup', 'mousePressed'],
+              `The mouse was clicked at x=${xLoc}, y=${yLoc}`,
+              LOG.LOG_LEVEL_VERBOSE
+            )
         }
-      }
-
+      }      
       return false // Prevent default behaviour
     }
   )
@@ -1175,7 +1179,7 @@ function keyTyped () {
     // If key is Enter we are done editing the description
     // so blur the input
     if (key === 'Enter') {
-      inputDescription.elt.blur()
+      inputDescription.blur()
       blurDescription()
     }
     return true // Don't prevent native event propagation on input element

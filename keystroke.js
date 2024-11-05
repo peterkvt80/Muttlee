@@ -175,7 +175,7 @@ global.KeyStroke = function () {
     if (this.eventList.length === 0) {
       return false
     }
-    
+
     LOG.fn(
       ['keystroke', 'saveEdit events to save = ' + this.eventList.length],
       '',
