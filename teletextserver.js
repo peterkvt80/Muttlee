@@ -531,10 +531,10 @@ function doSetDescription (data) {
   )
   // [!] TODO
   // Push the description to the keystroke buffer
-  
+
   const txt = {
     S: data.S, // service number
-    p: data.p,  // page number
+    p: data.p, // page number
     s: 0, // sub page
     k: data.desc, // key
     x: CONST.SIGNAL_DESCRIPTION_CHANGE,

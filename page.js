@@ -90,6 +90,9 @@ global.Page = function () {
       LOG.LOG_LEVEL_VERBOSE
     )
 
+    // Validator does a tti format grammar check and splices out bad sections
+    validatePage(this.ttiLines)
+
     // Scan for the subpage of the key
     for (let i = 0; i < this.ttiLines.length; i++) {
       let line = this.ttiLines[i] // get the next line
@@ -105,6 +108,7 @@ global.Page = function () {
 
       if (code === 'PN') { // Page Number: Get the MPP
         pageNumber = parseInt(line, 16) >> 8
+        // [!] @TODO Check the SS. Don't rely on the SC.
       }
 
       if (code === 'SC') {
@@ -255,4 +259,96 @@ global.Page = function () {
 function setCharAt (str, index, chr) {
   if (index > str.length - 1) return str
   return str.substr(0, index) + chr + str.substr(index + 1)
+}
+
+/**
+ * @brief Validate a teletext page, and remove bits that are invalid
+ * Rules:
+ * 1) A header starts with the first line of the page
+ * 2) A header can contain any of these line types in any order DE, DS, SP, CT, PN, SC, PS, RE
+ * 3) Each header can have zero or one occurence of these line types, except PN which must exist.
+ * 4) A header must have a valid PN. Any OL that arrives with a valid PN is discarded.
+ * 5) When OL is received, it becomes the page body.
+ * 6) When FL is received, expect the next header.
+ * 7) If a header arrives while in body mode, go to header mode
+ * 8) The next header must have a page number mppss, where mpp is the same and ss is a higher number than the previous header.
+ * The general idea is that if we don't like a line, make it null in the first pass, then splice out the nulls in the second pass
+ * @param page : A page is a ttifile that has been loaded into an array of strings
+ */
+function validatePage (ttiLines) {
+  // State machine constants
+  const EXPECT_HEADER = 0 // Initial condition. (rule 1)
+  const IN_HEADER = 1 // While parsing header (rule 2)
+  const IN_VALID_PN = 2 // Found a valid PN in the header (rule 4)
+  const IN_BODY = 3 // While parsing OL rows (rule 5)
+
+  // Parse values
+  let parseState = EXPECT_HEADER // state machine (rule 1)
+  let mpp = -1 // PN: Magazine and page number 100 .. 8ff
+  let ss = -1 // PN: Subpage 00..79
+  console.log('[validatPage] ' + ttiLines)
+
+  LOG.fn(
+    ['page', 'validatePage'],
+    `Line count = ${ttiLines.length}`,
+    LOG.LOG_LEVEL_VERBOSE
+  )
+  for (const li in ttiLines) {
+    const line = ttiLines[li]
+    console.log('The next line is ' + line)
+    const tokens = line.split(',')
+    // Handle the header rows (rule 2)
+    const isHeader = ['DE', 'DS', 'SP', 'CT', 'PN', 'SC', 'PS', 'RE'].includes(tokens[0])
+    console.log('isHeader  = ' + isHeader)
+    if (isHeader) {
+      if (parseState === EXPECT_HEADER) {
+        console.log('[PARSER] IN_HEADER')
+        parseState = IN_HEADER
+      }
+      // [!] @TODO Check the occurences of each type. Allow no more than one (rule 3)
+      // [!] @TODO Null out duplicates
+      if (tokens[0] === 'PN') { // Does this header have a valid PN? (Rule 4)
+        const mag = parseInt(tokens[1], 16) >> 8
+        const subpage = parseInt(tokens[1].substring(3))
+        mpp = mag
+        // If the PN valid? (rule 8)
+        if ((mpp > 0 && mpp !== mag) || (ss > -1 && ss >= subpage)) {
+          // Subsequent subpage is invalid.
+          // Either the mpp doesn't match or subpage is not increasing
+          ttiLines[li] = '' // Blank this line
+        } else {
+          mpp = mag
+          ss = subpage
+          console.log('[PARSER] IN_VALID_PN')
+          parseState = IN_VALID_PN // We can now accept an OL (rule 4)
+        }
+        console.log('PN mag = ', mag.toString(16))
+        console.log('PN sub = ', subpage)
+        console.log('PN = ', tokens[1])
+      }
+    }
+    // Is it a valid row?
+    const isBody = tokens[0] === 'OL'
+    if (isBody && parseState === IN_VALID_PN) {
+      parseState = IN_BODY // (rule 5)
+      console.log('[PARSER] IN_BODY')
+    }
+
+    //
+    if (parseState === IN_BODY) {
+      if (tokens[0] === 'OL') {
+        // [!] @todo Check that there are no more than one rows in the range 0..24
+        // [!] @TODO Null out duplicates 0..24
+        // [!] @TODO Limit duplicates for special packets
+        // Is it a fastext link? (rule 6)
+      } else if (tokens[0] === 'FL') {
+        parseState = EXPECT_HEADER // Next subpage
+      } else {
+        console.log('[PARSER] EXPECT_HEADER')
+        parseState = EXPECT_HEADER // (rule 7)
+      }
+    }
+  } // For all lines
+
+  // [!] @TODO Parse again and splice out null lines
 }

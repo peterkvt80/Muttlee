@@ -85,7 +85,7 @@ The system stays alive by using PM2. update-service-pages.js is set to run every
 ```
 sudo npm install pm2@latest -g
 pm2 start teletextserver.js
-pm2 start update-service-pages.js --cron "*/5 * * * *"
+pm2 start update-service-pages.js --cron "*/5 * * * *" --no-autorestart
 pm2 save
 ```
 
