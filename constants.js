@@ -2,7 +2,8 @@
 const CONST = {
   // page numbers
   PAGE_MIN: 0x100,
-  PAGE_MAX: 0x8ff,
+  // PAGE_MAX: 0x8ff, // This is the proper value
+  PAGE_MAX: 0x9ff, // However, Muttlee can make forbidden pages
 
   PAGE_404: 0x404,
 

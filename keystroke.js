@@ -240,7 +240,7 @@ global.KeyStroke = function () {
             page.keyMessage(event)
             that.eventList.shift()
           }
-
+          page.validatePage() // Check for badly formed teletext page
           page.print()
 
           // At this point we trigger off a timer

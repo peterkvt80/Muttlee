@@ -45,6 +45,13 @@ class TTXCURSOR {
     return this.y
   }
 
+  newLine () {
+    this.down()
+    this.x = 0
+    this.dump('N')
+    return this.y
+  }
+
   moveTo (x, y) {
     this.x = constrain(x, 0, 39)
     this.y = constrain(y, 0, 24)

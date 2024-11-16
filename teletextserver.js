@@ -172,7 +172,7 @@ app.use(
   '/constants.js',
   function (req, res) {
     res.sendFile(
-      __dirname + '/constants.js'
+      path.join(__dirname, '/constants.js')
     )
   }
 )
@@ -276,7 +276,7 @@ app.use(
 )
 
 app.use(
-  express.static(__dirname + '/public')
+  express.static(path.join(__dirname, '/public'))
 )
 
 app.use(
@@ -524,20 +524,18 @@ function doSetDescription (data) {
   LOG.fn(
     ['teletextserver', 'doSetDescription'],
     [
-      `Setting description = ${data.desc}` //,
-      // `keyMessage S=${data.S}, p=${data.p}, s=${data.s}`
+      `Setting description = ${data.desc}` ,
+      ` keyMessage S=${data.S}, p=${data.p}, s=${data.s}`
     ],
     LOG.LOG_LEVEL_VERBOSE
   )
-  // [!] TODO
-  // Push the description to the keystroke buffer
 
   const txt = {
     S: data.S, // service number
     p: data.p, // page number
     s: 0, // sub page
-    k: data.desc, // key
-    x: CONST.SIGNAL_DESCRIPTION_CHANGE,
+    k: data.desc, // description text
+    x: CONST.SIGNAL_DESCRIPTION_CHANGE, // flag to set the description
     y: 0,
     id: data.id
   }
@@ -622,6 +620,13 @@ function processServicePageLine (serviceData, data, line) {
       `Sending desc=${data.desc}`,
       LOG.LOG_LEVEL_VERBOSE
     )
+  } else if (line.indexOf('LK,') === 0) { // Detect a Locked page
+    LOG.fn(
+      ['teletextserver', 'locked'],
+      `page is locked`,
+      LOG.LOG_LEVEL_VERBOSE
+    )
+    io.sockets.emit('locked', data)    
   } else if (line.indexOf('FL,') === 0) { // Detect a Fastext link
     let ch
 

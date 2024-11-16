@@ -41,6 +41,7 @@ window.TTXPAGE = function () {
   this.cursor = new TTXCURSOR()
   this.service = undefined
   this.serviceData = {}
+  this.locked = false;
 
   // Misc page properties
   this.redLink = 0x900
@@ -73,6 +74,15 @@ window.TTXPAGE = function () {
     this.serviceData = servicesData[service]
 
     this.addPage(number)
+  }
+  
+  // locked
+  this.setLocked = function(value) {
+    this.locked = value
+  }
+  
+  this.isLocked = function() {
+    return this.locked
   }
 
   // timer
@@ -298,17 +308,19 @@ window.TTXPAGE = function () {
   }
 
   this.prevSubpage = function () {
-    // subPage might include subPage 0 so it needs to be handled carefully
-    if (this.subPage > 0) {
-      this.subPage--
-      /*
-      if (this.subPage === 0) { // wsfn
-        let x
-        x = this.subPage
-      }
-      */
+    // subPage starts from 0?
+    if (this.subPageZeroBase) {
+      if (this.subPage > 0) {
+        this.subPage--
+      } else {
+        this.subPage = this.subPageList.length - 1 // wrap
+      }      
     } else {
-      this.subPage = this.subPageList.length - 1
+      if (this.subPage > 1) {
+        this.subPage--
+      } else {
+        this.subPage = this.subPageList.length // wrap
+      }
     }
   }
 

@@ -3,7 +3,7 @@
 /* global saveToHash, LOG, touchStarted, touchX, touchY, PI, createVector, pixelDensity, windowResized */
 /* global key, keyTyped, keyCode */
 /* global page, TTXPAGE, background, noStroke, fill */
-/* global LEFT_ARROW, RIGHT_ARROW, UP_ARROW, DOWN_ARROW, TAB, BACKSPACE, ESCAPE */
+/* global LEFT_ARROW, RIGHT_ARROW, UP_ARROW, DOWN_ARROW, TAB, BACKSPACE, ESCAPE. ENTER */
 /* global select, frameRate, CHARCHANGED, history, event */
 // current state values (initialize to defaults)
 let service = CONFIG[CONST.CONFIG.DEFAULT_SERVICE]
@@ -329,6 +329,7 @@ function setup () {
   socket.on('subpage', setSubPage) // Subpage number for carousels (Expect two digits 00..99) [99 is higher than actual spec]
   socket.on('timer', setTimer) // Subpage timing. Currently this is just an overall value. Need to implement for animations
   socket.on('id', setID) // id is a socket id that identifies this client. Use this when requesting a page load
+  socket.on('locked', setLocked) // A page with "LK," can not be edited
 
   // create page number input field
   inputPage = select('#pageNumber')
@@ -571,6 +572,20 @@ function setSubPage (data) {
   myPage.setSubPage(
     parseInt(data.line)
   )
+}
+
+/** Mark the page as locked
+ */
+function setLocked(r)
+{
+  if (!matchpage(r)) return // Not for us
+
+  LOG.fn(
+    ['sketch', 'setLocked'],
+    `This page is locked`,
+    LOG.LOG_LEVEL_INFO
+  )
+  myPage.setLocked(true)
 }
 
 /** We MUST be sent the connection ID or we won't be able to display anything
@@ -901,6 +916,7 @@ function setBlank (data) { // 'blank'
   if (data.id !== gClientID && gClientID !== null) return // Not for us?
 
   myPage.setBlank()
+  myPage.setLocked(false)
 
   // clear the description too
   data.desc = ''
@@ -951,6 +967,7 @@ function inputDescriptionText () {
   const data = {
     S: myPage.service, // The codename such as artfax or wtf
     p: myPage.pageNumber, // Page mpp
+    s: myPage.subPage, // Subcode
     desc: newDescription,
     id: gClientID
   }
@@ -1013,9 +1030,16 @@ function keyPressed () {
       case DOWN_ARROW:
         if (editMode === CONST.EDITMODE_EDIT) myPage.cursor.down()
         break
+        
+      case ENTER:
+        if (editMode === CONST.EDITMODE_EDIT) myPage.cursor.newLine()
+        break
 
       case ESCAPE: {
       
+        if (myPage.isLocked()) // If the page has an "LK," command, don't allow editing
+          break
+          
         const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][myPage.service]
 
         // Services that are editable
