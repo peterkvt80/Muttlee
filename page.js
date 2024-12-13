@@ -24,6 +24,7 @@ global.Page = function () {
   this.ttiLines.push('DE,random comment 1')
   this.changed = false /// true if the page has been edited
   this.filename = ''
+  this.pageTime = 8 /// seconds per carousel page
 
   const that = this // should use bind(this) instead!
 
@@ -137,6 +138,12 @@ global.Page = function () {
         if (key.x === CONST.SIGNAL_DESCRIPTION_CHANGE) {
           this.ttiLines[i] = 'DE,' + key.k
         }
+      }
+      
+      if (code === 'CT') { // Counter/timer
+        // Ignore C/T, just assume the number is the seconds for all the subpages
+        const tokens = line.split(',')
+        this.pageTime = parseInt(tokens[0]) // Not actually used. 
       }
 
       if (key.x === CONST.SIGNAL_DESCRIPTION_CHANGE) {
@@ -352,7 +359,7 @@ global.Page = function () {
           console.log('PN sub = ', subpage)
           console.log('PN = ', tokens[1])
         }
-      }
+      } // isHeader
       // Is it a valid row?
       const isBody = tokens[0] === 'OL'
       if (isBody) {

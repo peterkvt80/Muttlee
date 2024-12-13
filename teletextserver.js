@@ -656,8 +656,9 @@ function processServicePageLine (serviceData, data, line) {
     return data
   } else if (line.indexOf('CT,') === 0) { // Counter timer
     // Hack: Send the time in Fastext[0]
+    const tokens = line.split(',') // Token[2] is C or T and is not currently used
     data.fastext = []
-    data.fastext[0] = line[3] // @todo: Need allow numbers greater than 9!
+    data.fastext[0] = parseInt(tokens[1])
 
     io.sockets.emit('timer', data)
 
@@ -694,7 +695,7 @@ function processServicePageLine (serviceData, data, line) {
     result = first + missingPage + second
   }
 
-  data.k = '?' // @todo Not sure what these values should be, if anything
+  data.k = '?' // k and x are ignored
   data.x = -1
   data.y = row // The row that we are sending out
 
@@ -705,7 +706,14 @@ function processServicePageLine (serviceData, data, line) {
   }
 
   //
-  io.sockets.emit('row', data)
+  // Check if it is a special row, X26,X27,X28
+  if (row === 28) {
+    console.log("row = " + row)
+    console.log("data = ")
+    console.log(data) // @todo
+    data.X28F1 = DecodeOL28(data.rowText,0)
+  }
+  io.sockets.emit('row', data)    
 
   return data
 }
