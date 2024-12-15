@@ -523,8 +523,18 @@ function print_tables			() {
 
     console.log("const _vbi_hamm24_inv_err = [")
     print_array2(_vbi_hamm24_inv_err, 64)
-    console.log("];")
+    console.log("];\n")
     
+    console.log("module.exports = {")
+    console.log("  _vbi_bit_reverse,")
+    console.log("  _vbi_hamm8_inv,")
+    console.log("  _vbi_hamm24_fwd_0,")
+    console.log("  _vbi_hamm24_fwd_1,")
+    console.log("  _vbi_hamm24_fwd_2,")
+    console.log("  _vbi_hamm24_inv_par,")
+    console.log("  _vbi_hamm24_inv_d1_d4,")
+    console.log("  _vbi_hamm24_inv_err")
+    console.log("};")
     
 /*    	PRINT (const uint8_t, _vbi_hamm8_fwd);
 	PRINT (const int8_t, _vbi_hamm8_inv);
