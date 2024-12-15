@@ -87,8 +87,10 @@ global.DecodeOL28 = function(rowText) {
     console.log("Decoded [" + i + "] = " + x.toString(16))
     triples.push(x)
   }
-  // Now pick the bones
+  // Now pick the bones. See Page 32 Table 4 for X/28 values
   let result = {}
+  result.defaultScreenColour = -1
+  result.defaultRowColoour = -1
   result.blackBackgroundSubRow = (triples[12] >> 13) & 0x01 // t13, 15
   result.colourTableRemapping = (triples[12] >> 14) & 0x07 // t13, 16..18
   console.log(result)
