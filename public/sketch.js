@@ -907,7 +907,16 @@ function newChar (data, local = true) { // 'keystroke'
 function setRow (r) {
   if (!matchpage(r)) return
   if (r.id !== gClientID && gClientID !== null) return // Not for us?
-  myPage.setRow(r.y, r.rowText)
+  if (r.y < 25) {
+    myPage.setRow(r.y, r.rowText)    
+  } else if (r.y === 28) {
+    console.log("X28 todo")
+    console.log(r.X28F1) // here is the data
+    // @TODO Save packet
+    // remembering to clear packet on new or load page etc
+    // Implement CLUT
+    // Direct all drawing through the CLUT.
+  }
 }
 
 // Clear the page to blank (all black)

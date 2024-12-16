@@ -39,6 +39,7 @@ window.TTXPAGE = function () {
   // Integer: The current sub page being shown or edited
   this.subPage = undefined
   this.cursor = new TTXCURSOR()
+  this.clut = new Clut()
   this.service = undefined
   this.serviceData = {}
   this.locked = false;
@@ -1151,6 +1152,15 @@ function Row (ttxpage, page, y, str) {
   }
 }
 
+function fill_clut(c) {
+  // Look up c in the clut and set that colour
+  fill(c)
+}
+
+function stroke_clut(c) {
+  // Look up c in the clut and set that colour
+  stroke(c)
+}
 /// ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function setCharAt (str, index, chr) {
