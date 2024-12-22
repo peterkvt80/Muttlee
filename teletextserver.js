@@ -709,7 +709,7 @@ function processServicePageLine (serviceData, data, line) {
   // Check if it is a special row, X26,X27,X28
   if (row === 28) {
     // @todo Might be an idea to check the designation code for F1
-    data.X28F1 = DecodeOL28(data.rowText.substring(1),0)
+    data.X28F1 = DecodeOL28(data.rowText,0)
   }
   io.sockets.emit('row', data)    
 

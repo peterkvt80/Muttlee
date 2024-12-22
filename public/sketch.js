@@ -350,6 +350,7 @@ function setup () {
   // store a reference to the DOM elements
   menuButton = document.querySelector('#menuButton')
   canvasElement = document.querySelector('#defaultCanvas0')
+  
 
   serviceSelector = document.querySelector('#serviceSelector')
   serviceSelector2 = document.querySelector('#serviceSelector2')
@@ -756,7 +757,7 @@ function draw () {
     forceUpdate = false
   }
 
-  // @todo We only need to update this during updates. No more than twice a second. Could save a lot of CPU
+  // We only need to update this during updates. We get here four times a second
   background(0)
   noStroke()
   fill(255, 255, 255)
@@ -910,12 +911,20 @@ function setRow (r) {
   if (r.y < 25) {
     myPage.setRow(r.y, r.rowText)    
   } else if (r.y === 28) {
-    console.log("X28 todo")
     console.log(r.X28F1) // here is the data
+    for (let i = 0; i < 16; i++) {
+      let val = r.X28F1.colourMap[i] // The 12 bit colour value
+      // convert to a p5.Color object
+      let hash = '#'+hex(val).substring(5) // eg. #c8f
+      let colourValue = color(hash)
+      let clutIndex = 2 + Math.trunc(i / 8) // Either CLUT 2 or 3 are updatable
+      let colourIndex = i % 8
+      myPage.clut.setValue(colourValue, clutIndex, colourIndex)
+    }
+    myPage.clut.setRemap(r.X28F1.colourTableRemapping)
+    myPage.clut.setBlackBackground(r.X28F1.backBackgroundSubRow)
     // @TODO Save packet
-    // remembering to clear packet on new or load page etc
-    // Implement CLUT
-    // Direct all drawing through the CLUT.
+    // remembering to clear packet on carousel, new or load page etc
   }
 }
 

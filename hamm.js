@@ -145,13 +145,13 @@ vbi_unham24p = function(p, offset) {
 //  let t0 = hamm._vbi_bit_reverse[p[offset].charCodeAt()] // !!Convert to int
 //  let t1 = hamm._vbi_bit_reverse[p[offset+1].charCodeAt()]
 //  let t2 = hamm._vbi_bit_reverse[p[offset+2].charCodeAt()]
-  let t0 = p[offset].charCodeAt() // !!Convert to int
-  let t1 = p[offset+1].charCodeAt()
-  let t2 = p[offset+2].charCodeAt()
+  let t0 = p[offset].charCodeAt() & 0x7f// !!Convert to int
+  let t1 = p[offset+1].charCodeAt() & 0x7f
+  let t2 = p[offset+2].charCodeAt() & 0x7f
   // console.log("triplet = " + t0.toString(16) + " " + t1.toString(16) + " " + t2.toString(16))
   
-  // D1_D4 = hamm._vbi_hamm24_inv_d1_d4[t0 >> 2];
-  D1_D4 = ((t0 >> 2) & 0x01) | t0 >> 4 // Do this because tti parity bit has a 50/50 chance of being valid
+//  D1_D4 = ((t0 >> 2) & 0x01) | t0 >> 3 // Do this because tti parity bit has a 50/50 chance of being valid
+  D1_D4 = hamm._vbi_hamm24_inv_d1_d4[t0 >> 2]// Do this because tti parity bit has a 50/50 chance of being valid
   D5_D11 = t1 & 0x7F;
   D12_D18 = t2 & 0x7F;
 

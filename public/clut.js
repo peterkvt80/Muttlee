@@ -65,16 +65,26 @@
 ## be redefined for a particular page by packet X/28/4, or
 ##
 */
-'use strict'
+'use strict';
 class Clut {
-  constructor () {
-    console.log('Clut loaded')
+  constructor() {
+    console.log ('Clut loaded')
     this.clut0 = new Array(8) // default full intensity colours
     this.clut1 = new Array(8) // default half intensity colours
     this.clut2 = new Array(8)
     this.clut3 = new Array(8)
+    this.remap = 0 // 0..7 Colour Table remapping
+    this.blackBackground = true // Don't let CLUT change the background colour
     // set defaults
     this.resetTable()
+  }
+  
+  setRemap(remap) {
+    this.remap = remap & 0x7
+  }
+
+  setBlackBackground(bgFlag) {
+    this.blackBackground = bgFlag!==0
   }
 
   /** Used by X28/0 to swap entire cluts
@@ -82,71 +92,80 @@ class Clut {
      * @param remap - Remap 0..7
      * @param foreground - True for foreground colour, or False for background
      * @return - Colour string for tkinter. eg. 'black' or '#000'
+     * Given a colour, it maps the colour according to the remapping Table 4
+     * and whether it is a background or a foreground colour
      */
-  remapColourTable (colourIndex, remap, foreground) {
+  remapColourTable(colourIndex, foreground) {
     let clutIndex = 0
     if (foreground) {
-      if (remap > 4) {
+      if (this.remap > 4) {
         clutIndex = 2
-      } else if (remap < 3) {
+      } else if (this.remap < 3) {
         clutIndex = 0
       } else {
         clutIndex = 1
       }
     } else {
-      if (remap < 3) { // background
-        clutIndex = remap
-      } else if (remap === 3 || remap === 5) {
+      if (this.remap < 3) { // background
+        clutIndex = this.remap
+      } else if (this.remap === 3 || this.remap === 5) {
         clutIndex = 1
-      } else if (remap === 4 || remap === 6) {
+      } else if (this.remap === 4 || this.remap === 6) {
         clutIndex = 2
       } else {
         clutIndex = 3
       }
     }
+    // Black Background Colour Substitution
+    if (this.blackBackground && !foreground && colourIndex===0) {
+      return color(0, 0, 0)
+    }
     return this.getValue(clutIndex, colourIndex)
   }
 
-  resetTable () { // Default values from table 12.4
+  resetTable() { // Default values from table 12.4
     // CLUT 0 full intensity
-    this.clut0[0] = 0x000 // black
-    this.clut0[1] = 0xf00 // red
-    this.clut0[2] = 0x0f0 // green
-    this.clut0[3] = 0xff0 // yellow
-    this.clut0[4] = 0x00f // blue
-    this.clut0[5] = 0xf0f // magenta
-    this.clut0[6] = 0x0ff // cyan
-    this.clut0[7] = 0xfff // white
+    this.clut0[0] = color(0) // black
+    this.clut0[1] = color(255, 0, 0) // red
+    this.clut0[2] = color(0, 255, 0) // green
+    this.clut0[3] = color(255, 255, 0) // yellow
+    this.clut0[4] = color(0, 0, 255) // blue
+    this.clut0[5] = color(255, 0, 255) // magenta
+    this.clut0[6] = color(0, 255, 255) // cyan
+    this.clut0[7] = color(255, 255, 255) // white
 
     // CLUT 1 half intensity
-    this.clut1[0] = 0x000 // transparent
-    this.clut1[1] = 0x700 // half red
-    this.clut1[2] = 0x070 // half green
-    this.clut1[3] = 0x770 // half yellow
-    this.clut1[4] = 0x007 // half blue
-    this.clut1[5] = 0x707 // half magenta
-    this.clut1[6] = 0x077 // half cyan
-    this.clut1[7] = 0x777 // half white
+    this.clut1[0] = color(0,0,0) // transparent @todo ?
+    this.clut1[1] = color(127, 0, 0) // half red
+    this.clut1[2] = color(0, 127, 0) // half green
+    this.clut1[3] = color(127, 127, 0) // half yellow
+    this.clut1[4] = color(0, 0, 127) // half blue
+    this.clut1[5] = color(127, 0, 127) // half magenta
+    this.clut1[6] = color(0, 127, 127) // half cyan
+    this.clut1[7] = color(127, 127, 127) // half white
 
     // CLUT 2 lovely colours
-    this.clut2[0] = 0xf05 // crimsonish
-    this.clut2[1] = 0xf70 // orangish
-    this.clut2[2] = 0x0f7 // blueish green
-    this.clut2[3] = 0xffb // pale yellow
-    this.clut2[4] = 0x0ca // cyanish
-    this.clut2[5] = 0x500 // dark red
-    this.clut2[6] = 0x652 // hint of a tint of runny poo
-    this.clut2[7] = 0xc77 // gammon
+    this.clut2[0] = color(0xff, 0x00, 0x55) // crimsonish
+    this.clut2[1] = color(0xff, 0x77, 0x00) // orangish
+    this.clut2[2] = color(0x00, 0xff, 0x77) // blueish green
+    this.clut2[3] = color(0xff, 0xff, 0xbb) // pale yellow
+    this.clut2[4] = color(0x00, 0xcc, 0xaa) // cyanish
+    this.clut2[5] = color(0x55, 0x00, 0x00) // dark red
+    this.clut2[6] = color(0x66, 0x55, 0x22) // hint of a tint of runny poo
+    this.clut2[7] = color(0xcc, 0x77, 0x77) // gammon
 
     // CLUT 3 more lovely colours
-    this.clut3[0] = 0x333 // pastel black
-    this.clut3[1] = 0xf77 // pastel red
-    this.clut3[2] = 0x7f7 // pastel green
-    this.clut3[3] = 0xff7 // pastel yellow
-    this.clut3[4] = 0x77f // pastel blue
-    this.clut3[5] = 0xf7f // pastel magenta
-    this.clut3[6] = 0x7ff // pastel cyan
-    this.clut3[7] = 0xddd // pastel white
+    this.clut3[0] = color(48, 48, 48) // pastel black
+    this.clut3[1] = color(255, 127, 127) // pastel red
+    this.clut3[2] = color(127, 255,127) // pastel green
+    this.clut3[3] = color(255, 255, 127) // pastel yellow
+    this.clut3[4] = color(127, 127, 255) // pastel blue
+    this.clut3[5] = color(255, 127, 255) // pastel magenta
+    this.clut3[6] = color(127, 255, 255) // pastel cyan
+    this.clut3[7] = color(0xdd, 0xdd, 0xdd) // pastel white
+    
+    this.blackBackground = true
+    this.remap = 0 // Default to CLUT 0
   }
 
   /** set a value in a particular clut
@@ -154,28 +173,28 @@ class Clut {
    * Probably want to record which cluts are selected
    * Lots of stuff
 
-   * @param colour - 12 bit web colour string eg. '#1ab'
+   * @param colour - p5js color object
    * @param clutIndex CLUT index 0 to 3
    * @param clrIndex - 0..7 colour index
    */
-  setValue (colour, clutIndex, clrIndex) {
+  setValue(colour, clutIndex, clrIndex) {
     clrIndex = clrIndex % 8 // need to trap this a bit better. This is masking a problem
     clutIndex = clutIndex % 4
     switch (clutIndex) {
-      case 0:
-        this.clut0[clrIndex] = colour
-        break
-      case 1:
-        this.clut1[clrIndex] = colour
-        break
-      case 2:
-        this.clut2[clrIndex] = colour
-        break
-      case 3:
-        this.clut3[clrIndex] = colour
-        break
+    case 0:
+      this.clut0[clrIndex] = colour
+      break
+    case 1:
+      this.clut1[clrIndex] = colour
+      break
+    case 2:
+      this.clut2[clrIndex] = colour
+      break
+    case 3:
+      this.clut3[clrIndex] = colour
+      break
     }
-    console.log('clut value: clut' + clutIndex + ' set[' + clrIndex + '] = ' + colour)
+    // console.log("clut value: clut" + clutIndex + " set[" + clrIndex + '] = ' + colour)
   }
 
   /**
@@ -183,27 +202,29 @@ class Clut {
    * @param clrIndex - 0..7 colour index
    * @return colour - 12 bit web colour number eg. 0x1ab
    */
-  getValue (clutIndex, clrIndex) {
+  getValue(clutIndex, clrIndex) {
     clutIndex = clutIndex % 4
     clrIndex = clrIndex % 8
+    // console.log("[getValue] clutIndex = " + clutIndex + " clrIndex = " + clrIndex)
     switch (clutIndex) {
       case 0:
         return this.clut0[clrIndex]
       case 1:
         return this.clut1[clrIndex]
       case 2:
+      //console.log("colour selected = " + this.clut2[clrIndex])
         return this.clut2[clrIndex]
       case 3:
         return this.clut3[clrIndex]
       default:
-        return 0 // just in case!
+        return this.clut0[clrIndex] // just in case!
     }
   }
 
   /** debug dump the clut contents
    *  Don't need this right now
    */
-  /*
+   /*
   dump() {
     console.log("[Dump] CLUT values")
     for (let i=0; i<8; i++) {
@@ -220,4 +241,5 @@ class Clut {
     print()
   }
   */
+
 }

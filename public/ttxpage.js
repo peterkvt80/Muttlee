@@ -155,6 +155,7 @@ window.TTXPAGE = function () {
     this.subPageZeroBase = false
 
     this.subPageList = [] // [!] todo Possibly run through the subpages and remove their rows
+    this.clut.resetTable()
 
     this.addPage(this.pageNumber)
 
@@ -210,12 +211,12 @@ window.TTXPAGE = function () {
 
     // As rows go from 0 to 31 and pages start at 100, we can use the same parameter for both
     this.rows.push(
-      new Row(this, number, 0, this.getServiceHeader())
+      new Row(this, number, 0, this.getServiceHeader(), this.clut)
     )
 
     for (let i = 1; i < 26; i++) {
       this.rows.push(
-        new Row(this, number, i, ''.padStart(CONFIG[CONST.CONFIG.NUM_COLUMNS]))
+        new Row(this, number, i, ''.padStart(CONFIG[CONST.CONFIG.NUM_COLUMNS]), this.clut)
       )
     }
 
@@ -656,13 +657,14 @@ function isMosaic (ch) {
 
 /// ////////////////////////////////////////////////////////////////////////////////////////////
 
-function Row (ttxpage, page, y, str) {
+function Row (ttxpage, page, y, str, clut) {
   this.ttxpage = ttxpage
 
   this.page = page
   this.row = y
   this.txt = str
   this.pagetext = 'xxx'
+  this.clut = clut
 
   this.setchar = function (ch, n) {
     this.txt = setCharAt(this.txt, n, ch)
@@ -853,8 +855,8 @@ function Row (ttxpage, page, y, str) {
     }
 
     // Set up all the display mode initial defaults
-    let fgColor = color(255, 255, 255) // Foreground defaults to white
-    let bgColor = color(0) // Background starts black
+    let fgColor = 7 // color(255, 255, 255) // Foreground defaults to white
+    let bgColor = 0 // color(0) // Background starts black
     let textmode = true // If false it is graphics mode
     let contiguous = true // if false it is separated graphics
     let concealed = false
@@ -945,7 +947,7 @@ function Row (ttxpage, page, y, str) {
           contiguous = false
           break
         case 28: // 28 black background
-          bgColor = color(0)
+          bgColor = 0 // color(0)
           break
         case 29: // 29: new background
           bgColor = fgColor
@@ -972,7 +974,8 @@ function Row (ttxpage, page, y, str) {
 
       // Paint the background colour always
       noStroke()
-      fill(bgColor)
+      let myColour = this.clut.remapColourTable(bgColor, false)
+      fill(myColour) // @todo work out which clut we are using
 
       // except if this is the cursor position
       if (cpos === i && flashState) {
@@ -988,7 +991,8 @@ function Row (ttxpage, page, y, str) {
       this.drawchar(String.fromCharCode(0xe6df), i, this.row, dblHeight)
 
       if (printable && (flashState || !flashMode) && !concealed) {
-        fill(fgColor) // Normal
+        let myColour = this.clut.remapColourTable(fgColor, false)
+        fill(myColour) // Normal
 
         if (textmode || (ch.charCodeAt(0) >= 0x40 && ch.charCodeAt(0) < 0x60)) {
           ch = this.mapchar(ch)
@@ -1005,7 +1009,7 @@ function Row (ttxpage, page, y, str) {
           }
 
           if (cpos === i && flashState) {
-            const r = red(fgColor)
+            const r = red(fgColor) // @todo Probably needs some work after adding clut
             const g = green(fgColor)
             const b = blue(fgColor)
 
@@ -1013,7 +1017,7 @@ function Row (ttxpage, page, y, str) {
           }
 
           if (contiguous) {
-            stroke(fgColor)
+            stroke(this.clut.remapColourTable(fgColor, true))
             this.drawchar(String.fromCharCode(ic2 + 0x0e680 - 0x20), i, this.row, dblHeight)
           } else {
             this.drawchar(String.fromCharCode(ic2 + 0x0e680), i, this.row, dblHeight)
@@ -1024,35 +1028,35 @@ function Row (ttxpage, page, y, str) {
       // Set-After codes go here
       switch (ic) {
         case 0: // 0: black. Only for level 1 rebels.
-          fgColor = color(0)
+          fgColor = 0 // color(0)
           textmode = true
           break
         case 1: // 1:red
-          fgColor = color(255, 0, 0)
+          fgColor = 1 // color(255, 0, 0)
           textmode = true
           break
         case 2: // 2:green
-          fgColor = color(0, 255, 0)
+          fgColor = 2 // color(0, 255, 0)
           textmode = true
           break
         case 3: // 3:yellow
-          fgColor = color(255, 255, 0)
+          fgColor = 3 // color(255, 255, 0)
           textmode = true
           break
         case 4: // 4:blue
-          fgColor = color(0, 0, 255)
+          fgColor = 4 // color(0, 0, 255)
           textmode = true
           break
         case 5: // 5:magenta
-          fgColor = color(255, 0, 255)
+          fgColor = 5 // color(255, 0, 255)
           textmode = true
           break
         case 6: // 6:cyan
-          fgColor = color(0, 255, 255)
+          fgColor = 6 // color(0, 255, 255)
           textmode = true
           break
         case 7: // 7:white
-          fgColor = color(255, 255, 255)
+          fgColor = 7 // color(255, 255, 255)
           textmode = true
           break
         case 13: // 13: double height
@@ -1062,35 +1066,35 @@ function Row (ttxpage, page, y, str) {
           textSize(CONFIG[CONST.CONFIG.TELETEXT_FONT_SIZE] * 2)
           break
         case 16: // 16: Farrimond gfxblack
-          fgColor = color(0)
+          fgColor = 0 // color(0)
           textmode = false
           break
         case 17: // 17:gfxred
-          fgColor = color(255, 0, 0)
+          fgColor = 1 // color(255, 0, 0)
           textmode = false
           break
         case 18: // 18:gfxgreen
-          fgColor = color(0, 255, 0)
+          fgColor = 2 // color(0, 255, 0)
           textmode = false
           break
         case 19: // 19:gfxyellow
-          fgColor = color(255, 255, 0)
+          fgColor = 3 // color(255, 255, 0)
           textmode = false
           break
         case 20: // 20:gfxblue
-          fgColor = color(0, 0, 255)
+          fgColor = 4 // color(0, 0, 255)
           textmode = false
           break
         case 21: // 21:gfxmagenta
-          fgColor = color(255, 0, 255)
+          fgColor = 5 // color(255, 0, 255)
           textmode = false
           break
         case 22: // 22:gfxcyan
-          fgColor = color(0, 255, 255)
+          fgColor = 6 // color(0, 255, 255)
           textmode = false
           break
         case 23: // 23:gfxwhite
-          fgColor = color(255, 255, 255)
+          fgColor = 7 // color(255, 255, 255)
           textmode = false
           break
         case 24: // 24:conceal
@@ -1152,15 +1156,6 @@ function Row (ttxpage, page, y, str) {
   }
 }
 
-function fill_clut(c) {
-  // Look up c in the clut and set that colour
-  fill(c)
-}
-
-function stroke_clut(c) {
-  // Look up c in the clut and set that colour
-  stroke(c)
-}
 /// ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function setCharAt (str, index, chr) {
