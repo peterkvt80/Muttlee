@@ -919,10 +919,10 @@ function setRow (r) {
       let colourValue = color(hash)
       let clutIndex = 2 + Math.trunc(i / 8) // Either CLUT 2 or 3 are updatable
       let colourIndex = i % 8
-      myPage.clut.setValue(colourValue, clutIndex, colourIndex)
+      myPage.metadata[myPage.subPage].clut.setValue(colourValue, clutIndex, colourIndex)
     }
-    myPage.clut.setRemap(r.X28F1.colourTableRemapping)
-    myPage.clut.setBlackBackground(r.X28F1.backBackgroundSubRow)
+    myPage.metadata[myPage.subPage].clut.setRemap(r.X28F1.colourTableRemapping)
+    myPage.metadata[myPage.subPage].clut.setBlackBackground(r.X28F1.backBackgroundSubRow)
     // @TODO Save packet
     // remembering to clear packet on carousel, new or load page etc
   }

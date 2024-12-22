@@ -21,11 +21,11 @@ function toggle () {
 }
 
 /// /////////////////////////////////////////////////////////////////////////////////////////////////////
-// Not much of a class
-function MetaData (displayTiming) {
+// Store subpage data other than the displayable rows 
+function MetaData (displayTiming, clut) {
   this.timer = displayTiming
-  /// @todo Probably not a lot more that we need to add
-  /// unless we have the actual sub page number
+  this.clut = clut // x28
+  /// @todo Add packets 26, 28, 29
 }
 
 /// /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -35,11 +35,10 @@ const servicesData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE]
 
 window.TTXPAGE = function () {
   // Basic page properties
-  this.pageNumber = CONST.PAGE_MIN
-  // Integer: The current sub page being shown or edited
-  this.subPage = undefined
+  this.pageNumber = CONST.PAGE_MIN  
+  this.subPage = undefined // Integer: The current sub page being shown or edited
   this.cursor = new TTXCURSOR()
-  this.clut = new Clut()
+  // this.clut = new Clut() // moved to myPage.metaData[subpage].clut
   this.service = undefined
   this.serviceData = {}
   this.locked = false;
@@ -155,7 +154,7 @@ window.TTXPAGE = function () {
     this.subPageZeroBase = false
 
     this.subPageList = [] // [!] todo Possibly run through the subpages and remove their rows
-    this.clut.resetTable()
+    // this.clut.resetTable()
 
     this.addPage(this.pageNumber)
 
@@ -208,20 +207,22 @@ window.TTXPAGE = function () {
       */
     }
     this.rows = []
+    
+    let clut = new Clut
 
     // As rows go from 0 to 31 and pages start at 100, we can use the same parameter for both
     this.rows.push(
-      new Row(this, number, 0, this.getServiceHeader(), this.clut)
+      new Row(this, number, 0, this.getServiceHeader(), clut)
     )
 
     for (let i = 1; i < 26; i++) {
       this.rows.push(
-        new Row(this, number, i, ''.padStart(CONFIG[CONST.CONFIG.NUM_COLUMNS]), this.clut)
+        new Row(this, number, i, ''.padStart(CONFIG[CONST.CONFIG.NUM_COLUMNS]), clut)
       )
     }
 
     this.subPageList.push(this.rows)
-    this.metadata.push(new MetaData(7))
+    this.metadata.push(new MetaData(7, clut))
   }
 
   /**
@@ -664,7 +665,7 @@ function Row (ttxpage, page, y, str, clut) {
   this.row = y
   this.txt = str
   this.pagetext = 'xxx'
-  this.clut = clut
+  this.clut = clut // @todo This clut should be in the subpage list
 
   this.setchar = function (ch, n) {
     this.txt = setCharAt(this.txt, n, ch)
@@ -974,7 +975,7 @@ function Row (ttxpage, page, y, str, clut) {
 
       // Paint the background colour always
       noStroke()
-      let myColour = this.clut.remapColourTable(bgColor, false)
+      let myColour = clut.remapColourTable(bgColor, false)
       fill(myColour) // @todo work out which clut we are using
 
       // except if this is the cursor position
