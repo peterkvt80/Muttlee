@@ -53,6 +53,7 @@ window.TTXPAGE = function () {
   this.description = ''
   this.showGrid = false
   this.subPageZeroBase = false
+  this.editProperties = undefined
 
   // this.timer=7 // This is global. Replaced by a per page timer
 
@@ -98,7 +99,7 @@ window.TTXPAGE = function () {
   // edit mode
   this.editSwitch = function (mode) {
     this.editMode = mode
-    this.cursor.hide = (mode === CONST.EDITMODE_NORMAL)
+    this.cursor.hide = (mode === CONST.EDITMODE_NORMAL) || (mode === CONST.EDITMODE_PROPERTIES)
   }
 
   this.getServiceHeader = function () {
@@ -200,7 +201,7 @@ window.TTXPAGE = function () {
 
     // clear out data from previous page
     if (this.rows !== undefined) {
-    /* Suspect tha this doesn't work
+    /* Suspect that this doesn't work
       for (let row of this.rows) {
         row = null
       }
@@ -343,6 +344,20 @@ window.TTXPAGE = function () {
   }
 
   this.draw = function (changed) {
+    
+    // Properties are special local pages    
+    if (this.editMode === CONST.EDITMODE_PROPERTIES) {
+      // @todo Draw the properties pages
+      // Create the properties page
+      if (this.editProperties === undefined) {
+        this.editProperties = new TTXPROPERTIES(this.pageNumber, this.description, this.metadata[this.subPage].clut)
+      }
+      this.editProperties.draw()
+      return;
+    }
+    
+
+    
     // Sometimes the carousel isn't ready
     if (typeof this.subPage === 'undefined') {
       return
@@ -371,7 +386,7 @@ window.TTXPAGE = function () {
 
     for (let rw = 0; rw < this.rows.length; rw++) {
       let cpos = -1
-      if (this.editMode !== CONST.EDITMODE_NORMAL && rw === this.cursor.y) {
+      if (this.editMode === CONST.EDITMODE_EDIT && rw === this.cursor.y) {
         // If in edit mode and it is the correct row...
         cpos = this.cursor.x
       }
@@ -668,10 +683,23 @@ function Row (ttxpage, page, y, str, clut) {
   this.clut = clut // @todo This clut should be in the subpage list
 
   this.setchar = function (ch, n) {
+    // Out of range?
+    if (n<0 || n>40) {
+      return
+    }
+    if (this.txt.length < 40) {
+      this.txt = this.txt + "                                        "
+      this.txt = this.txt.substring(0, 40)
+    }
     this.txt = setCharAt(this.txt, n, ch)
   }
 
   this.setrow = function (txt) {
+    // @todo Pad with spaces if needed
+    if (txt.length < 40) {
+      txt = txt + "                                        "
+      this.txt = txt.substring(0, 40)      
+    }
     this.txt = txt
   }
 
@@ -685,6 +713,7 @@ function Row (ttxpage, page, y, str, clut) {
    * @return True if there was a double height code in this row
    */
   this.draw = function (cpos, revealMode, holdMode, editMode, subPage, changed) {
+    
     let txt = this.txt // Copy the row text because a header row will modify it
 
     // Special treatment for row 0
@@ -997,8 +1026,8 @@ function Row (ttxpage, page, y, str, clut) {
 
         if (textmode || (ch.charCodeAt(0) >= 0x40 && ch.charCodeAt(0) < 0x60)) {
           ch = this.mapchar(ch)
-
-          if (changed[i]) {
+          // If cpos is negative, we can't be editing anything
+          if (changed[i] && cpos>=0) {
             fill(200, 100, 0)
           }
 

@@ -88,8 +88,8 @@ global.DecodeOL28 = function(rowText) {
     let b = rowText[i*3+2].charCodeAt() & 0x3f
     let c = rowText[i*3+3].charCodeAt() & 0x3f
     let x = (c << 12) | (b << 6) | a
-    console.log("rowText = " + rowText)
-    console.log("Decoded [" + i + "] = " + x.toString(16))
+    // console.log("rowText = " + rowText)
+    // console.log("Decoded [" + i + "] = " + x.toString(16))
     triples.push(x)
   }
   // Now pick the bones. See Page 32 Table 4 for X/28 values

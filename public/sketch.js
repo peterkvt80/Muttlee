@@ -1240,6 +1240,16 @@ function keyTyped () {
 function processKey (keyPressed) {
   // @todo need to map codes to national options at this point.
   // @todo Also need to fix alphaInGraphics when I do this
+  
+  // In properties mode, the keys work completely differently, as does the page renderer
+  if (editMode === CONST.EDITMODE_PROPERTIES) {
+    // Now we handle the UI elements on the properties pages.
+    print("Key pressed in Properties mode")
+    // for now, return back to EDIT
+    editMode = CONST.EDITMODE_EDIT
+    return
+  }
+  
   if (editMode === CONST.EDITMODE_ESCAPE) {
     editMode = CONST.EDITMODE_INSERT
     myPage.editSwitch(editMode)
@@ -1506,6 +1516,8 @@ function prevPage () {
 /** Execute an editTF escape command
  *  This is the key that follows the escape key
  *  As zxnet keys are handled the same way, we add aliases for those too
+ *  Most keys return a keystroke in which case we use break.
+ *  If we do not want a keystroke then use return
  */
 function editTF (key) {
   let chr // The character that the editTF escape creates
@@ -1642,6 +1654,11 @@ function editTF (key) {
     case 'x' :
       myPage.showGrid = !myPage.showGrid
       return // toggle grid display
+      
+    // Enter properties mode, for setting page properties like description
+    case 'X' :
+      editMode = CONST.EDITMODE_PROPERTIES
+      return // no more processing needed
 
     case 'i' : { // Insert row
       editMode = CONST.EDITMODE_EDIT
@@ -1705,6 +1722,29 @@ function editTF (key) {
 
       editMode = CONST.EDITMODE_EDIT
 
+      return
+    }
+    
+    // Go to page 990 special edit page
+    case '?' : { 
+      let page = 0x0990
+      myPage.setPage(page) // We now have a different page number
+
+      const data = {
+        S: myPage.service,
+        p: page, // Page mpp
+        s: undefined, // subpage doesn't default to 0
+        x: 0,
+        y: 0,
+        rowText: '',
+        id: gClientID
+      }
+
+      //if (createPage) { // Special case
+//        socket.emit('create', data)
+      //} else {
+        socket.emit('load', data)
+      //}
       return
     }
     /*
