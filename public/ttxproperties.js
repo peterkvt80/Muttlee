@@ -4,7 +4,7 @@
 // * x/26 and x/28 enhancements
 // * fastext links
 // * transmission flags
-'use strict'
+"use strict"
 
 // What I think it should do is...
 
@@ -21,17 +21,35 @@ class TTXPROPERTIES {
     this.description = description
     this.rows = []
     // Row 0
+    let newClut = new Clut
+    this.copyClut(clut, newClut)
     this.rows.push(
-      new Row(this, pageNumber, 0, "          Muttlee Properties Editor     ", clut)
+      new Row(this, pageNumber, 0, "          Muttlee Properties Editor     ", newClut)
     )
     this.rows[0].setpagetext(pageNumber)
     for (let i = 1; i < 26; i++) {
+      let newClut = new Clut
+      this.copyClut(clut, newClut)
       this.rows.push(
-        new Row(this, pageNumber, i, ''.padStart(CONFIG[CONST.CONFIG.NUM_COLUMNS]), clut)
+        new Row(this, pageNumber, i, ''.padStart(CONFIG[CONST.CONFIG.NUM_COLUMNS]), newClut)
       )
       this.rows[i].setrow("                                        ")
     }
     this.updateIndex()    
+  }
+  
+  /** 
+   * Deep copy clut
+   */
+  copyClut(src, dest) {
+    for (let i=0; i<8; i++) {
+      dest.clut0[i]=src.clut0[i]
+      dest.clut1[i]=src.clut1[i]
+      dest.clut2[i]=src.clut2[i]
+      dest.clut3[i]=src.clut3[i]
+    }
+    dest.remap = src.remap
+    dest.blackBackground = src.blackBackground
   }
   
   /** When the user changes the configuration page with pg up/pg dn
@@ -115,9 +133,71 @@ class TTXPROPERTIES {
     let yStep = 4
     for (let pal=0; pal<4; pal++) {
       // Draw the Clut caption
-      let r = this.rows[yLoc]
+      let r = this.rows[yLoc++]
       r.setrow(replace(r.txt, String.fromCharCode(0x07) + "Clut " + pal + String.fromCharCode(0x13), xLeft))
-      yLoc += yStep
+      // Which clut to use?
+      let clut
+      let palette = pal
+      switch (palette) {
+      case 0: 
+        clut = r.clut.clut0
+        break
+      case 1: 
+        clut = r.clut.clut1
+        break
+      case 2: 
+        clut = r.clut.clut2
+        break
+      case 3: 
+        clut = r.clut.clut3
+        break
+      }
+      if (palette===3) {
+        palette = 7 // CLUT 3
+      }
+      this.rows[yLoc+0].clut.setRemap(palette)
+      this.rows[yLoc+1].clut.setRemap(palette)
+      // Draw a row of the palette
+      let palstr1=''
+      let palstr2=''
+      for (let palcol=0; palcol<4; palcol++) {
+        // What colour to make the text?        
+        let c = clut[palcol] // The colour
+        let cs = (c.levels[0]>>4) << 8 | (c.levels[1]>>4) << 4 | (c.levels[2]>>4) // The 12 bit colour
+        let csh = ('00' + cs.toString(16)).slice(-3)   // three digit hex colour
+        let luma =  0.299 * c.levels[0] + 0.587 * c.levels[1] + 0.114 * c.levels[2]
+        let textColour = 0x07 // white
+        if (luma > 0x60) {
+          textColour = 0x00 // black
+        }
+        palstr1 += String.fromCharCode(0x00+palcol) +
+          String.fromCharCode(29) +
+          String.fromCharCode(textColour) +
+          csh + '  '
+        c = clut[palcol+4]
+        cs = (c.levels[0]>>4) << 8 | (c.levels[1]>>4) << 4 | (c.levels[2]>>4) // The 12 bit colour
+        csh = ('00' + cs.toString(16)).slice(-3)   // three digit hex colour
+        luma =  0.299 * c.levels[0] + 0.587 * c.levels[1] + 0.114 * c.levels[2]
+        textColour = 0x07 // white
+        if (luma > 0x60) {
+          textColour = 0x00 // black
+        }
+        palstr2 += String.fromCharCode(0x04+palcol) +
+          String.fromCharCode(29) + // new background
+          String.fromCharCode(textColour) +
+          csh + '  '
+      }
+      // first four colours
+      palstr1+=String.fromCharCode(28) + String.fromCharCode(0x13) // new background, yellow mosaic
+      r = this.rows[yLoc++]
+      r.setrow(replace(r.txt, palstr1, 4))
+
+      // last four colours
+      palstr2+=String.fromCharCode(28) + String.fromCharCode(0x13)
+      r = this.rows[yLoc++]
+      r.setrow(replace(r.txt, palstr2, 4))
+      
+      yLoc++
     }
   }
   
