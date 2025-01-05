@@ -37,7 +37,9 @@ window.TTXPAGE = function () {
   // Basic page properties
   this.pageNumber = CONST.PAGE_MIN  
   this.subPage = undefined // Integer: The current sub page being shown or edited
+  function dummy(myX, myY){print("[TTXPAGE]THIS IS A CALLBACK TEST " + myX + " " + myY )}
   this.cursor = new TTXCURSOR()
+  this.cursor.setCallback(dummy); // Temporary test
   // this.clut = new Clut() // moved to myPage.metaData[subpage].clut
   this.service = undefined
   this.serviceData = {}
@@ -92,7 +94,7 @@ window.TTXPAGE = function () {
     if (this.metadata[this.subPage] !== undefined) {
       this.metadata[this.subPage].timer = t
     } else {
-      console.log('[setTimer] This should not happen. subPage should have been defined by now')
+      // console.log('[setTimer] This should not happen. subPage should have been defined by now')
     }
   }
 
@@ -303,7 +305,6 @@ window.TTXPAGE = function () {
   this.nextSubpage = function () {
     // Cycle from 1 to n, or possibly from 0 to n-1
     // Find out which way the carousel is numbered
-    console.log('carousel zero base = ' + this.subPageZeroBase)
     if (this.subPageZeroBase) {
       this.subPage = ((this.subPage + 1) % (this.subPageList.length)) // 0..n-1
     } else {
@@ -347,10 +348,11 @@ window.TTXPAGE = function () {
     
     // Properties are special local pages    
     if (this.editMode === CONST.EDITMODE_PROPERTIES) {
-      // @todo Draw the properties pages
       // Create the properties page
-      if (this.editProperties === undefined) {
+      if (this.editProperties === undefined) {      
         this.editProperties = new TTXPROPERTIES(this.pageNumber, this.description, this.metadata[this.subPage].clut)
+        // Hook up the cursor callback so we can edit the properties
+        this.cursor.setCallback(this.editProperties.getCursorCallback())
       }
       this.editProperties.draw()
       return;

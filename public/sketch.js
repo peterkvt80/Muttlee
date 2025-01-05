@@ -1,4 +1,4 @@
-'use strict'
+"use strict"
 /* global CONFIG, CONST, loadFont, hex, io, textFont, textSize, textWidth, createCanvas, int, mouseX, mouseY, location, exportPage */
 /* global saveToHash, LOG, touchStarted, touchX, touchY, PI, createVector, pixelDensity, windowResized */
 /* global key, keyTyped, keyCode */
@@ -294,9 +294,8 @@ function setup () {
         inputDescription.blur()
         blurDescription()
 
-        // Move the cursor if we are in edit mode
+        // Move the cursor if we are editing
         if (editMode !== CONST.EDITMODE_NORMAL) {
-          // Only need to do this in edit mode
             myPage.cursor.moveTo(xLoc, yLoc)
             LOG.fn(
               ['sketch', 'setup', 'mousePressed'],
@@ -1658,6 +1657,7 @@ function editTF (key) {
     // Enter properties mode, for setting page properties like description
     case 'X' :
       editMode = CONST.EDITMODE_PROPERTIES
+      myPage.editSwitch(editMode)
       return // no more processing needed
 
     case 'i' : { // Insert row

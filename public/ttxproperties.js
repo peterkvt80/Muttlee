@@ -16,11 +16,39 @@
 class TTXPROPERTIES {
   // @todo Need to pass description, X28 clut and palette etc.
   constructor(pageNumber, description, clut) {
+    print("[TTXPROPERTIES] Constructor")    
     this.totalPages = 5 // How many configuration pages
     this.pageIndex = 0 // Which configuration page we are on
     this.description = description
     this.rows = []
-    // Row 0
+    this.clut = clut // Keep this so we can return changed values
+    this.cursorCol = -1
+    this.cursorRow = 0
+    
+    let self = this // Ensure we use the correct "this" on callbacks
+    this.cursorCallback // When the cursor changes
+     = function(xLoc, yLoc) {
+      print("[TTXPROPERTIES::callback] x,y = ("+xLoc+","+yLoc+")")
+      if (self.pageHandler !== undefined && self.pageHandler !== null) {
+        self.pageHandler(xLoc, yLoc)    
+        self.cursorCol = xLoc
+        self.cursorRow = yLoc
+      }
+      else {
+        print("undefined page handler") // We got the wrong "this"?
+      }
+    }
+
+    this.getCursorCallback = function() {    
+      return self.cursorCallback
+    }
+    this.page0Handler = function(xLoc, yLoc) {
+      print("[TTXPROPERTIES::pageHandler] x,y = ("+xLoc+","+yLoc+")")
+      // @todo look at the xLoc/yLoc and see if it affects any UI element
+    }
+
+    this.pageHandler = 99 // The page handler that processes cursor changes
+    // Row 0    
     let newClut = new Clut
     this.copyClut(clut, newClut)
     this.rows.push(
@@ -69,6 +97,10 @@ class TTXPROPERTIES {
     print("[TTXPROPERTIES::draw] called")
     for (let rw = 0; rw < this.rows.length; rw++) {
       let cpos = -1 // Disable the cursor
+      // unless this is the correct row, then show it
+      if (rw === this.cursorRow) {
+        cpos = this.cursorCol
+      }
       let revealMode = false // Don't need this
       let holdMode = false // Don't need this
       let subPage = 0
@@ -214,9 +246,13 @@ class TTXPROPERTIES {
     this.drawPalettes()
     this.drawFastext(String.fromCharCode(1)+"Next  " + String.fromCharCode(2) + "Colour remap  "
     + String.fromCharCode(3) + "Metadata  "+String.fromCharCode(6)+"Exit")
+    this.pageHandler = this.page0Handler
   }
   
   
+  
+  
+
   
 }
 

@@ -4,9 +4,11 @@
  */
 class TTXCURSOR {
   constructor () {
+  print("[TTXCURSOR] Constructor")
     this.x = 0
     this.y = 0
-    this.hide = true
+    this.hide = true // Not used atm
+    this.callback = null // Callback function for when the cursor is moved
   }
 
   right () {
@@ -14,7 +16,7 @@ class TTXCURSOR {
     if (this.x > 39) {
       this.x = 39
     }
-    this.dump('R')
+    this.doCallback('R')
     return this.x
   }
 
@@ -23,7 +25,7 @@ class TTXCURSOR {
     if (this.x < 0) {
       this.x = 0
     }
-    this.dump('L')
+    this.doCallback('L')
     return this.x
   }
 
@@ -32,7 +34,7 @@ class TTXCURSOR {
     if (this.y < 0) {
       this.y = 0
     }
-    this.dump('U')
+    this.doCallback('U')
     return this.y
   }
 
@@ -41,24 +43,41 @@ class TTXCURSOR {
     if (this.y > 24) {
       this.y = 24
     }
-    this.dump('D')
+    this.doCallback('D')
     return this.y
   }
 
   newLine () {
     this.down()
     this.x = 0
-    this.dump('N')
+    this.doCallback('N')
     return this.y
   }
 
   moveTo (x, y) {
     this.x = constrain(x, 0, 39)
-    this.y = constrain(y, 0, 24)
-    this.dump('M')
+    this.y = constrain(y, 0, 24)    
+    this.doCallback('M')
   }
-
-  dump (ch) {
+  
+  /** Set a callback
+   *  The callback should have the X and Y coordinates
+   */
+  setCallback(callback) {
+    this.callback = callback
+  }
+  
+  /** Execute a callback for when the cursor moves
+   * @param ch - Can be used for debugging 
+   */
+  doCallback (ch) {
+    if (this.callback !== null && this.callback !==undefined) {
+      this.callback(this.x, this.y)
+    }
+    else
+    {
+      print("There is no callback")
+    }
     // console.log("cursor="+ch+" ("+this.x+","+this.y+")")
   }
 } // TTXCursor
