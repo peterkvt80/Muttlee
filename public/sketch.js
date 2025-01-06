@@ -1033,19 +1033,31 @@ function keyPressed () {
     // todo: Kill refresh cycles while the input is active.
     switch (keyCode) {
       case LEFT_ARROW:
-        if (editMode === CONST.EDITMODE_EDIT) myPage.cursor.left()
+        if ( (editMode === CONST.EDITMODE_EDIT) ||
+            (editMode === CONST.EDITMODE_PROPERTIES) ) {
+            myPage.cursor.left()
+        }
         break
 
       case RIGHT_ARROW:
-        if (editMode === CONST.EDITMODE_EDIT) myPage.cursor.right()
+        if ( (editMode === CONST.EDITMODE_EDIT) ||
+            (editMode === CONST.EDITMODE_PROPERTIES) ) {
+            myPage.cursor.right()
+        }
         break
 
       case UP_ARROW:
-        if (editMode === CONST.EDITMODE_EDIT) myPage.cursor.up()
+        if ( (editMode === CONST.EDITMODE_EDIT) ||
+            (editMode === CONST.EDITMODE_PROPERTIES) ) {
+            myPage.cursor.up()
+        }
         break
 
       case DOWN_ARROW:
-        if (editMode === CONST.EDITMODE_EDIT) myPage.cursor.down()
+        if ( (editMode === CONST.EDITMODE_EDIT) ||
+            (editMode === CONST.EDITMODE_PROPERTIES) ) {
+            myPage.cursor.down()
+        }
         break
         
       case ENTER:
@@ -1243,9 +1255,13 @@ function processKey (keyPressed) {
   // In properties mode, the keys work completely differently, as does the page renderer
   if (editMode === CONST.EDITMODE_PROPERTIES) {
     // Now we handle the UI elements on the properties pages.
-    print("Key pressed in Properties mode")
-    // for now, return back to EDIT
-    editMode = CONST.EDITMODE_EDIT
+    myPage.handlePropertiesKey(key)
+    
+    
+    if (false) { // @todo, somehow return back to EDIT
+      editMode = CONST.EDITMODE_EDIT
+      myPage.editSwitch(editMode)
+    }
     return
   }
   

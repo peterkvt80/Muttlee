@@ -350,7 +350,8 @@ window.TTXPAGE = function () {
     if (this.editMode === CONST.EDITMODE_PROPERTIES) {
       // Create the properties page
       if (this.editProperties === undefined) {      
-        this.editProperties = new TTXPROPERTIES(this.pageNumber, this.description, this.metadata[this.subPage].clut)
+        this.editProperties =
+            new TTXPROPERTIES(this.pageNumber, this.description, this.metadata[this.subPage].clut, this.cursor)
         // Hook up the cursor callback so we can edit the properties
         this.cursor.setCallback(this.editProperties.getCursorCallback())
       }
@@ -640,7 +641,7 @@ window.TTXPAGE = function () {
     return gfxMode
   }
 
-  /** \return the character at location given in data.x amd data.y */
+  /** \return the character at location given in data.x and data.y */
   this.getChar = function (data) {
     if (data === undefined) {
       return 0
@@ -663,8 +664,16 @@ window.TTXPAGE = function () {
     )
 
     return ch
+  } // getChar
+  
+  /** handlePropertiesKey - keystroke on the properties page
+   */
+  this.handlePropertiesKey = function(key) {
+    if (this.editProperties !== undefined) {
+      this.editProperties.handleKeyPress(key)
+    }
   }
-}
+} // Window.TTXPage class
 
 /** \return true if while in graphics mode it is a graphics character */
 function isMosaic (ch) {
@@ -1186,7 +1195,7 @@ function Row (ttxpage, page, y, str, clut) {
 
     return ch
   }
-}
+} // Row class
 
 /// ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 

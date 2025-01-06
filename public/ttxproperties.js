@@ -15,15 +15,17 @@
 // 
 class TTXPROPERTIES {
   // @todo Need to pass description, X28 clut and palette etc.
-  constructor(pageNumber, description, clut) {
+  constructor(pageNumber, description, clut, cursor) {
     print("[TTXPROPERTIES] Constructor")    
     this.totalPages = 5 // How many configuration pages
     this.pageIndex = 0 // Which configuration page we are on
     this.description = description
     this.rows = []
     this.clut = clut // Keep this so we can return changed values
+    this.cursor = cursor
     this.cursorCol = -1
     this.cursorRow = 0
+    this.editableFields = [] // UI elements that we can interact with
     
     let self = this // Ensure we use the correct "this" on callbacks
     this.cursorCallback // When the cursor changes
@@ -248,9 +250,70 @@ class TTXPROPERTIES {
     + String.fromCharCode(3) + "Metadata  "+String.fromCharCode(6)+"Exit")
     this.pageHandler = this.page0Handler
     // Editable fields
+    this.editableFields = []
+    // CLUT 0
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7,  7, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15,  7, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23,  7, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31,  7, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7,  8, 3, 1, null )) 
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15,  8, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23,  8, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31,  8, 3, 1, null ))
+    // CLUT 1
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7, 11, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15, 11, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23, 11, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31, 11, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7, 12, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15, 12, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23, 12, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31, 12, 3, 1, null ))
+    // CLUT 2
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7, 15, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15, 15, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23, 15, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31, 15, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7, 16, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15, 16, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23, 16, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31, 16, 3, 1, null ))
+    // CLUT 3
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7, 19, 3, 1, null )) 
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15, 19, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23, 19, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31, 19, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7, 20, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15, 20, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23, 20, 3, 1, null ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31, 20, 3, 1, null ))
+    
   }
   
-  
+  handleKeyPress(key) {
+    print("[TTXPROPERTIES::handleKeyPress] Key pressed in Properties mode key = " + key) 
+    // Go through the the editable fields and see if we hit one
+    let xp = this.cursorCol
+    let yp = this.cursorRow
+    if ( (xp < 0) || (xp > 39) || (yp < 0) || (yp > 25) ) {
+      return
+    }
+    for (const field of this.editableFields) {
+      // Are we in the editable zone?
+      if ( (xp >= field.xLoc) && (xp < field.xLoc + field.xWidth) &&
+        (yp >= field.yLoc) && (yp < field.yLoc + field.yHeight)) {
+        // @todo Test if the character is valid
+        // @todo Write the new character to the screen
+        this.rows[yp].setchar(key, xp)
+        // Advance cursor
+        // @todo Ability to TAB or navigate cursor through fields
+        if (xp < field.xLoc + field.xWidth) {
+          this.cursor.right() // Advance right after a character
+        }
+        // @todo Return the modified data to the clut object
+      }
+    }
+  }
   
   
 
