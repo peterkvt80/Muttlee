@@ -76,6 +76,7 @@ const CONST = {
   SERVICE_WIKI: 'wtf',
   //SERVICE_CHANNEL19: 'channel19',
   //SERVICE_CHRISLUCA: 'chrisluca',
+  
 
   SERVICE_NMS_CEEFAX_NATIONAL: 'nms_cf_national',
   //SERVICE_NMS_CEEFAX__EAST: 'nms_cf_east',
@@ -149,6 +150,14 @@ const CONST = {
 
 
     FRONTEND_CONFIG_KEYS: 'FRONTEND_CONFIG_KEYS',
+    
+  },
+  // UI Fields for property editing
+  UI_FIELD: {
+    FIELD_HEXCOLOUR: 0, // Three digit hex colour
+    FIELD_CHECKBOX:  1, // Checkbox
+    FIELD_NUMBER:    2, // Decimal number
+    FIELD_COMBO:     3, // Combo box
   },
 };
 

@@ -247,6 +247,7 @@ class TTXPROPERTIES {
     this.drawFastext(String.fromCharCode(1)+"Next  " + String.fromCharCode(2) + "Colour remap  "
     + String.fromCharCode(3) + "Metadata  "+String.fromCharCode(6)+"Exit")
     this.pageHandler = this.page0Handler
+    // Editable fields
   }
   
   
