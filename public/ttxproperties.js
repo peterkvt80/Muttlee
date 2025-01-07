@@ -312,15 +312,18 @@ class TTXPROPERTIES {
       if ( (xp >= field.xLoc) && (xp < field.xLoc + field.xWidth) &&
         (yp >= field.yLoc) && (yp < field.yLoc + field.yHeight)) {
         // @todo Test if the character is valid
+        key = field.validateKey(key)
         // @todo Write the new character to the screen
         // Don't draw special codes
         // [!] Test for special TAB code *before* testing for a character
-        if (key !=(9+0x80) && key.charCodeAt(0) < 0x80) {
+        if (key !=(9+0x80) && (key != 0xff) && key.charCodeAt(0) < 0x80) {
           this.rows[yp].setchar(key, xp)
+          // The field changed. What is the new value?
+          this.updateField(field)
         }
         // Advance cursor
-        // @todo Ability to TAB or navigate cursor through fields
-        if (xp < field.xLoc + field.xWidth - 1) {
+        // @todo Backwards TAB
+        if  ((xp < field.xLoc + field.xWidth - 1) && (key != 0xff)) {
           this.cursor.right() // Advance right after a character
         }
         // We went off the end of the field or TAB, flip to the next one
@@ -330,10 +333,26 @@ class TTXPROPERTIES {
         // @todo Return the modified data to the clut object
       }
     }
-  }
-  
-  
+    // Forward TAB wrap back to the start
+    if (doTab) {
+      this.cursor.moveTo(this.editableFields[0].xLoc, this.editableFields[0].yLoc)
+    }
+  }   
 
+  updateField(field) {
+    // Get the updated data
+    let row = this.rows[field.yLoc]
+    switch (field.uiType) {
+    case CONST.UI_FIELD.FIELD_HEXCOLOUR:
+      let rowString = row.txt
+      let value = rowString.substring(field.xLoc, field.xLoc + field.xWidth)
+      print ("new value = " + value)
+      break;
+    default:
+      print("[TTXPROPERTIES::updateField] switch todo")
+    }
+    // update the display
+  }
   
 }
 

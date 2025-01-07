@@ -23,11 +23,12 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-# */
-'use strict'
+#*/
+"use strict"
 
 class uiField {
-  /**
+
+  /** 
    * @param uiType - CONST.UI_FIELD.FIELD_HEXCOLOUR | FIELD_CHECKBOX | FIELD_NUMBER | FIELD_COMBO
    * @param xLoc - X origin of the field
    * @param yLoc - Y origin of the field
@@ -35,7 +36,7 @@ class uiField {
    * @param yHeight - Width of the field
    * @param sourceData - Reference to the data being edited
    */
-  constructor (uiType, xLoc, yLoc, xWidth, yHeight, sourceData) {
+  constructor(uiType, xLoc, yLoc, xWidth, yHeight, sourceData) {
     this.uiType = uiType
     this.xLoc = xLoc
     this.yLoc = yLoc
@@ -43,25 +44,39 @@ class uiField {
     this.yHeight = yHeight
     this.sourceData = sourceData
   }
-
-  /** processKey
+  
+  /** validateKey
    *  Update this field according to the key press and its location
    *  This comes from a callback in TTXPROPERTIES
-   */
-  processKey (key, x, y) {
+   */  
+  validateKey(key)
+  {  
     // Is the cursor in our field
     // Is the key valid for this type of field?
+    key = key.toLowerCase()
     switch (this.uiType) {
-      case CONST.UI_FIELD.FIELD_HEXCOLOUR: // Three digit hex value
-        break
-      case CONST.UI_FIELD.FIELD_CHECKBOX: // Cross or blank
-        break
-      case CONST.UI_FIELD.FIELD_NUMBER: // Arbitrary decimal number
-        break
-      case CONST.UI_FIELD.FIELD_COMBO: // Yeah. Could be interesting! Don't know how to control this
-        break
+    case CONST.UI_FIELD.FIELD_HEXCOLOUR: // Three digit hex value
+      if  ( ((key >= '0') && (key <='9')) || 
+        ((key >='a') && (key <='f'))) {
+          return key
+        }
+      break
+    case CONST.UI_FIELD.FIELD_CHECKBOX: // Cross or blank
+      return key // @todo Replace this placeholder. 
+      break
+    case CONST.UI_FIELD.FIELD_NUMBER: // Arbitrary decimal number
+      if  ( (key >= '0') && (key <='9')) {
+          return key
+        }
+      break
+    case CONST.UI_FIELD.FIELD_COMBO: // Yeah. Could be interesting! Don't know how to control this
+      return key // @todo Replace this placeholder. 
+      break
     }
     // update the display
     // update the source data
+    return 0xff // Invalid key
   }
+  
+
 } // uiField
