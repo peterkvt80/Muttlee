@@ -1093,9 +1093,15 @@ function keyPressed () {
         break
       }
       case TAB: // Insert a space
-        myPage.insertSpace() // Do our page
-        insertSpace() // Any other clients
-        editMode = CONST.EDITMODE_EDIT
+        if (editMode === CONST.EDITMODE_PROPERTIES) {
+          // Forward this tab to the properties page
+          myPage.handlePropertiesKey(keyCode + 0x80) // Special flag
+
+        } else {
+          myPage.insertSpace() // Do our page
+          insertSpace() // Any other clients
+          editMode = CONST.EDITMODE_EDIT
+        }
         break
 
       case BACKSPACE: // Remove current character, move the remainder one char left.

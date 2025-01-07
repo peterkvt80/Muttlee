@@ -298,17 +298,34 @@ class TTXPROPERTIES {
     if ( (xp < 0) || (xp > 39) || (yp < 0) || (yp > 25) ) {
       return
     }
+    // Do tab
+    let doTab = false
     for (const field of this.editableFields) {
+      if (doTab) { // forward tab
+        this.cursor.moveTo(field.xLoc, field.yLoc)
+        doTab = false
+        break
+      }
+      // @todo Backward tab
+      // @todo Wrap around forward or backward tab
       // Are we in the editable zone?
       if ( (xp >= field.xLoc) && (xp < field.xLoc + field.xWidth) &&
         (yp >= field.yLoc) && (yp < field.yLoc + field.yHeight)) {
         // @todo Test if the character is valid
         // @todo Write the new character to the screen
-        this.rows[yp].setchar(key, xp)
+        // Don't draw special codes
+        // [!] Test for special TAB code *before* testing for a character
+        if (key !=(9+0x80) && key.charCodeAt(0) < 0x80) {
+          this.rows[yp].setchar(key, xp)
+        }
         // Advance cursor
         // @todo Ability to TAB or navigate cursor through fields
-        if (xp < field.xLoc + field.xWidth) {
+        if (xp < field.xLoc + field.xWidth - 1) {
           this.cursor.right() // Advance right after a character
+        }
+        // We went off the end of the field or TAB, flip to the next one
+        if ((xp === field.xLoc + field.xWidth - 1) || (key === (9 + 0x80))) {
+          doTab = true
         }
         // @todo Return the modified data to the clut object
       }
