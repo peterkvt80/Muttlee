@@ -117,8 +117,12 @@ class Clut {
       }
     }
     // Black Background Colour Substitution
-    if (this.blackBackground && !foreground && colourIndex===0) {
-      return color(0, 0, 0)
+    // todo fix this if the first colour in each palette comes out black
+    //if (this.blackBackground && !foreground && colourIndex===0) {
+    //  return color(0, 0, 0)
+    //}
+    if (colourIndex === 0) {
+      print("This is a test clutIndex = " + clutIndex)
     }
     return this.getValue(clutIndex, colourIndex)
   }
