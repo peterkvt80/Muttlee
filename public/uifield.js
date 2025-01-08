@@ -34,15 +34,15 @@ class uiField {
    * @param yLoc - Y origin of the field
    * @param xWidth - Width of the field
    * @param yHeight - Width of the field
-   * @param sourceData - Reference to the data being edited
+   * @param clutIndex - index of the CLUT this colour comes from
    */
-  constructor(uiType, xLoc, yLoc, xWidth, yHeight, sourceData) {
+  constructor(uiType, xLoc, yLoc, xWidth, yHeight, clutIndex) {
     this.uiType = uiType
     this.xLoc = xLoc
     this.yLoc = yLoc
     this.xWidth = xWidth
     this.yHeight = yHeight
-    this.sourceData = sourceData
+    this.clutIndex = clutIndex
   }
   
   /** validateKey

@@ -1264,7 +1264,7 @@ function processKey (keyPressed) {
     myPage.handlePropertiesKey(key)
     
     
-    if (false) { // @todo, somehow return back to EDIT
+    if (key ==='x' || key === 'q') { // @todo, somehow return back to EDIT
       editMode = CONST.EDITMODE_EDIT
       myPage.editSwitch(editMode)
     }
@@ -1678,7 +1678,13 @@ function editTF (key) {
       
     // Enter properties mode, for setting page properties like description
     case 'X' :
-      editMode = CONST.EDITMODE_PROPERTIES
+      if (editMode === CONST.EDITMODE_PROPERTIES) { // This doesn't work
+        editMode = CONST.EDITMODE_NORMAL
+      }
+      else
+      {
+        editMode = CONST.EDITMODE_PROPERTIES
+      }
       myPage.editSwitch(editMode)
       return // no more processing needed
 

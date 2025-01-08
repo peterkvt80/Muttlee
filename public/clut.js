@@ -220,6 +220,22 @@ class Clut {
         return this.clut0[clrIndex] // just in case!
     }
   }
+  
+  /** colour12to24
+   * @param colour12 -  a 12 bit colour
+   * @return -  p5js colour
+   */
+  colour12to24(colour12) {
+    print(colour12)
+    colour12 = parseInt(colour12, 16)
+    let r = (colour12 >> 8) & 0x0f
+    let g = (colour12 >> 4) & 0x0f
+    let b = colour12 & 0x0f    
+    return color(
+      (r<<4 || r),
+      (g<<4 || g),
+      (b<<4 || b))
+  }
 
   /** debug dump the clut contents
    *  Don't need this right now
