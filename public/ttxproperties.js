@@ -17,7 +17,7 @@ class TTXPROPERTIES {
   // @todo Need to pass description, X28 clut and palette etc.
   constructor(pageNumber, description, clut, cursor) {
     print("[TTXPROPERTIES] Constructor")    
-    this.totalPages = 5 // How many configuration pages
+    this.totalPages = 2 // How many configuration pages
     this.pageIndex = 0 // Which configuration page we are on
     this.description = description
     this.rows = []
@@ -86,9 +86,15 @@ class TTXPROPERTIES {
    *  load in the new page
    */
   updateIndex() {
+    // Blank all the rows
+    for (let i = 1; i < 26; i++) {
+      this.rows[i].setrow("                                        ")    
+    }
     switch (this.pageIndex)
     {
       case 0: this.loadPage0()
+        break;
+      case 1: this.loadPage1()
         break;
       default:
         print("[ttxproperties::updateIndex] Invalid index " + this.pageIndex)
@@ -96,7 +102,7 @@ class TTXPROPERTIES {
   }
   
   draw() {
-    print("[TTXPROPERTIES::draw] called")
+    // print("[TTXPROPERTIES::draw] called")
     for (let rw = 0; rw < this.rows.length; rw++) {
       let cpos = -1 // Disable the cursor
       // unless this is the correct row, then show it
@@ -154,7 +160,7 @@ class TTXPROPERTIES {
     * eg. 2/5
    */
   drawPageIndex(pageIndex) {
-    this.rows[3].setchar('1',37)
+    this.rows[3].setchar(pageIndex,37)
     this.rows[3].setchar('/',38)
     this.rows[3].setchar(this.totalPages,39)
   }
@@ -242,8 +248,9 @@ class TTXPROPERTIES {
 
   // X/28 palette editor
   loadPage0(pageIndex) {
+    print("loading page 0")
     this.drawHeader("PAGE ENHANCEMENTS-X/28/0 format 1")
-    this.drawPageIndex(pageIndex)
+    this.drawPageIndex(1)
     this.drawBox(1,4,39,19,"Palette")
     this.drawPalettes()
     this.drawFastext(String.fromCharCode(1)+"Next  " + String.fromCharCode(2) + "Colour remap  "
@@ -290,12 +297,46 @@ class TTXPROPERTIES {
     
   }
   
+  // X/28 clut editor
+  loadPage1(pageIndex) {
+    print("loading page 1")
+    this.drawHeader("PAGE ENHANCEMENTS-X/28/0 format 1")
+    this.drawPageIndex(2)
+    this.drawBox(1,14,39,6,"Side panels")
+    this.drawBox(1,4,39,16,"Colours")
+    // this.drawPalettes()
+    this.drawFastext(String.fromCharCode(1)+"Next  " + String.fromCharCode(2) + "Colour remap  "
+    + String.fromCharCode(3) + "Metadata  "+String.fromCharCode(6)+"Exit")
+    this.pageHandler = this.page0Handler
+    // Editable fields
+    this.editableFields = []
+    // CLUT 0
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7,  7, 3, 1, 0 ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15,  7, 3, 1, 0 ))
+    
+  }
+
   handleKeyPress(key) {
     print("[TTXPROPERTIES::handleKeyPress] Key pressed in Properties mode key = " + key) 
     // Go through the the editable fields and see if we hit one
     let xp = this.cursorCol
     let yp = this.cursorRow
-    if ( (xp < 0) || (xp > 39) || (yp < 0) || (yp > 25) ) {
+    // Are we on the page? Tried to type a character off the page?
+    // Allow TAB, Page Up, Page Down to get through though
+    if ( ((xp < 0) || (xp > 39) || (yp < 0) || (yp > 25)) && (key < 0x80)) {
+      return
+    }
+    // Page up and Page down cycle through the properties pages
+    if (key === 0x21 + 0x80) { // Page up
+      print("Page Up")
+      this.pageIndex = (this.pageIndex + 1) % this.totalPages
+      this.updateIndex()
+      return
+    }
+    if (key === 0x22 + 0x80) { // Page down
+      print("Page Down")
+      this.pageIndex = (this.pageIndex - 1) % this.totalPages
+      this.updateIndex()
       return
     }
     // Do tab
@@ -316,14 +357,14 @@ class TTXPROPERTIES {
         // @todo Write the new character to the screen
         // Don't draw special codes
         // [!] Test for special TAB code *before* testing for a character
-        if (key !=(9+0x80) && (key != 0xff) && key.charCodeAt(0) < 0x80) {
+        if ( (key < 0x80) /*key !=(9+0x80) && (key != 0xff)*/ && key.charCodeAt(0) < 0x80) {
           this.rows[yp].setchar(key, xp)
           // The field changed. What is the new value?
           this.updateField(field)
         }
         // Advance cursor
         // @todo Backwards TAB
-        if  ((xp < field.xLoc + field.xWidth - 1) && (key != 0xff)) {
+        if  ((xp < field.xLoc + field.xWidth - 1) && (key < 0x80)) {
           this.cursor.right() // Advance right after a character
         }
         // We went off the end of the field or TAB, flip to the next one

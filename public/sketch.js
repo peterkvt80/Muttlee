@@ -1111,14 +1111,25 @@ function keyPressed () {
         break
 
       case 33: // PAGE_UP (next subpage when in edit mode)
-        if (editMode === CONST.EDITMODE_EDIT) {
-          myPage.nextSubpage()
+        if (editMode === CONST.EDITMODE_PROPERTIES) {
+          // Forward page up to the properties page
+          myPage.handlePropertiesKey(keyCode + 0x80) // Special flag
+
+        } else {
+          if (editMode === CONST.EDITMODE_EDIT) {
+            myPage.nextSubpage()
+          }
         }
         break
 
       case 34: // PAGE_DOWN (prev subpage when in edit mode)
-        if (editMode === CONST.EDITMODE_EDIT) {
-          myPage.prevSubpage()
+        if (editMode === CONST.EDITMODE_PROPERTIES) {
+          // Forward page down to the properties page
+          myPage.handlePropertiesKey(keyCode + 0x80) // Special flag
+        } else {
+          if (editMode === CONST.EDITMODE_EDIT) {
+            myPage.prevSubpage()
+          }
         }
         break
 

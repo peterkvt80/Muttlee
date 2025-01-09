@@ -53,9 +53,12 @@ class uiField {
   {  
     // Is the cursor in our field
     // Is the key valid for this type of field?
+    if (Number.isInteger(key)) { // TAB, Page Up, Page Down etc.
+      return key
+    }
     key = key.toLowerCase()
     switch (this.uiType) {
-    case CONST.UI_FIELD.FIELD_HEXCOLOUR: // Three digit hex value
+    case CONST.UI_FIELD.FIELD_HEXCOLOUR: // Three digit hex value.
       if  ( ((key >= '0') && (key <='9')) || 
         ((key >='a') && (key <='f'))) {
           return key

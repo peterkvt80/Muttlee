@@ -122,7 +122,8 @@ class Clut {
     //  return color(0, 0, 0)
     //}
     if (colourIndex === 0) {
-      print("This is a test clutIndex = " + clutIndex)
+      // print("This is a test clutIndex = " + clutIndex)
+      // @todo Implement black background colour substitution
     }
     return this.getValue(clutIndex, colourIndex)
   }
