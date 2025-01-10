@@ -67,7 +67,7 @@ class uiField {
     case CONST.UI_FIELD.FIELD_CHECKBOX: // Cross or blank
       return key // @todo Replace this placeholder. 
       break
-    case CONST.UI_FIELD.FIELD_NUMBER: // Arbitrary decimal number
+    case CONST.UI_FIELD.FIELD_NUMBER: // Arbitrary decimal number. [@todo Could use limits]
       if  ( (key >= '0') && (key <='9')) {
           return key
         }
@@ -81,5 +81,4 @@ class uiField {
     return 0xff // Invalid key
   }
   
-
 } // uiField

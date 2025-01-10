@@ -140,6 +140,7 @@ class TTXPROPERTIES {
     //Verticals
     for (let y=ypos+1; y<ypos+yheight-1; y++) {
       this.rows[y].setchar('5',xpos+1)
+      this.rows[y].setchar(String.fromCharCode(0x13),xpos+xwidth-2) // Yellow
       this.rows[y].setchar('j',xpos+xwidth-1)
     }
     // corners
@@ -302,24 +303,42 @@ class TTXPROPERTIES {
     print("loading page 1")
     this.drawHeader("PAGE ENHANCEMENTS-X/28/0 format 1")
     this.drawPageIndex(2)
+    
+    // outlines
     this.drawBox(1,14,39,6,"Side panels")
     this.drawBox(1,4,39,16,"Colours")
+    // Fix the ends of the "Side Panels" row
+    this.rows[14].setchar('w',2)
+    this.rows[14].setchar('s',38)
+    this.rows[14].setchar('{',39)
     
-    this.drawCaption(4, 6, "Default screen")
-    this.drawCaption(4, 8, "Default row")
-    this.drawCaption(4, 10, "CLUT remapping")
-    this.drawCaption(4, 12, "Blk background sub.")
-    this.drawCaption(4, 16, "Left columns")
-    this.drawCaption(4, 18, "Right columns")
+    // captions
+    this.drawCaption(4, 6, "Default screen          CLUT 0:1")
+    this.drawCaption(4, 8, "Default row             CLUT 0:2")
+    this.drawCaption(4, 10, "CLUT remap mode = x    Fg2, Bg2")
+    this.drawCaption(4, 12, "Blk background sub.      YES")
+    this.drawCaption(4, 16, "Left columns             10")
+    this.drawCaption(4, 18, "Right columns            15")
     // this.drawPalettes()
     this.drawFastext(String.fromCharCode(1)+"Next  " + String.fromCharCode(2) + "Colour remap  "
     + String.fromCharCode(3) + "Metadata  "+String.fromCharCode(6)+"Exit")
     this.pageHandler = this.page0Handler
     // Editable fields
     this.editableFields = []
-    // CLUT 0
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7,  7, 3, 1, 0 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15,  7, 3, 1, 0 ))
+    // Default screen colour
+    // Default row colour
+    // CLUT remap mode
+    let clutIndex = 0 // Use default colours
+    let field = new uiField(CONST.UI_FIELD.FIELD_NUMBER,  23, 10, 1, 1, clutIndex )
+    // Display the value in the field
+    let row = field.yLoc
+    let col = field.xLoc
+    let txt = this.rows[row]
+    txt.setrow(replace(txt.txt, this.clut.remap.toString(), col))
+    this.editableFields.push(field) 
+    // Blk background sub.
+    // Left columns
+    // Right columns
     
   }
   
@@ -398,13 +417,15 @@ class TTXPROPERTIES {
     }
   }   
 
+  // Unfortunately, this handler is used for all pages, so the logic may be
+  // a little muddled
   updateField(field) {
     // Get the updated data
     let row = this.rows[field.yLoc]
+    let rowString = row.txt
+    let value = rowString.substring(field.xLoc, field.xLoc + field.xWidth)
     switch (field.uiType) {
-    case CONST.UI_FIELD.FIELD_HEXCOLOUR:
-      let rowString = row.txt
-      let value = rowString.substring(field.xLoc, field.xLoc + field.xWidth)
+    case CONST.UI_FIELD.FIELD_HEXCOLOUR: // This only is used on page 0
       print ("new value = " + value)
       // Now put this colour value into the CLUT of each row
       {
@@ -439,6 +460,37 @@ class TTXPROPERTIES {
         }
         // Update the master clut
         this.clut.setValue(colour, clutIndex, colourIndex)
+      }
+      break;
+    case CONST.UI_FIELD.FIELD_NUMBER: // This is only used on page 1
+      value = Number(value)
+      // there are several numeric fields on this page.
+      let x = field.yLoc
+      let y = field.yLoc
+      if (y===10) { // CLUT remapping 0..7
+        print ("CLUT remap new number = " + value) 
+        // Update the data
+        this.clut.setRemap(value)
+        // update the display
+        // Fg/ Bg
+        // 0, 0
+        // 0, 1
+        // 0, 2
+        // 1, 1
+        // 1, 2
+        // 2, 1
+        // 2, 2
+        // 2, 3
+        switch (value) {
+        case 0:row.setrow(replace(rowString,"Fg0, Bg0", 27));break;
+        case 1:row.setrow(replace(rowString,"Fg0, Bg1", 27));break;
+        case 2:row.setrow(replace(rowString,"Fg0, Bg2", 27));break;
+        case 3:row.setrow(replace(rowString,"Fg1, Bg1", 27));break;
+        case 4:row.setrow(replace(rowString,"Fg1, Bg2", 27));break;
+        case 5:row.setrow(replace(rowString,"Fg2, Bg1", 27));break;
+        case 6:row.setrow(replace(rowString,"Fg2, Bg2", 27));break;
+        case 7:row.setrow(replace(rowString,"Fg2, Bg3", 27));break;
+        }
       }
       break;
     default:
