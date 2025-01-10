@@ -304,6 +304,13 @@ class TTXPROPERTIES {
     this.drawPageIndex(2)
     this.drawBox(1,14,39,6,"Side panels")
     this.drawBox(1,4,39,16,"Colours")
+    
+    this.drawCaption(4, 6, "Default screen")
+    this.drawCaption(4, 8, "Default row")
+    this.drawCaption(4, 10, "CLUT remapping")
+    this.drawCaption(4, 12, "Blk background sub.")
+    this.drawCaption(4, 16, "Left columns")
+    this.drawCaption(4, 18, "Right columns")
     // this.drawPalettes()
     this.drawFastext(String.fromCharCode(1)+"Next  " + String.fromCharCode(2) + "Colour remap  "
     + String.fromCharCode(3) + "Metadata  "+String.fromCharCode(6)+"Exit")
@@ -314,6 +321,16 @@ class TTXPROPERTIES {
     this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7,  7, 3, 1, 0 ))
     this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15,  7, 3, 1, 0 ))
     
+  }
+  
+  /** Draws a caption at xLoc+1, yPos
+   *  xLoc contains a white alpha code
+   */
+  drawCaption(xLoc, yLoc, caption) {    
+    this.rows[yLoc].setrow(
+      replace(this.rows[yLoc].txt,
+        String.fromCharCode(0x07) + caption,
+        xLoc))
   }
 
   handleKeyPress(key) {
@@ -328,14 +345,15 @@ class TTXPROPERTIES {
     }
     // Page up and Page down cycle through the properties pages
     if (key === 0x21 + 0x80) { // Page up
-      print("Page Up")
       this.pageIndex = (this.pageIndex + 1) % this.totalPages
       this.updateIndex()
       return
     }
     if (key === 0x22 + 0x80) { // Page down
-      print("Page Down")
-      this.pageIndex = (this.pageIndex - 1) % this.totalPages
+      this.pageIndex = (this.pageIndex - 1)
+      if (this.pageIndex < 0) { // wrap around
+        this.pageIndex = this.totalPages -1
+      }
       this.updateIndex()
       return
     }
