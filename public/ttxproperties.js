@@ -313,23 +313,34 @@ class TTXPROPERTIES {
     this.rows[14].setchar('{',39)
     
     // captions
-    this.drawCaption(4, 6, "Default screen          CLUT 0:1")
-    this.drawCaption(4, 8, "Default row             CLUT 0:2")
-    this.drawCaption(4, 10, "CLUT remap mode = x    Fg2, Bg2")
-    this.drawCaption(4, 12, "Blk background sub.      YES")
-    this.drawCaption(4, 16, "Left columns             10")
-    this.drawCaption(4, 18, "Right columns            15")
-    // this.drawPalettes()
+    this.drawCaption(4, 6, "Default screen         CLUT 0:1")
+    this.drawCaption(4, 8, "Default row            CLUT 0:2")
+    this.drawCaption(4, 10, "CLUT remap mode = x            ")
+    this.drawCaption(4, 12, "Blk background sub.      YES   ")
+    this.drawCaption(4, 16, "Left columns              0    ")
+    this.drawCaption(4, 18, "Right columns             5    ")
+
     this.drawFastext(String.fromCharCode(1)+"Next  " + String.fromCharCode(2) + "Colour remap  "
     + String.fromCharCode(3) + "Metadata  "+String.fromCharCode(6)+"Exit")
     this.pageHandler = this.page0Handler
+
     // Editable fields
     this.editableFields = []
     // Default screen colour
-    // Default row colour
-    // CLUT remap mode
     let clutIndex = 0 // Use default colours
-    let field = new uiField(CONST.UI_FIELD.FIELD_NUMBER,  23, 10, 1, 1, clutIndex )
+    let field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 33, 6, 1, 1, clutIndex ) // CLUT
+    this.editableFields.push(field) 
+    field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 35, 6, 1, 1, clutIndex ) // Colour
+    this.editableFields.push(field) 
+    // Default row colour
+    clutIndex = 0 // Use default colours
+    field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 33, 8, 1, 1, clutIndex ) // CLUT
+    this.editableFields.push(field) 
+    field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 35, 8, 1, 1, clutIndex ) // Colour
+    this.editableFields.push(field) 
+    // CLUT remap mode
+    clutIndex = 0 // Use default colours
+    field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 23, 10, 1, 1, clutIndex )
     // Display the value in the field
     let row = field.yLoc
     let col = field.xLoc
@@ -467,7 +478,16 @@ class TTXPROPERTIES {
       // there are several numeric fields on this page.
       let x = field.yLoc
       let y = field.yLoc
-      if (y===10) { // CLUT remapping 0..7
+      
+      // Default screen clut and colour
+      if (y===6) {
+        if (x===33) {
+          // Clut
+        }
+      }
+      
+       // CLUT remapping 0..7
+      if (y===10) {
         print ("CLUT remap new number = " + value) 
         // Update the data
         this.clut.setRemap(value)
@@ -482,14 +502,14 @@ class TTXPROPERTIES {
         // 2, 2
         // 2, 3
         switch (value) {
-        case 0:row.setrow(replace(rowString,"Fg0, Bg0", 27));break;
-        case 1:row.setrow(replace(rowString,"Fg0, Bg1", 27));break;
-        case 2:row.setrow(replace(rowString,"Fg0, Bg2", 27));break;
-        case 3:row.setrow(replace(rowString,"Fg1, Bg1", 27));break;
-        case 4:row.setrow(replace(rowString,"Fg1, Bg2", 27));break;
-        case 5:row.setrow(replace(rowString,"Fg2, Bg1", 27));break;
-        case 6:row.setrow(replace(rowString,"Fg2, Bg2", 27));break;
-        case 7:row.setrow(replace(rowString,"Fg2, Bg3", 27));break;
+        case 0:row.setrow(replace(rowString,"Fg 0, Bg 0", 27));break;
+        case 1:row.setrow(replace(rowString,"Fg 0, Bg 1", 27));break;
+        case 2:row.setrow(replace(rowString,"Fg 0, Bg 2", 27));break;
+        case 3:row.setrow(replace(rowString,"Fg 1, Bg 1", 27));break;
+        case 4:row.setrow(replace(rowString,"Fg 1, Bg 2", 27));break;
+        case 5:row.setrow(replace(rowString,"Fg 2, Bg 1", 27));break;
+        case 6:row.setrow(replace(rowString,"Fg 2, Bg 2", 27));break;
+        case 7:row.setrow(replace(rowString,"Fg 2, Bg 3", 27));break;
         }
       }
       break;
