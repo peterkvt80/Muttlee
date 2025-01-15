@@ -920,8 +920,14 @@ function setRow (r) {
       let colourIndex = i % 8
       myPage.metadata[myPage.subPage].clut.setValue(colourValue, clutIndex, colourIndex)
     }
+    myPage.metadata[myPage.subPage].clut.setDefaultScreenColour(r.X28F1.defaultScreenColour)
+    myPage.metadata[myPage.subPage].clut.setDefaultRowColour(r.X28F1.defaultRowColour)
+    myPage.metadata[myPage.subPage].clut.setDefaultScreenColour(r.X28F1.defaultRowColour)
     myPage.metadata[myPage.subPage].clut.setRemap(r.X28F1.colourTableRemapping)
     myPage.metadata[myPage.subPage].clut.setBlackBackground(r.X28F1.backBackgroundSubRow)
+    myPage.metadata[myPage.subPage].clut.setEnableLeftPanel(r.X28F1.enableLeftPanel)
+    myPage.metadata[myPage.subPage].clut.setEnableRightPanel(r.X28F1.enableRightPanel)
+    myPage.metadata[myPage.subPage].clut.setLeftColumns(r.X28F1.leftColumns)
     // @TODO Save packet
     // remembering to clear packet on carousel, new or load page etc
   }

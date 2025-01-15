@@ -73,10 +73,59 @@ class Clut {
     this.clut1 = new Array(8) // default half intensity colours
     this.clut2 = new Array(8)
     this.clut3 = new Array(8)
+    this.defaultScreenColour = 0 // black. [!] Assume that bits 4,3 are CLUT, 2,1,0 are Colour
+    this.defaultRowColour = 0 // black
     this.remap = 0 // 0..7 Colour Table remapping
     this.blackBackground = true // Don't let CLUT change the background colour
+    this.enableLeftPanel = false
+    this.enableRightPanel = false
+    this.leftColumns = 0
+    this.rightColumns = 0 // implied
     // set defaults
     this.resetTable()
+  }
+  
+  // Setters and getters
+  
+  setDefaultScreenColour(value) {
+    // @todo Check that it is a 5 bit value
+    this.defaultScreenColour = value 
+  }
+  
+  getDefaultScreenClut() {
+    return (this.defaultScreenColour >> 3) & 0x03
+  }
+   
+  getDefaultScreenColour() {
+    return this.defaultScreenColour & 0x07
+  }
+
+  getDefaultRowClut() {
+    return (this.defaultRowColour >> 3) & 0x03
+  }
+
+  getDefaultRowColour() {
+    return this.defaultRowColour & 0x07
+  }
+   
+   
+   
+  setDefaultRowColour(value) {
+    // @todo Check that it is a 5 bit value
+    this.defaultRowColour = value 
+  }
+  
+  setLeftColumns(value) {
+    // @todo Check that it is 20 or less
+    this.leftColumns = value 
+  }
+  
+  setEnableLeftPanel(value) {
+    this.enableLeftPanel = value 
+  }
+  
+  setEnableRightPanel(value) {
+    this.enableRightPanel = value 
   }
   
   setRemap(remap) {
@@ -117,10 +166,19 @@ class Clut {
       }
     }
     // Black Background Colour Substitution
-    // todo fix this if the first colour in each palette comes out black
-    //if (this.blackBackground && !foreground && colourIndex===0) {
-    //  return color(0, 0, 0)
-    //}
+    // If this is set, then colour 0 in a row is replaced by the default row colour
+    if (this.blackBackground && !foreground && colourIndex===0) {
+      let value = this.defaultRowColour
+      let clut = (value >> 3) & 0x03
+      let colour = value & 0x07
+      switch (clut) {
+      case 0: return this.clut0[colour]
+      case 1: return this.clut1[colour]
+      case 2: return this.clut2[colour]
+      case 3: return this.clut3[colour]
+      }
+      return color(0, 0, 255)
+    }
     if (colourIndex === 0) {
       // print("This is a test clutIndex = " + clutIndex)
       // @todo Implement black background colour substitution

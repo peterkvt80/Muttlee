@@ -313,8 +313,8 @@ class TTXPROPERTIES {
     this.rows[14].setchar('{',39)
     
     // captions
-    this.drawCaption(4, 6, "Default screen         CLUT 0:1")
-    this.drawCaption(4, 8, "Default row            CLUT 0:2")
+    this.drawCaption(4, 6, "Default screen         CLUT ?:?")
+    this.drawCaption(4, 8, "Default row            CLUT ?:?")
     this.drawCaption(4, 10, "CLUT remap mode = x            ")
     this.drawCaption(4, 12, "Blk background sub.      YES   ")
     this.drawCaption(4, 16, "Left columns              0    ")
@@ -326,31 +326,53 @@ class TTXPROPERTIES {
 
     // Editable fields
     this.editableFields = []
+    
     // Default screen colour
     let clutIndex = 0 // Use default colours
     let field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 33, 6, 1, 1, clutIndex ) // CLUT
     this.editableFields.push(field) 
     field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 35, 6, 1, 1, clutIndex ) // Colour
     this.editableFields.push(field) 
+    
     // Default row colour
     clutIndex = 0 // Use default colours
     field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 33, 8, 1, 1, clutIndex ) // CLUT
     this.editableFields.push(field) 
     field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 35, 8, 1, 1, clutIndex ) // Colour
     this.editableFields.push(field) 
+    
     // CLUT remap mode
     clutIndex = 0 // Use default colours
     field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 23, 10, 1, 1, clutIndex )
-    // Display the value in the field
-    let row = field.yLoc
-    let col = field.xLoc
-    let txt = this.rows[row]
-    txt.setrow(replace(txt.txt, this.clut.remap.toString(), col))
     this.editableFields.push(field) 
     // Blk background sub.
     // Left columns
     // Right columns
+    this.updateFieldsPage1()
+  }
+  
+  /** Load the page data into the UI
+   */
+  updateFieldsPage1() {
+    // Default screen colour
+    let txt = this.rows[6]
+    txt.setchar(txt.clut.getDefaultScreenClut(), 33)
+    txt.setchar(txt.clut.getDefaultScreenColour(), 35)
     
+    // Default row colour
+    txt = this.rows[8]
+    txt.setchar(txt.clut.getDefaultRowClut().toString(), 33)
+    txt.setchar(txt.clut.getDefaultRowColour().toString(), 35)
+    
+    // CLUT remap mode
+    let row = 10 // field.yLoc
+    let col = 23 // field.xLoc
+    txt = this.rows[row]
+    txt.setchar(this.clut.remap.toString(), col)
+    
+    // BLack background substitution
+    // Left columns
+    // Right columns
   }
   
   /** Draws a caption at xLoc+1, yPos
@@ -405,7 +427,9 @@ class TTXPROPERTIES {
         // @todo Write the new character to the screen
         // Don't draw special codes
         // [!] Test for special TAB code *before* testing for a character
-        if ( (key < 0x80) /*key !=(9+0x80) && (key != 0xff)*/ && key.charCodeAt(0) < 0x80) {
+        let test1 = (key < 0x80)  || (key >='a' && key<='f')
+        let test2 = key.charCodeAt(0) < 0x80
+        if ( (test1) /*key !=(9+0x80) && (key != 0xff)*/ && test2) {
           this.rows[yp].setchar(key, xp)
           // The field changed. What is the new value?
           this.updateField(field)

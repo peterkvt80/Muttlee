@@ -1032,7 +1032,7 @@ function Row (ttxpage, page, y, str, clut) {
       this.drawchar(String.fromCharCode(0xe6df), i, this.row, dblHeight)
 
       if (printable && (flashState || !flashMode) && !concealed) {
-        let myColour = this.clut.remapColourTable(fgColor, false)
+        let myColour = this.clut.remapColourTable(fgColor, true)
         fill(myColour) // Normal
 
         if (textmode || (ch.charCodeAt(0) >= 0x40 && ch.charCodeAt(0) < 0x60)) {

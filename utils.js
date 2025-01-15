@@ -134,13 +134,18 @@ global.DecodeOL28 = function(rowText) {
       colour = 0
     }    
   }
-  
-  
-  // @TODO Lots more values
-  result.defaultScreenColour = -1
-  result.defaultRowColour = -1
-  result.blackBackgroundSubRow = (triples[12] >> 13) & 0x01 // t13, 15
+    
+  // Screen colour remapping
+  result.defaultScreenColour = (triples[12] >> 4) & 0x1f // t13, 5..9
+  result.defaultRowColour = (triples[12] >> 9) & 0x1f // t13, 10..14
+  result.blackBackgroundSubRow = (triples[12] >> 14) & 0x01 // t13, 15
   result.colourTableRemapping = (triples[12] >> 15) & 0x07 // t13, 16..18
+  // left and right extension panels
+  result.enableLeftPanel = (triples[1] & 0x08) > 0 // t2, 4
+  result.enableRightPanel = (triples[1] & 0x10) > 0 // t2, 5
+  result.leftColumns = (triples[1] >> 6) & 0x0f // t2, 7..10 
+  // result.rightColumns = (triples[12]) Implied. Always 16-leftColumns
+  
   console.log(result)
   for (let i=0; i<8; i++) {
     console.log(result.colourMap[i].toString(16))
