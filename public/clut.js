@@ -79,36 +79,33 @@ class Clut {
     this.blackBackground = true // Don't let CLUT change the background colour
     this.enableLeftPanel = false
     this.enableRightPanel = false
-    this.leftColumns = 0
+    this.leftColumns = -1
     this.rightColumns = 0 // implied
     // set defaults
     this.resetTable()
+
+    // Getters
+    let self = this // You'll thank me later
+    this.getDefaultScreenClut = function() {
+      return (self.defaultScreenColour >> 3) & 0x03
+    }
+    this.getDefaultScreenColour = function() {
+      return self.defaultScreenColour & 0x07
+    }
+    this.getDefaultRowClut = function() {
+      return (self.defaultRowColour >> 3) & 0x03
+    }
+    this.getDefaultRowColour = function() {
+      return self.defaultRowColour & 0x07
+    }
   }
   
   // Setters and getters
-  
+    
   setDefaultScreenColour(value) {
     // @todo Check that it is a 5 bit value
     this.defaultScreenColour = value 
-  }
-  
-  getDefaultScreenClut() {
-    return (this.defaultScreenColour >> 3) & 0x03
-  }
-   
-  getDefaultScreenColour() {
-    return this.defaultScreenColour & 0x07
-  }
-
-  getDefaultRowClut() {
-    return (this.defaultRowColour >> 3) & 0x03
-  }
-
-  getDefaultRowColour() {
-    return this.defaultRowColour & 0x07
-  }
-   
-   
+  }   
    
   setDefaultRowColour(value) {
     // @todo Check that it is a 5 bit value
@@ -300,6 +297,25 @@ class Clut {
       (b<<4 || b))
   }
 
+  /** 
+   * Deep copy clut.
+   */
+  copyClut(src, dest) {
+    for (let i=0; i<8; i++) {
+      dest.clut0[i]=src.clut0[i]
+      dest.clut1[i]=src.clut1[i]
+      dest.clut2[i]=src.clut2[i]
+      dest.clut3[i]=src.clut3[i]
+    }
+    dest.defaultScreenColour = src.defaultScreenColour
+    dest.defaultRowColour = src.defaultRowColour
+    dest.remap = src.remap
+    dest.blackBackground = src.blackBackground
+    dest.enableLeftPanel = src.enableLeftPanel
+    dest.enableRightPanel = src.enableRightPanel
+    dest.leftColumns = src.leftColumns
+  }
+  
   /** debug dump the clut contents
    *  Don't need this right now
    */

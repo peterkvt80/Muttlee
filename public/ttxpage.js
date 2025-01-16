@@ -37,7 +37,7 @@ window.TTXPAGE = function () {
   // Basic page properties
   this.pageNumber = CONST.PAGE_MIN  
   this.subPage = undefined // Integer: The current sub page being shown or edited
-  function dummy(myX, myY){print("[TTXPAGE]THIS IS A CALLBACK TEST " + myX + " " + myY )}
+  function dummy(myX, myY){print("[TTXPAGE]Cursor callback test " + myX + " " + myY )}
   this.cursor = new TTXCURSOR()
   this.cursor.setCallback(dummy); // Temporary test
   // this.clut = new Clut() // moved to myPage.metaData[subpage].clut

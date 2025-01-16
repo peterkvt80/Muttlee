@@ -26,6 +26,7 @@ class TTXPROPERTIES {
     this.cursorCol = -1
     this.cursorRow = 0
     this.editableFields = [] // UI elements that we can interact with
+    this.remapField = 0
     
     let self = this // Ensure we use the correct "this" on callbacks
     this.cursorCallback // When the cursor changes
@@ -52,34 +53,20 @@ class TTXPROPERTIES {
     this.pageHandler = 99 // The page handler that processes cursor changes
     // Row 0    
     let newClut = new Clut
-    this.copyClut(clut, newClut)
+    clut.copyClut(clut, newClut)
     this.rows.push(
       new Row(this, pageNumber, 0, "          Muttlee Properties Editor     ", newClut)
     )
     this.rows[0].setpagetext(pageNumber)
     for (let i = 1; i < 26; i++) {
       let newClut = new Clut
-      this.copyClut(clut, newClut)
+      clut.copyClut(clut, newClut)
       this.rows.push(
         new Row(this, pageNumber, i, ''.padStart(CONFIG[CONST.CONFIG.NUM_COLUMNS]), newClut)
       )
       this.rows[i].setrow("                                        ")
     }
     this.updateIndex()    
-  }
-  
-  /** 
-   * Deep copy clut
-   */
-  copyClut(src, dest) {
-    for (let i=0; i<8; i++) {
-      dest.clut0[i]=src.clut0[i]
-      dest.clut1[i]=src.clut1[i]
-      dest.clut2[i]=src.clut2[i]
-      dest.clut3[i]=src.clut3[i]
-    }
-    dest.remap = src.remap
-    dest.blackBackground = src.blackBackground
   }
   
   /** When the user changes the configuration page with pg up/pg dn
@@ -345,9 +332,14 @@ class TTXPROPERTIES {
     clutIndex = 0 // Use default colours
     field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 23, 10, 1, 1, clutIndex )
     this.editableFields.push(field) 
+    this.remapField = field
+
     // Blk background sub.
-    // Left columns
-    // Right columns
+    // Left columns (0..20)
+    field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 30, 16, 2, 1, clutIndex )
+    this.editableFields.push(field)
+    // Right columns are implied. @todo
+    
     this.updateFieldsPage1()
   }
   
@@ -369,9 +361,18 @@ class TTXPROPERTIES {
     let col = 23 // field.xLoc
     txt = this.rows[row]
     txt.setchar(this.clut.remap.toString(), col)
+    // Also want to update the remap description
+    this.updateField(this.remapField)
     
-    // BLack background substitution
+    // Black background substitution
     // Left columns
+    row = 16
+    col = 30
+    txt = this.rows[row]
+    txt.setrow(
+      replace(txt.txt,
+        this.clut.leftColumns.toString() + ' ',
+        col))
     // Right columns
   }
   
