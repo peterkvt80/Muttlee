@@ -84,21 +84,45 @@ class Clut {
     // set defaults
     this.resetTable()
 
-    // Getters
+    // Setters and Getters
     let self = this // You'll thank me later
     this.getDefaultScreenClut = function() {
       return (self.defaultScreenColour >> 3) & 0x03
     }
-    this.getDefaultScreenColour = function() {
+    this.getDefaultScreenColourIndex = function() {
       return self.defaultScreenColour & 0x07
     }
     this.getDefaultRowClut = function() {
       return (self.defaultRowColour >> 3) & 0x03
     }
-    this.getDefaultRowColour = function() {
+    this.getDefaultRowColourIndex = function() {
       return self.defaultRowColour & 0x07
     }
-  }
+
+    /// Replace the screen clut value 
+    this.setDefaultScreenClut = function(value) {
+      self.defaultScreenColour &= 0x07
+      self.defaultScreenColour |= value << 3
+    }
+    
+    /// Replace the screen colour index value
+    this.setDefaultScreenColourIndex = function(value) {
+      self.defaultScreenColour &= 0x18
+      self.defaultScreenColour |= (value & 0x07)
+    }   
+    
+    /// Replace the row clut value 
+    this.setDefaultRowClut = function(value) {
+      self.defaultRowColour &= 0x07
+      self.defaultRowColour |= value << 3
+    }
+    
+    /// Replace the row colour index value
+    this.setDefaultRowColourIndex = function(value) {
+      self.defaultRowColour &= 0x18
+      self.defaultRowColour |= (value & 0x07)
+    }   
+      } // constructor
   
   // Setters and getters
     
@@ -135,7 +159,6 @@ class Clut {
 
   /** Used by X28/0 to swap entire cluts
      * @param colour - Colour index 0..7
-     * @param remap - Remap 0..7
      * @param foreground - True for foreground colour, or False for background
      * @return - Colour string for tkinter. eg. 'black' or '#000'
      * Given a colour, it maps the colour according to the remapping Table 4
@@ -261,6 +284,7 @@ class Clut {
    * @param clutIndex CLUT index 0 to 3
    * @param clrIndex - 0..7 colour index
    * @return colour - 12 bit web colour number eg. 0x1ab
+   * // [!] Hmm seems to return p5js colour type?
    */
   getValue(clutIndex, clrIndex) {
     clutIndex = clutIndex % 4

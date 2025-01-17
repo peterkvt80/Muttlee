@@ -4,7 +4,7 @@
 // * x/26 and x/28 enhancements
 // * fastext links
 // * transmission flags
-"use strict"
+"use strict";
 
 // What I think it should do is...
 
@@ -21,7 +21,9 @@ class TTXPROPERTIES {
     this.pageIndex = 0 // Which configuration page we are on
     this.description = description
     this.rows = []
-    this.clut = clut // Keep this so we can return changed values
+    this.clut = clut
+    this.savedClut = new Clut  // Make a copy of the clut if we need to revert it
+    clut.copyClut(clut, this.savedClut)
     this.cursor = cursor
     this.cursorCol = -1
     this.cursorRow = 0
@@ -288,6 +290,12 @@ class TTXPROPERTIES {
   // X/28 clut editor
   loadPage1(pageIndex) {
     print("loading page 1")
+    
+    // Use the default CLUT for all rows
+    for (const i of this.rows) {
+      i.clut.setRemap(0)
+    }
+    
     this.drawHeader("PAGE ENHANCEMENTS-X/28/0 format 1")
     this.drawPageIndex(2)
     
@@ -346,15 +354,45 @@ class TTXPROPERTIES {
   /** Load the page data into the UI
    */
   updateFieldsPage1() {
-    // Default screen colour
+    // Default screen colour    
     let txt = this.rows[6]
-    txt.setchar(txt.clut.getDefaultScreenClut(), 33)
-    txt.setchar(txt.clut.getDefaultScreenColour(), 35)
     
-    // Default row colour
+    // Values as text
+    // Need to choose the text colour for contrast
+    txt.setchar(this.clut.getDefaultScreenClut(), 33)
+    txt.setchar(this.clut.getDefaultScreenColourIndex(), 35)
+
+    /////////////////////////////////// Screen colour
+//    txt.setchar(String.fromCharCode(this.clut.getDefaultScreenColour()), 25) 
+    // Fiddle this row's colour palette rather than mess with control codes.
+    // We get the colour value and copy it from the page clut to CLUT 0:1
+    let c = this.clut.defaultScreenColour // 5 bit clut and colour
+    let clut = (c >> 3) & 0x03
+    let clr = c & 0x07
+    let colour = this.clut.getValue(clut, clr) // 12 bit colour
+    txt.clut.setValue(colour, 0,1) // CLUT 0:1 (red)
+    
+    txt.setchar(String.fromCharCode(1), 25) // colour index 1 (red)
+    txt.setchar(String.fromCharCode(29), 26) // new background
+    txt.setchar(String.fromCharCode(7), 27) // foreground colour (text)
+    
+    /////////////////////////////////// Default row colour
     txt = this.rows[8]
-    txt.setchar(txt.clut.getDefaultRowClut().toString(), 33)
-    txt.setchar(txt.clut.getDefaultRowColour().toString(), 35)
+    c = this.clut.defaultRowColour // 5 bit clut and colour
+    clut = (c >> 3) & 0x03
+    clr = c & 0x07
+    colour = this.clut.getValue(clut, clr) // 12 bit colour
+    txt.clut.setValue(colour, 0,1) // CLUT 0:1 (red)
+    // @todo Choose the colour to contrast with the background
+    txt.setchar(this.clut.getDefaultRowClut().toString(), 33)
+    txt.setchar(this.clut.getDefaultRowColourIndex().toString(), 35)
+    
+    // Row colour
+    // @todo Choose the colour to contrast with the background
+//    txt.setchar(String.fromCharCode(this.clut.getDefaultRowColour()), 25) 
+    txt.setchar(String.fromCharCode(1), 25) // colour index 1 (red)
+    txt.setchar(String.fromCharCode(29), 26) // new background
+    txt.setchar(String.fromCharCode(7), 27) // foreground colour (text)
     
     // CLUT remap mode
     let row = 10 // field.yLoc
@@ -451,6 +489,9 @@ class TTXPROPERTIES {
     if (doTab) {
       this.cursor.moveTo(this.editableFields[0].xLoc, this.editableFields[0].yLoc)
     }
+    if (this.pageIndex === 1) {
+      this.updateFieldsPage1()
+    }
   }   
 
   // Unfortunately, this handler is used for all pages, so the logic may be
@@ -501,13 +542,26 @@ class TTXPROPERTIES {
     case CONST.UI_FIELD.FIELD_NUMBER: // This is only used on page 1
       value = Number(value)
       // there are several numeric fields on this page.
-      let x = field.yLoc
+      let x = field.xLoc
       let y = field.yLoc
       
       // Default screen clut and colour
       if (y===6) {
-        if (x===33) {
-          // Clut
+        if (x===33) { // Screen Clut
+          this.clut.setDefaultScreenClut(value)
+        }
+        if (x===35) { // Screen Colour Index
+          this.clut.setDefaultScreenColourIndex(value)
+        }
+      }
+      
+      // Default row clut and colour
+      if (y===8) {
+        if (x===33) { // Row Clut
+          this.clut.setDefaultRowClut(value)
+        }
+        if (x===35) { // Row Colour Index
+          this.clut.setDefaultRowColourIndex(value)
         }
       }
       
