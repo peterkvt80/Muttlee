@@ -15,15 +15,14 @@
 // 
 class TTXPROPERTIES {
   // @todo Need to pass description, X28 clut and palette etc.
-  constructor(pageNumber, description, clut, cursor) {
+  constructor(/*pageNumber, description, clut, cursor*/) {
     print("[TTXPROPERTIES] Constructor")    
     this.totalPages = 2 // How many configuration pages
     this.pageIndex = 0 // Which configuration page we are on
     this.description = description
     this.rows = []
-    this.clut = clut
+    this.clut = undefined
     this.savedClut = new Clut  // Make a copy of the clut if we need to revert it
-    clut.copyClut(clut, this.savedClut)
     this.cursor = cursor
     this.cursorCol = -1
     this.cursorRow = 0
@@ -55,20 +54,34 @@ class TTXPROPERTIES {
     this.pageHandler = 99 // The page handler that processes cursor changes
     // Row 0    
     let newClut = new Clut
-    clut.copyClut(clut, newClut)
+    // clut.copyClut(clut, newClut)
+    let pageNumber = 999
     this.rows.push(
       new Row(this, pageNumber, 0, "          Muttlee Properties Editor     ", newClut)
     )
     this.rows[0].setpagetext(pageNumber)
     for (let i = 1; i < 26; i++) {
       let newClut = new Clut
-      clut.copyClut(clut, newClut)
+      // clut.copyClut(clut, newClut)
       this.rows.push(
         new Row(this, pageNumber, i, ''.padStart(CONFIG[CONST.CONFIG.NUM_COLUMNS]), newClut)
       )
       this.rows[i].setrow("                                        ")
     }
     this.updateIndex()    
+  } // constructor
+  
+  /** doInits
+   *  When entering ttxproperties, call this to set up the page parameters
+   */
+  doInits(pageNumber, description, clut, cursor) {
+    // not sure we care about page number at all
+    this.rows[0].pagetext = pageNumber.toString(16)
+    this.rows[0].page = pageNumber
+    this.description = description
+    this.clut = clut // A reference to the page clut which is also the working clut
+    clut.copyClut(clut, this.savedClut) // Copy the working clut before we modify it
+    this.cursor = cursor
   }
   
   /** When the user changes the configuration page with pg up/pg dn
@@ -382,7 +395,7 @@ class TTXPROPERTIES {
     clut = (c >> 3) & 0x03
     clr = c & 0x07
     colour = this.clut.getValue(clut, clr) // 12 bit colour
-    txt.clut.setValue(colour, 0,1) // CLUT 0:1 (red)
+    txt.clut.setValue(colour, 0,1) // CLUT 0:1 (Use the red slot for the colour)
     // @todo Choose the colour to contrast with the background
     txt.setchar(this.clut.getDefaultRowClut().toString(), 33)
     txt.setchar(this.clut.getDefaultRowColourIndex().toString(), 35)
@@ -467,8 +480,7 @@ class TTXPROPERTIES {
         // Don't draw special codes
         // [!] Test for special TAB code *before* testing for a character
         let test1 = (key < 0x80)  || (key >='a' && key<='f')
-        let test2 = key.charCodeAt(0) < 0x80
-        if ( (test1) /*key !=(9+0x80) && (key != 0xff)*/ && test2) {
+        if (test1 && key.charCodeAt(0) < 0x80) {
           this.rows[yp].setchar(key, xp)
           // The field changed. What is the new value?
           this.updateField(field)
@@ -571,15 +583,6 @@ class TTXPROPERTIES {
         // Update the data
         this.clut.setRemap(value)
         // update the display
-        // Fg/ Bg
-        // 0, 0
-        // 0, 1
-        // 0, 2
-        // 1, 1
-        // 1, 2
-        // 2, 1
-        // 2, 2
-        // 2, 3
         switch (value) {
         case 0:row.setrow(replace(rowString,"Fg 0, Bg 0", 27));break;
         case 1:row.setrow(replace(rowString,"Fg 0, Bg 1", 27));break;

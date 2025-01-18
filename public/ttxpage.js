@@ -99,9 +99,28 @@ window.TTXPAGE = function () {
   }
 
   // edit mode
-  this.editSwitch = function (mode) {
-    this.editMode = mode
-    this.cursor.hide = (mode === CONST.EDITMODE_NORMAL) || (mode === CONST.EDITMODE_PROPERTIES)
+  this.setEditMode = function (mode) {
+    if (mode === CONST.EDITMODE_PROPERTIES) {
+      // If we are switching to properties mode
+      if (this.editMode !== CONST.EDITMODE_PROPERTIES) {
+        // create the properties object if it doesn't exist
+        if (this.editProperties === undefined) {      
+          this.editProperties = new TTXPROPERTIES()
+          // Hook up the cursor callback so we can edit the properties
+          this.cursor.setCallback(this.editProperties.getCursorCallback())
+        }
+        // populate with data from the current subpage
+        this.editProperties.doInits(this.pageNumber, this.description, this.metadata[this.subPage].clut, this.cursor)
+      }
+    }
+    if (mode < CONST.EDITMODE_MAX) {
+      this.editMode = mode
+      this.cursor.hide = (mode === CONST.EDITMODE_NORMAL) || (mode === CONST.EDITMODE_PROPERTIES)
+    }
+  }
+  
+  this.getEditMode = function() {
+    return this.editMode
   }
 
   this.getServiceHeader = function () {
@@ -347,20 +366,11 @@ window.TTXPAGE = function () {
   this.draw = function (changed) {
     
     // Properties are special local pages    
-    if (this.editMode === CONST.EDITMODE_PROPERTIES) {
-      // Create the properties page
-      if (this.editProperties === undefined) {      
-        this.editProperties =
-            new TTXPROPERTIES(this.pageNumber, this.description, this.metadata[this.subPage].clut, this.cursor)
-        // Hook up the cursor callback so we can edit the properties
-        this.cursor.setCallback(this.editProperties.getCursorCallback())
-      }
+    if (this.getEditMode() === CONST.EDITMODE_PROPERTIES) {
       this.editProperties.draw()
       return;
     }
-    
-
-    
+       
     // Sometimes the carousel isn't ready
     if (typeof this.subPage === 'undefined') {
       return
@@ -372,7 +382,7 @@ window.TTXPAGE = function () {
       carouselReady = (typeof this.metadata[this.subPage] !== 'undefined')
     }
 
-    if (!(this.holdMode || this.editMode !== CONST.EDITMODE_NORMAL) && carouselReady) { // Only cycle if we are not in hold mode or edit
+    if (!(this.holdMode || this.getEditMode() !== CONST.EDITMODE_NORMAL) && carouselReady) { // Only cycle if we are not in hold mode or edit
       // carousel timing
       if (tickCounter % ((1 + Math.round(this.metadata[this.subPage].timer)) * 2) === 0) { // Times 2 because the tick is 2Hz.
         this.nextSubpage()
@@ -389,7 +399,7 @@ window.TTXPAGE = function () {
 
     for (let rw = 0; rw < this.rows.length; rw++) {
       let cpos = -1
-      if (this.editMode === CONST.EDITMODE_EDIT && rw === this.cursor.y) {
+      if (this.getEditMode() === CONST.EDITMODE_EDIT && rw === this.cursor.y) {
         // If in edit mode and it is the correct row...
         cpos = this.cursor.x
       }
@@ -430,7 +440,7 @@ window.TTXPAGE = function () {
 
         const str = changed.rows[rw]
 
-        if (v[rw].draw(cpos, this.revealMode, this.holdMode, this.editMode, this.subPage, str)) {
+        if (v[rw].draw(cpos, this.revealMode, this.holdMode, this.getEditMode(), this.subPage, str)) {
           rw++ // If double height, skip the next row
         }
       }

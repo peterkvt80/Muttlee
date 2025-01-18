@@ -37,6 +37,7 @@ const CONST = {
   EDITMODE_ESCAPE: 2,    // expect next character to be either an edit.tf function or Escape again to exit.
   EDITMODE_INSERT: 3,    // The next character is ready to insert
   EDITMODE_PROPERTIES: 4,// Editing page properties. Description, X26/X28 enhancements etc.
+  EDITMODE_MAX: 5,       // Range check       
 
   // state signals
   SIGNAL_PAGE_NOT_FOUND: -1,

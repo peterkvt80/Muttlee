@@ -1093,7 +1093,7 @@ function keyPressed () {
               break
           }
 
-          myPage.editSwitch(editMode)
+          myPage.setEditMode(editMode)
         }
 
         break
@@ -1283,14 +1283,21 @@ function processKey (keyPressed) {
     
     if (key ==='x' || key === 'q') { // @todo, somehow return back to EDIT
       editMode = CONST.EDITMODE_EDIT
-      myPage.editSwitch(editMode)
+      myPage.setEditMode(editMode)
+      // Return the modified clut to the server
+      /// TEST - Delete this section
+      print("Clut exits\n" + myPage.metadata[myPage.subPage].clut)
+      /// \TEST
     }
+    // @todo Think about this. If we delete the object, it loses all state.
+    // The UI might be nicer if it remembers state, like which properties page it was on last.
+    //delete myPage.editProperties // Finished editing.
     return
   }
   
   if (editMode === CONST.EDITMODE_ESCAPE) {
     editMode = CONST.EDITMODE_INSERT
-    myPage.editSwitch(editMode)
+    myPage.setEditMode(editMode)
 
     editTF(key)
 
@@ -1702,7 +1709,7 @@ function editTF (key) {
       {
         editMode = CONST.EDITMODE_PROPERTIES
       }
-      myPage.editSwitch(editMode)
+      myPage.setEditMode(editMode)
       return // no more processing needed
 
     case 'i' : { // Insert row
