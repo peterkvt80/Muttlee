@@ -694,6 +694,13 @@ function isMosaic (ch) {
 
 /// ////////////////////////////////////////////////////////////////////////////////////////////
 
+/** Row - Defines the storage and rendering of a teletext row
+ *  @param ttxpage - context of the parent page (this)
+ *  @param page - page number as a hex value. Used for mpp
+ *  @param y - Row number 0..24 Higher row numbers are not handled here
+ *  @param str - Text to initialise this row
+ *  @param clut - Clut object to use with this row
+ */
 function Row (ttxpage, page, y, str, clut) {
   this.ttxpage = ttxpage
 
@@ -708,6 +715,7 @@ function Row (ttxpage, page, y, str, clut) {
     if (n<0 || n>40) {
       return
     }
+    // Pad with spaces to 40 characters if needed
     if (this.txt.length < 40) {
       this.txt = this.txt + "                                        "
       this.txt = this.txt.substring(0, 40)

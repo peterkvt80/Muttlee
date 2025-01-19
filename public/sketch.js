@@ -922,7 +922,6 @@ function setRow (r) {
     }
     myPage.metadata[myPage.subPage].clut.setDefaultScreenColour(r.X28F1.defaultScreenColour)
     myPage.metadata[myPage.subPage].clut.setDefaultRowColour(r.X28F1.defaultRowColour)
-    myPage.metadata[myPage.subPage].clut.setDefaultScreenColour(r.X28F1.defaultScreenColour)
     myPage.metadata[myPage.subPage].clut.setRemap(r.X28F1.colourTableRemapping)
     myPage.metadata[myPage.subPage].clut.setBlackBackground(r.X28F1.backBackgroundSubRow)
     myPage.metadata[myPage.subPage].clut.setEnableLeftPanel(r.X28F1.enableLeftPanel)
@@ -1288,6 +1287,34 @@ function processKey (keyPressed) {
       /// TEST - Delete this section
       print("Clut exits\n" + myPage.metadata[myPage.subPage].clut)
       /// \TEST
+      if (key === 'q') { // Restore the original CLUT
+        Clut.copyClut(myPage.editProperties.savedClut, myPage.metadata[myPage.subPage].clut)
+      }
+      if (key === 'x') { // Transmit the changed CLUT back to the server
+        // Copy the clut to the corresponding X28F1 message format
+        // Make a row 28 object
+        let clut = myPage.metadata[myPage.subPage].clut
+        let X28F1 = {
+          colourMap : [],
+          defaultScreenColour : clut.defaultScreenColour, // 5 bits
+          defaultRowColour : clut.defaultRowColour, // 5 bits
+          colourTableRemapping : clut.remap, // 3 bits
+          backBackgroundSubRow : clut.blackBackground, // 1 bit
+          enableLeftPanel : clut.enableLeftPanel, // 1 bit
+          enableRightPanel : clut.enableRightPanel, // 1 bit
+          leftColumns : clut.leftColumns  // 4 bits
+        }
+        // Packet X28 only affects CLUT 2 and 3
+        for (let i=0; i<16; ++i) {
+          let clutIndex = Math.floor(i/8) + 2
+          let colourIndex = i % 8
+          let colour = clut.getValue(clutIndex, colourIndex)
+          X28F1.colourMap.push(clut.colour24to12(colour))
+        }
+        // @todo Send X28F1 to the server
+        print(X28F1)
+        // Probably need to wrap it up in a packet to indicate the page, connection etc.
+      }
     }
     // @todo Think about this. If we delete the object, it loses all state.
     // The UI might be nicer if it remembers state, like which properties page it was on last.

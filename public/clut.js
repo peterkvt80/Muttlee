@@ -321,6 +321,17 @@ class Clut {
       (b<<4 || b))
   }
 
+  /** colour24to12
+   * @param p5js colour
+   * @return - colour12 -  a 12 bit colour
+   */
+  colour24to12(colour24) {
+    print(colour24)
+    let c = colour24 // The p5js colour
+    let cs = (c.levels[0]>>4) << 8 | (c.levels[1]>>4) << 4 | (c.levels[2]>>4) // The 12 bit colour
+    return cs
+  }
+
   /** 
    * Deep copy clut.
    */
