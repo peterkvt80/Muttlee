@@ -80,7 +80,7 @@ class TTXPROPERTIES {
     this.rows[0].page = pageNumber
     this.description = description
     this.clut = clut // A reference to the page clut which is also the working clut
-    clut.copyClut(clut, this.savedClut) // Copy the working clut before we modify it
+    Clut.copyClut(clut, this.savedClut) // Copy the working clut before we modify it
     this.cursor = cursor
   }
   

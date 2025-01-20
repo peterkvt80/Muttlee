@@ -496,6 +496,7 @@ function newConnection (socket) {
   socket.on('create', doCreate)
   socket.on('clearPage', doClearPage)
   socket.on('description', doSetDescription)
+  socket.on('x28f1', doX28f1)
 
   // When this connection closes we remove the connection id
   socket.on('disconnect', function () {
@@ -589,6 +590,17 @@ function doInitialLoad (data) {
   data.p = parseInt(initialPage)
 
   doLoad(data)
+}
+
+function doX28f1(data)
+{
+  // Data returned from X28F1 properties editor
+  console.log("Message from client:\n" + JSON.stringify(data, null, 4));
+  // @todo Format this into a .tti packet OL,28
+  // @todo Update the OL,28 in the .tti file
+  
+  // keystroke.addEvent(data) // probably some form of keystroke event
+  // @todo Send the update to any clients looking at the same page
 }
 
 function processServicePageLine (serviceData, data, line) {

@@ -309,7 +309,7 @@ class Clut {
    * @param colour12 -  a 12 bit colour
    * @return -  p5js colour
    */
-  colour12to24(colour12) {
+  static colour12to24(colour12) {
     print(colour12)
     colour12 = parseInt(colour12, 16)
     let r = (colour12 >> 8) & 0x0f
@@ -325,7 +325,7 @@ class Clut {
    * @param p5js colour
    * @return - colour12 -  a 12 bit colour
    */
-  colour24to12(colour24) {
+  static colour24to12(colour24) {
     print(colour24)
     let c = colour24 // The p5js colour
     let cs = (c.levels[0]>>4) << 8 | (c.levels[1]>>4) << 4 | (c.levels[2]>>4) // The 12 bit colour
@@ -335,7 +335,7 @@ class Clut {
   /** 
    * Deep copy clut.
    */
-  copyClut(src, dest) {
+  static copyClut(src, dest) {
     for (let i=0; i<8; i++) {
       dest.clut0[i]=src.clut0[i]
       dest.clut1[i]=src.clut1[i]

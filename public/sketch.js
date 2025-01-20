@@ -1280,7 +1280,7 @@ function processKey (keyPressed) {
     myPage.handlePropertiesKey(key)
     
     
-    if (key ==='x' || key === 'q') { // @todo, somehow return back to EDIT
+    if (key ==='x' || key === 'q') {
       editMode = CONST.EDITMODE_EDIT
       myPage.setEditMode(editMode)
       // Return the modified clut to the server
@@ -1309,10 +1309,20 @@ function processKey (keyPressed) {
           let clutIndex = Math.floor(i/8) + 2
           let colourIndex = i % 8
           let colour = clut.getValue(clutIndex, colourIndex)
-          X28F1.colourMap.push(clut.colour24to12(colour))
+          X28F1.colourMap.push(Clut.colour24to12(colour))
         }
-        // @todo Send X28F1 to the server
+        // Send X28F1 to the server        
         print(X28F1)
+        // Wrap it up in an identifier packet
+        let packet28 = {
+        S: myPage.service,
+        p: myPage.pageNumber,
+        s: myPage.subPage,
+        y: 28,
+        x28f1: X28F1,
+        id: gClientID
+        }
+        socket.emit('x28f1', packet28)
         // Probably need to wrap it up in a packet to indicate the page, connection etc.
       }
     }
