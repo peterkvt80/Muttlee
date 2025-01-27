@@ -920,13 +920,20 @@ function setRow (r) {
       let colourIndex = i % 8
       myPage.metadata[myPage.subPage].clut.setValue(colourValue, clutIndex, colourIndex)
     }
-    myPage.metadata[myPage.subPage].clut.setDefaultScreenColour(r.X28F1.defaultScreenColour)
-    myPage.metadata[myPage.subPage].clut.setDefaultRowColour(r.X28F1.defaultRowColour)
-    myPage.metadata[myPage.subPage].clut.setRemap(r.X28F1.colourTableRemapping)
-    myPage.metadata[myPage.subPage].clut.setBlackBackground(r.X28F1.backBackgroundSubRow)
-    myPage.metadata[myPage.subPage].clut.setEnableLeftPanel(r.X28F1.enableLeftPanel)
-    myPage.metadata[myPage.subPage].clut.setEnableRightPanel(r.X28F1.enableRightPanel)
-    myPage.metadata[myPage.subPage].clut.setLeftColumns(r.X28F1.leftColumns)
+    let clut = myPage.metadata[myPage.subPage].clut
+    clut.setDC(r.X28F1.dc)
+    clut.setPageFunction(r.X28F1.pageFunction)
+    clut.setPageCoding(r.X28F1.pageCoding)
+    clut.setDefaultG0G2CharacterSet(r.X28F1.defaultG0G2CharacterSet)
+    clut.setSecondG0G2CharacterSet(r.X28F1.secondG0G2CharacterSet)
+    clut.setDefaultScreenColour(r.X28F1.defaultScreenColour)
+    clut.setDefaultRowColour(r.X28F1.defaultRowColour)
+    clut.setRemap(r.X28F1.colourTableRemapping)
+    clut.setBlackBackground(r.X28F1.backBackgroundSubRow)
+    clut.setEnableLeftPanel(r.X28F1.enableLeftPanel)
+    clut.setEnableRightPanel(r.X28F1.enableRightPanel)
+    clut.setSidePanelStatusFlag(r.X28F1.sidePanelStatusFlag)
+    clut.setLeftColumns(r.X28F1.leftColumns)
     // @TODO Save packet
     // remembering to clear packet on carousel, new or load page etc
   }
@@ -1295,13 +1302,19 @@ function processKey (keyPressed) {
         // Make a row 28 object
         let clut = myPage.metadata[myPage.subPage].clut
         let X28F1 = {
+          dc : clut.dc,
+          pageFunction : clut.pageFunction,
+          pageCoding : clut.pageCoding,
+          defaultG0G2CharacterSet : clut.defaultG0G2CharacterSet,
+          secondG0G2CharacterSet : clut.secondG0G2CharacterSet,
           colourMap : [],
           defaultScreenColour : clut.defaultScreenColour, // 5 bits
           defaultRowColour : clut.defaultRowColour, // 5 bits
           colourTableRemapping : clut.remap, // 3 bits
-          backBackgroundSubRow : clut.blackBackground, // 1 bit
+          blackBackgroundSubRow : clut.blackBackground, // 1 bit
           enableLeftPanel : clut.enableLeftPanel, // 1 bit
           enableRightPanel : clut.enableRightPanel, // 1 bit
+          sidePanelStatusFlag : clut.sidePanelStatusFlag, // 1 bit
           leftColumns : clut.leftColumns  // 4 bits
         }
         // Packet X28 only affects CLUT 2 and 3

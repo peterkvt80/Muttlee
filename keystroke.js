@@ -237,8 +237,14 @@ global.KeyStroke = function () {
 
           // apply all the edits that refer to this page
           for (; ((that.eventList.length > 0) && (pageNumber === event.p) && (service === event.S)); event = that.eventList[0]) {
-            page.keyMessage(event)
-            that.eventList.shift()
+            // Send the message to the page. X28 is a whole row, so send it differently
+            if (event.y === 28) {
+              console.log("[KeyStroke:saveEdits] Packet 28 not implemented")
+            }
+            else {
+              page.keyMessage(event)              
+            }
+            that.eventList.shift() // Remove the event we just processed
           }
           page.validatePage() // Check for badly formed teletext page
           page.print()

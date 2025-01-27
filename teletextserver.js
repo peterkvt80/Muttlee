@@ -592,14 +592,20 @@ function doInitialLoad (data) {
   doLoad(data)
 }
 
+/** doX28f1 - Update X28 configuration from the client
+ * Adds this as a keyevent to update the tti file with a new OL,28 packet
+ * Returns this message to update any clients viewing the same page
+ * @param data - X28F1 settings wrapped up in a keyevent message
+ */
 function doX28f1(data)
 {
   // Data returned from X28F1 properties editor
   console.log("Message from client:\n" + JSON.stringify(data, null, 4));
+  // let ol28 = EncodeOL28(data.X28F1)
   // @todo Format this into a .tti packet OL,28
   // @todo Update the OL,28 in the .tti file
   
-  // keystroke.addEvent(data) // probably some form of keystroke event
+  keystroke.addEvent(data) // probably some form of keystroke event
   // @todo Send the update to any clients looking at the same page
 }
 
@@ -720,8 +726,7 @@ function processServicePageLine (serviceData, data, line) {
   //
   // Check if it is a special row, X26,X27,X28
   if (row === 28) {
-    // @todo Might be an idea to check the designation code for F1
-    data.X28F1 = DecodeOL28(data.rowText,0)
+    data.X28F1 = DecodeOL28(data.rowText)
   }
   io.sockets.emit('row', data)    
 

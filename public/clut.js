@@ -2,7 +2,7 @@
 # clut.js.
 #
 # clut.js Teletext colour lookup table
-# Maintains colour lookups
+# Maintains colour lookups and all data in X28/F1 packet
 #
 # Copyright (c) 2024 Peter Kwan
 #
@@ -69,6 +69,10 @@
 class Clut {
   constructor() {
     console.log ('Clut loaded')
+    this.dc = 0 // Should always be 0 for this packet
+    this.pageFunction = 0
+    this.pageCoding = 0
+    this.defaultG0G2CharacterSet
     this.clut0 = new Array(8) // default full intensity colours
     this.clut1 = new Array(8) // default half intensity colours
     this.clut2 = new Array(8)
@@ -79,7 +83,8 @@ class Clut {
     this.blackBackground = true // Don't let CLUT change the background colour
     this.enableLeftPanel = false
     this.enableRightPanel = false
-    this.leftColumns = -1
+    this.sidePanelStatusFlag = false
+    this.leftColumns = -1 // 0..15
     this.rightColumns = 0 // implied
     // set defaults
     this.resetTable()
@@ -126,6 +131,26 @@ class Clut {
   
   // Setters and getters
     
+  setDC(value) {
+    this.dc = value // Should always be 0
+  }  
+
+  setPageFunction(value) {
+    this.pageFunction = value
+  }  
+
+  setPageCoding(value) {
+    this.coding = value
+  }  
+
+  setDefaultG0G2CharacterSet(value) {
+    this.defaultG0G2CharacterSet = value
+  }
+
+  setSecondG0G2CharacterSet(value) {
+    this.secondG0G2CharacterSet = value
+  }
+
   setDefaultScreenColour(value) {
     // @todo Check that it is a 5 bit value
     this.defaultScreenColour = value 
@@ -149,6 +174,9 @@ class Clut {
     this.enableRightPanel = value 
   }
   
+  setSidePanelStatusFlag(value) {
+    this.sidePanelStatusFlag = value
+  }
   setRemap(remap) {
     this.remap = remap & 0x7
   }
