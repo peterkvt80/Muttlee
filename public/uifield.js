@@ -36,13 +36,14 @@ class uiField {
    * @param yHeight - Width of the field
    * @param clutIndex - index of the CLUT this colour comes from
    */
-  constructor(uiType, xLoc, yLoc, xWidth, yHeight, clutIndex) {
+  constructor(uiType, xLoc, yLoc, xWidth, yHeight, clutIndex, hint) {
     this.uiType = uiType
     this.xLoc = xLoc
     this.yLoc = yLoc
     this.xWidth = xWidth
     this.yHeight = yHeight
     this.clutIndex = clutIndex
+    this.hint = hint
   }
   
   /** validateKey
@@ -78,7 +79,28 @@ class uiField {
     }
     // update the display
     // update the source data
-    return 0xff // Invalid key
+    return 0xff // Valid field but invalid key
   }
+  
+  // Set a hint string for the user
+  setHint(hint) {
+    // Probably should limit size and contents. Todo
+    this.hint = hint
+  }
+  
+  // Return The hint string
+  getHint() {
+    return this.hint
+  }
+  
+  // Return true if (xp, yp) is in this field 
+  inField(xp, yp) {
+    if ((xp >= this.xLoc) && (xp < this.xLoc + this.xWidth) &&
+        (yp >= this.yLoc) && (yp < this.yLoc + this.yHeight)) {
+        return true
+    }
+    return false
+  }
+  
   
 } // uiField

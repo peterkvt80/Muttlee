@@ -83,7 +83,7 @@ global.Page = function () {
     let insert = true
     let pageNumber = 0x100 // the mpp of mppss
     let pageSubCode = 0 // The ss of mppss
-    let rowIndex = 0 // The index of the line OR where we want to splice
+    let rowIndex = -1 // The index of the line OR where we want to splice. -1 = not found
     let fastext = '8ff,8ff,8ff,8ff,8ff,8ff'
     let noDescription = true // If we don't have a description, we need to add one
 
@@ -101,7 +101,7 @@ global.Page = function () {
 
       if (code === 'FL') { // Fastext Link: Save the fastext link
         fastext = line
-        if ((rowIndex === 0) && (key.subcode === pageSubCode)) { // did we get to the end of the page without finding any rows?
+        if ((rowIndex === -1) && (key.subcode === pageSubCode)) { // did we get to the end of the page without finding any rows?
           rowIndex = i - 1 // Splice before the FL // [!] todo Not sure that i is correct.
         }
       }
@@ -151,6 +151,7 @@ global.Page = function () {
       }
 
       if (code === 'OL') { // Output Line
+        // TODO: X28 row inserts need to be first, before row 1.
         let ix = 0
         let row = 0
         let ch = line.charAt(ix++)
@@ -164,6 +165,9 @@ global.Page = function () {
         row = parseInt(row)
         line = line.substring(++ix)
 
+//        if (key.y === 28) {
+  //        console.log("[Page::keyMessage] X28 insert TODO")
+    //    }
         if (key.s === pageSubCode) { // if we are on the right page
           LOG.fn(
             ['page', 'keyMessage'],
@@ -173,7 +177,14 @@ global.Page = function () {
 
           // [!] @TODO Doesn't this assume that rows are ordered?
           if (key.y >= row) { // Save the new index if it is ahead of here
-            rowIndex = i
+            if (key.y === 28) { // We want the X28 to be first of the OL
+              if (rowIndex === -1) {
+                rowIndex = i      
+              }
+            }
+            else {
+              rowIndex = i            
+            }
             if (key.y === row) { // If we have found the line that we want
               insert = false
               break
@@ -189,7 +200,7 @@ global.Page = function () {
       } // OL
     } // Find the splice point
 
-    if ((key.s === pageSubCode) && (rowIndex === 0)) { // If no splice point was found then add to the end of the file
+    if ((key.s === pageSubCode) && (rowIndex === -1)) { // If no splice point was found then add to the end of the file
       rowIndex = this.ttiLines.length - 1
     }
 
@@ -222,7 +233,7 @@ global.Page = function () {
 
     // we should now have the line in which we are going to do the insert
     if (insert) {
-      this.ttiLines.splice(++rowIndex, 0, 'OL,' + key.y + ',                                        ')
+      this.ttiLines.splice(++rowIndex, 0, 'OL,' + key.y + ',xyzzy                                   ')
     }
 
     let offset = 5 // OL,n,
@@ -230,17 +241,24 @@ global.Page = function () {
       offset = 6 // OL,nn,
     }
 
-    if (this.ttiLines[rowIndex].length < 45) {
-      this.ttiLines[rowIndex] = this.ttiLines[rowIndex] + '                                        '
+    if (key.y === 28) {
+      console.log("[page::keyMessage] ROW 28 not implemented")
+      this.ttiLines[rowIndex] = "OL,28,0000000000000000000000000000000000000000" // Placeholder
+      // TODO: At this point convert the message to x28f1 TTI
+    }     
+    else
+    {
+      if (this.ttiLines[rowIndex].length < 45) {
+        this.ttiLines[rowIndex] = this.ttiLines[rowIndex] + '                                        '
+      }
+
+      this.ttiLines[rowIndex] = setCharAt(this.ttiLines[rowIndex], key.x + offset, key.k)
+      LOG.fn(
+        ['page', 'keyMessage'],
+        `Setting a character at row = ${rowIndex}:<${this.ttiLines[rowIndex]}>`,
+        LOG.LOG_LEVEL_VERBOSE
+      )
     }
-
-    this.ttiLines[rowIndex] = setCharAt(this.ttiLines[rowIndex], key.x + offset, key.k)
-    LOG.fn(
-      ['page', 'keyMessage'],
-      `Setting a character at row = ${rowIndex}:<${this.ttiLines[rowIndex]}>`,
-      LOG.LOG_LEVEL_VERBOSE
-    )
-
     if (noDescription) {
       if (key.x === CONST.SIGNAL_DESCRIPTION_CHANGE) {
         this.ttiLines.unshift('DE,' + key.k)
@@ -338,7 +356,7 @@ global.Page = function () {
           console.log('[PARSER] IN_HEADER')
           parseState = IN_HEADER
         }
-        // [!] @TODO Check the occurences of each type. Allow no more than one (rule 3)
+        // [!] @TODO Check the occurrences of each type. Allow no more than one (rule 3)
         // [!] @TODO Null out duplicates
         if (tokens[0] === 'PN') { // Does this header have a valid PN? (Rule 4)
           const mag = parseInt(tokens[1], 16) >> 8

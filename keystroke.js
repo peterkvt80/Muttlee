@@ -72,23 +72,30 @@ global.KeyStroke = function () {
     // @todo Search through the list and if the character location matches
     // then replace the key entry for that location
     // otherwise push the event
+    
     let overwrite = false
 
-    for (let i = 0; i < this.eventList.length; i++) {
-      if (this.sameChar(data, this.eventList[i])) {
-        this.eventList[i].k = data.k // replace the key as this overwrites the original character
-        overwrite = true
+    // Packet X28 skips this check.
+    if (data.y === 28) {
+      // Don't check for an existing x28
+    }
+    else
+    {      
+      for (let i = 0; i < this.eventList.length; i++) {
+        if (this.sameChar(data, this.eventList[i])) {
+          this.eventList[i].k = data.k // replace the key as this overwrites the original character
+          overwrite = true
 
-        LOG.fn(
-          ['keystroke', 'addEvent'],
-          'Overwriting character',
-          LOG.LOG_LEVEL_VERBOSE
-        )
+          LOG.fn(
+            ['keystroke', 'addEvent'],
+            'Overwriting character',
+            LOG.LOG_LEVEL_VERBOSE
+          )
 
-        break
+          break
+        }
       }
     }
-
     if (!overwrite) {
       this.eventList.push(data)
     }
@@ -237,13 +244,20 @@ global.KeyStroke = function () {
 
           // apply all the edits that refer to this page
           for (; ((that.eventList.length > 0) && (pageNumber === event.p) && (service === event.S)); event = that.eventList[0]) {
-            // Send the message to the page. X28 is a whole row, so send it differently
+
+            /*
+            // Send the message to the page. X28 is a whole row, so send it differently            
             if (event.y === 28) {
               console.log("[KeyStroke:saveEdits] Packet 28 not implemented")
+              // TODO: Probably page.keyMessage(event) is the right way to go as this is the routine that parses the page file
+              
             }
             else {
+              
               page.keyMessage(event)              
             }
+            */
+            page.keyMessage(event)              
             that.eventList.shift() // Remove the event we just processed
           }
           page.validatePage() // Check for badly formed teletext page

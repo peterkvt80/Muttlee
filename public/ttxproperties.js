@@ -47,8 +47,25 @@ class TTXPROPERTIES {
       return self.cursorCallback
     }
     this.page0Handler = function(xLoc, yLoc) {
-      print("[TTXPROPERTIES::pageHandler] x,y = ("+xLoc+","+yLoc+")")
+      print("[TTXPROPERTIES::page0Handler] x,y = ("+xLoc+","+yLoc+")")
       // @todo look at the xLoc/yLoc and see if it affects any UI element
+      
+      // Check if a UI field hint can be added
+      // Scan all the fields
+      let foundField
+      for (const field of this.editableFields) {
+        if (field.inField(xLoc, yLoc)) {
+          print("[page0Handler] FOUND A UI FIELD") // This is where we want to add a field hint??
+          foundField = field
+          break
+        }
+      }
+      if (typeof foundField === 'undefined') {
+        this.rows[23].setrow("                                        ")    // No hint. Not on a UI field
+      } else {
+        print("Setting hint = " + foundField.getHint())        
+        this.rows[23].setrow(String.fromCharCode(0x03) + " Hint: " + foundField.getHint())    // Found UI field, add the hint on row 23
+      }
     }
 
     this.pageHandler = 99 // The page handler that processes cursor changes
@@ -262,41 +279,41 @@ class TTXPROPERTIES {
     // Editable fields
     this.editableFields = []
     // CLUT 0
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7,  7, 3, 1, 0 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15,  7, 3, 1, 0 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23,  7, 3, 1, 0 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31,  7, 3, 1, 0 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7,  8, 3, 1, 0 )) 
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15,  8, 3, 1, 0 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23,  8, 3, 1, 0 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31,  8, 3, 1, 0 ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7,  7, 3, 1, 0 , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15,  7, 3, 1, 0  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23,  7, 3, 1, 0  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31,  7, 3, 1, 0  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7,  8, 3, 1, 0  , "Three hex digit colour")) 
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15,  8, 3, 1, 0  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23,  8, 3, 1, 0  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31,  8, 3, 1, 0  , "Three hex digit colour"))
     // CLUT 1
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7, 11, 3, 1, 1 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15, 11, 3, 1, 1 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23, 11, 3, 1, 1 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31, 11, 3, 1, 1 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7, 12, 3, 1, 1 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15, 12, 3, 1, 1 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23, 12, 3, 1, 1 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31, 12, 3, 1, 1 ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7, 11, 3, 1, 1  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15, 11, 3, 1, 1  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23, 11, 3, 1, 1  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31, 11, 3, 1, 1  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7, 12, 3, 1, 1  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15, 12, 3, 1, 1  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23, 12, 3, 1, 1  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31, 12, 3, 1, 1  , "Three hex digit colour"))
     // CLUT 2
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7, 15, 3, 1, 2 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15, 15, 3, 1, 2 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23, 15, 3, 1, 2 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31, 15, 3, 1, 2 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7, 16, 3, 1, 2 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15, 16, 3, 1, 2 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23, 16, 3, 1, 2 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31, 16, 3, 1, 2 ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7, 15, 3, 1, 2  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15, 15, 3, 1, 2  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23, 15, 3, 1, 2  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31, 15, 3, 1, 2  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7, 16, 3, 1, 2  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15, 16, 3, 1, 2  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23, 16, 3, 1, 2  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31, 16, 3, 1, 2  , "Three hex digit colour"))
     // CLUT 3
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7, 19, 3, 1, 3 )) 
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15, 19, 3, 1, 3 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23, 19, 3, 1, 3 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31, 19, 3, 1, 3 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7, 20, 3, 1, 3 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15, 20, 3, 1, 3 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23, 20, 3, 1, 3 ))
-    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31, 20, 3, 1, 3 ))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7, 19, 3, 1, 3  , "Three hex digit colour")) 
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15, 19, 3, 1, 3  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23, 19, 3, 1, 3  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31, 19, 3, 1, 3  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR,  7, 20, 3, 1, 3  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 15, 20, 3, 1, 3  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23, 20, 3, 1, 3  , "Three hex digit colour"))
+    this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31, 20, 3, 1, 3  , "Three hex digit colour"))
     
   }
   
@@ -337,27 +354,27 @@ class TTXPROPERTIES {
     
     // Default screen colour
     let clutIndex = 0 // Use default colours
-    let field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 33, 6, 1, 1, clutIndex ) // CLUT
+    let field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 33, 6, 1, 1, clutIndex, "CLUT 0 to 3" ) // CLUT
     this.editableFields.push(field) 
-    field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 35, 6, 1, 1, clutIndex ) // Colour
+    field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 35, 6, 1, 1, clutIndex, "Colour 0 to 7" ) // Colour
     this.editableFields.push(field) 
     
     // Default row colour
     clutIndex = 0 // Use default colours
-    field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 33, 8, 1, 1, clutIndex ) // CLUT
+    field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 33, 8, 1, 1, clutIndex, "Row CLUT 0 to 3" ) // CLUT
     this.editableFields.push(field) 
-    field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 35, 8, 1, 1, clutIndex ) // Colour
+    field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 35, 8, 1, 1, clutIndex, "Colour 0 to 7" ) // Colour
     this.editableFields.push(field) 
     
     // CLUT remap mode
     clutIndex = 0 // Use default colours
-    field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 23, 10, 1, 1, clutIndex )
+    field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 23, 10, 1, 1, clutIndex, "CLUT remap mode 0 to 7" )
     this.editableFields.push(field) 
     this.remapField = field
 
     // Blk background sub.
     // Left columns (0..20)
-    field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 30, 16, 2, 1, clutIndex )
+    field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 30, 16, 2, 1, clutIndex, "Left columns 0 to 20"  )
     this.editableFields.push(field)
     // Right columns are implied. @todo
     
@@ -474,6 +491,8 @@ class TTXPROPERTIES {
       // Are we in the editable zone?
       if ( (xp >= field.xLoc) && (xp < field.xLoc + field.xWidth) &&
         (yp >= field.yLoc) && (yp < field.yLoc + field.yHeight)) {
+        // TODO: Is this where we want to add the uiField hint?
+        // print("Is this where we want to add the uiField hint?") // Apparently not. Only fires when a printable character is pressed
         // @todo Test if the character is valid
         key = field.validateKey(key)
         // @todo Write the new character to the screen
@@ -513,6 +532,7 @@ class TTXPROPERTIES {
     let row = this.rows[field.yLoc]
     let rowString = row.txt
     let value = rowString.substring(field.xLoc, field.xLoc + field.xWidth)
+    print("[TTXPROPERTIES::updateField] entered. Is this where we want to add an hint?")
     switch (field.uiType) {
     case CONST.UI_FIELD.FIELD_HEXCOLOUR: // This only is used on page 0
       print ("new value = " + value)
