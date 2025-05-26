@@ -929,7 +929,7 @@ function setRow (r) {
     clut.setDefaultScreenColour(r.X28F1.defaultScreenColour)
     clut.setDefaultRowColour(r.X28F1.defaultRowColour)
     clut.setRemap(r.X28F1.colourTableRemapping)
-    clut.setBlackBackground(r.X28F1.backBackgroundSubRow)
+    clut.setBlackBackgroundSub(r.X28F1.backBackgroundSubRow)
     clut.setEnableLeftPanel(r.X28F1.enableLeftPanel)
     clut.setEnableRightPanel(r.X28F1.enableRightPanel)
     clut.setSidePanelStatusFlag(r.X28F1.sidePanelStatusFlag)
@@ -1311,7 +1311,7 @@ function processKey (keyPressed) {
           defaultScreenColour : clut.defaultScreenColour, // 5 bits
           defaultRowColour : clut.defaultRowColour, // 5 bits
           colourTableRemapping : clut.remap, // 3 bits
-          blackBackgroundSubRow : clut.blackBackground, // 1 bit
+          blackBackgroundSubRow : clut.blackBackgroundSub, // 1 bit
           enableLeftPanel : clut.enableLeftPanel, // 1 bit
           enableRightPanel : clut.enableRightPanel, // 1 bit
           sidePanelStatusFlag : clut.sidePanelStatusFlag, // 1 bit

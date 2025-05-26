@@ -65,8 +65,11 @@ class uiField {
           return key
         }
       break
-    case CONST.UI_FIELD.FIELD_CHECKBOX: // Cross or blank
-      return key // @todo Replace this placeholder. 
+    case CONST.UI_FIELD.FIELD_CHECKBOX: // Yes/No but this should be made less language dependent
+      // <Y|y> = YES, <N|n> = NO, <space> = toggle
+      if ( key ==='y' || key ==='n' ||  key ===' ') {
+        return key
+      }
       break
     case CONST.UI_FIELD.FIELD_NUMBER: // Arbitrary decimal number. [@todo Could use limits]
       if  ( (key >= '0') && (key <='9')) {

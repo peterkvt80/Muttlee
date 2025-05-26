@@ -28,6 +28,7 @@ class TTXPROPERTIES {
     this.cursorRow = 0
     this.editableFields = [] // UI elements that we can interact with
     this.remapField = 0
+    this.backBackgroundSubField = 0 // Allow black background to be substituted
     
     let self = this // Ensure we use the correct "this" on callbacks
     this.cursorCallback // When the cursor changes
@@ -55,16 +56,14 @@ class TTXPROPERTIES {
       let foundField
       for (const field of this.editableFields) {
         if (field.inField(xLoc, yLoc)) {
-          print("[page0Handler] FOUND A UI FIELD") // This is where we want to add a field hint??
           foundField = field
           break
         }
       }
       if (typeof foundField === 'undefined') {
-        this.rows[23].setrow("                                        ")    // No hint. Not on a UI field
+        this.rows[23].setrow(String.fromCharCode(0x03) + " q" + String.fromCharCode(0x07) + "=quit," + String.fromCharCode(0x03) + "x" + String.fromCharCode(0x07) + "=save, PgUp/PgDn")    // Default hint.
       } else {
-        print("Setting hint = " + foundField.getHint())        
-        this.rows[23].setrow(String.fromCharCode(0x03) + " Hint: " + foundField.getHint())    // Found UI field, add the hint on row 23
+        this.rows[23].setrow(String.fromCharCode(0x03) + " Hint:" + String.fromCharCode(0x07) + foundField.getHint())    // Found UI field, add the hint on row 23
       }
     }
 
@@ -92,7 +91,7 @@ class TTXPROPERTIES {
    *  When entering ttxproperties, call this to set up the page parameters
    */
   doInits(pageNumber, description, clut, cursor) {
-    // not sure we care about page number at all
+    // do we care about page number at all?
     this.rows[0].pagetext = pageNumber.toString(16)
     this.rows[0].page = pageNumber
     this.description = description
@@ -131,9 +130,10 @@ class TTXPROPERTIES {
       let revealMode = false // Don't need this
       let holdMode = false // Don't need this
       let subPage = 0
-      let str = 'not sure what this is for'
+      let changed = '                   ' // Side effect. The first n printable characters go orange when the cursor is on the line
+      // TODO: Make this the length of the caption text instead of fixed for all rows.
       editMode = CONST.EDITMODE_PROPERTIES
-      if (this.rows[rw].draw(cpos, revealMode, holdMode, editMode, subPage, str)) {
+      if (this.rows[rw].draw(cpos, revealMode, holdMode, editMode, subPage, changed)) {
         rw++ // If double height, skip the next row
       }
     }
@@ -338,8 +338,9 @@ class TTXPROPERTIES {
     this.rows[14].setchar('{',39)
     
     // captions
-    this.drawCaption(4, 6, "Default screen         CLUT ?:?")
-    this.drawCaption(4, 8, "Default row            CLUT ?:?")
+    let cyan = String.fromCharCode(6)
+    this.drawCaption(4,  6, "Default screen        \x06CLUT ?:?")
+    this.drawCaption(4,  8, "Default row           \x06CLUT ?:?")
     this.drawCaption(4, 10, "CLUT remap mode = x            ")
     this.drawCaption(4, 12, "Blk background sub.      YES   ")
     this.drawCaption(4, 16, "Left columns              0    ")
@@ -373,6 +374,10 @@ class TTXPROPERTIES {
     this.remapField = field
 
     // Blk background sub.
+    field = new uiField(CONST.UI_FIELD.FIELD_CHECKBOX, 30, 12, 3, 1, clutIndex, "Y = yes, N = no, <space> = toggle")
+    this.editableFields.push(field)
+    this.backBackgroundSubField = field
+    
     // Left columns (0..20)
     field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 30, 16, 2, 1, clutIndex, "Left columns 0 to 20"  )
     this.editableFields.push(field)
@@ -404,7 +409,17 @@ class TTXPROPERTIES {
     
     txt.setchar(String.fromCharCode(1), 25) // colour index 1 (red)
     txt.setchar(String.fromCharCode(29), 26) // new background
-    txt.setchar(String.fromCharCode(7), 27) // foreground colour (text)
+    // txt.setchar(String.fromCharCode(7), 27) // foreground colour (text)
+    let screenColour = this.clut.getDefaultScreenRGB()
+    let luma = (0.299 * screenColour.levels[0]) + (0.587 * screenColour.levels[1]) + (0.114 * screenColour.levels[2]);
+    if (luma > 128) {
+      // Set the text colour dark
+      txt.setchar('\x00',27) // Black
+    } else {
+      // Set the text colour light
+      txt.setchar('\x07',27) // White
+    }
+    
     
     /////////////////////////////////// Default row colour
     txt = this.rows[8]
@@ -422,7 +437,15 @@ class TTXPROPERTIES {
 //    txt.setchar(String.fromCharCode(this.clut.getDefaultRowColour()), 25) 
     txt.setchar(String.fromCharCode(1), 25) // colour index 1 (red)
     txt.setchar(String.fromCharCode(29), 26) // new background
-    txt.setchar(String.fromCharCode(7), 27) // foreground colour (text)
+    let rowColour = this.clut.getDefaultRowRGB()
+    luma = (0.299 * rowColour.levels[0]) + (0.587 * rowColour.levels[1]) + (0.114 * rowColour.levels[2]);
+    if (luma > 128) {
+      // Set the text colour dark
+      txt.setchar('\x00',27) // Black
+    } else {
+      // Set the text colour light
+      txt.setchar('\x07',27) // White
+    }
     
     // CLUT remap mode
     let row = 10 // field.yLoc
@@ -433,6 +456,14 @@ class TTXPROPERTIES {
     this.updateField(this.remapField)
     
     // Black background substitution
+    row = 12
+    col = 30
+    txt = this.rows[row]
+    txt.setrow(
+      replace(txt.txt,
+        this.clut.blackBackgroundSub  ? 'Yes' : 'No ',
+        col))
+
     // Left columns
     row = 16
     col = 30
@@ -441,7 +472,8 @@ class TTXPROPERTIES {
       replace(txt.txt,
         this.clut.leftColumns.toString() + ' ',
         col))
-    // Right columns
+
+    // Right columns (I think these are based on left and not explicitly set)
   }
   
   /** Draws a caption at xLoc+1, yPos
@@ -491,17 +523,25 @@ class TTXPROPERTIES {
       // Are we in the editable zone?
       if ( (xp >= field.xLoc) && (xp < field.xLoc + field.xWidth) &&
         (yp >= field.yLoc) && (yp < field.yLoc + field.yHeight)) {
-        // TODO: Is this where we want to add the uiField hint?
-        // print("Is this where we want to add the uiField hint?") // Apparently not. Only fires when a printable character is pressed
         // @todo Test if the character is valid
         key = field.validateKey(key)
         // @todo Write the new character to the screen
         // Don't draw special codes
         // [!] Test for special TAB code *before* testing for a character
-        let test1 = (key < 0x80)  || (key >='a' && key<='f')
-        if (test1 && key.charCodeAt(0) < 0x80) {
-          this.rows[yp].setchar(key, xp)
-          // The field changed. What is the new value?
+        if (this.pageIndex === 0) {
+          // A 12 bit RGB colour edit
+          let test1 = (key < 0x80)  || (key >='a' && key<='f')
+          if (test1 && key.charCodeAt(0) < 0x80) {
+            this.rows[yp].setchar(key, xp)
+            // The field changed. What is the new value?
+            this.updateField(field)
+          }
+        }
+        
+        if (this.pageIndex === 1) {
+          // Mainly look at blackBackgroundSub
+          print("Need to process key = " + key)
+          field.key = key
           this.updateField(field)
         }
         // Advance cursor
@@ -532,9 +572,8 @@ class TTXPROPERTIES {
     let row = this.rows[field.yLoc]
     let rowString = row.txt
     let value = rowString.substring(field.xLoc, field.xLoc + field.xWidth)
-    print("[TTXPROPERTIES::updateField] entered. Is this where we want to add an hint?")
     switch (field.uiType) {
-    case CONST.UI_FIELD.FIELD_HEXCOLOUR: // This only is used on page 0
+    case CONST.UI_FIELD.FIELD_HEXCOLOUR: // This is only used on page 0
       print ("new value = " + value)
       // Now put this colour value into the CLUT of each row
       {
@@ -571,47 +610,96 @@ class TTXPROPERTIES {
         this.clut.setValue(colour, clutIndex, colourIndex)
       }
       break;
+    case CONST.UI_FIELD.FIELD_CHECKBOX: // This is only used on page 1
+      // page 1?
+      if (this.pageIndex === 1) {
+        // blackBackgroundSub
+        let x = field.xLoc
+        let y = field.yLoc
+        // blackbackgroundSub
+        if (y===12) {
+          if (key==='y') {
+            this.clut.setBlackBackgroundSub(true)
+          }
+          if (key==='n') {
+            this.clut.setBlackBackgroundSub(0)
+          }
+          if (key===' ') {
+            this.clut.setBlackBackgroundSub(this.clut.blackBackgroundSub===0?1:0)
+          }
+        }
+        
+        print("PROPERTIES; x = " + x + " y = " + y + " key = " + field.key)
+      }
+      break
     case CONST.UI_FIELD.FIELD_NUMBER: // This is only used on page 1
-      value = Number(value)
-      // there are several numeric fields on this page.
-      let x = field.xLoc
-      let y = field.yLoc
-      
-      // Default screen clut and colour
-      if (y===6) {
-        if (x===33) { // Screen Clut
-          this.clut.setDefaultScreenClut(value)
+      // page 1?
+      if (this.pageIndex === 1) {
+        value = Number(value)
+        // there are several numeric fields on this page.
+        let x = field.xLoc
+        let y = field.yLoc
+        
+        // Default screen clut and colour
+        if (y===6) {
+          if (x===33) { // Screen Clut
+            this.clut.setDefaultScreenClut(value)
+          }
+          if (x===35) { // Screen Colour Index
+            this.clut.setDefaultScreenColourIndex(value)
+          }
+          // @todo At this point we want to find what the background colour is
+          // and make the foreground text black or white to make it readable
+          let screenColour = this.clut.getDefaultScreenRGB()
+          let luma = (0.299 * screenColour.levels[0]) + (0.587 * screenColour.levels[1]) + (0.114 * screenColour.levels[2]);
+          print("default screen luma = " + luma)
+          if (luma > 128) {
+            // Set the text colour dark
+            this.rows[y].setchar('\x00',27) // Black
+          } else {
+            // Set the text colour light
+            this.rows[y].setchar('\x07',27) // White
+          }
         }
-        if (x===35) { // Screen Colour Index
-          this.clut.setDefaultScreenColourIndex(value)
+        
+        // Default row clut and colour
+        if (y===8) {
+          if (x===33) { // Row Clut
+            this.clut.setDefaultRowClut(value)
+          }
+          if (x===35) { // Row Colour Index
+            this.clut.setDefaultRowColourIndex(value)
+          }
+          // @todo At this point we want to find what the background colour is
+          // and make the foreground text black or white to make it readable
+          let rowColour = this.clut.getDefaultRowRGB()
+          let luma = (0.299 * rowColour.levels[0]) + (0.587 * rowColour.levels[1]) + (0.114 * rowColour.levels[2]);
+          print("default row colour = " + rowColour + " luma = " + luma)
+          if (luma > 128) {
+            // Set the text colour dark
+            this.rows[y].setchar('\x00',27) // Black
+          } else {
+            // Set the text colour light
+            this.rows[y].setchar('\x07',27) // White
+          }
         }
-      }
-      
-      // Default row clut and colour
-      if (y===8) {
-        if (x===33) { // Row Clut
-          this.clut.setDefaultRowClut(value)
-        }
-        if (x===35) { // Row Colour Index
-          this.clut.setDefaultRowColourIndex(value)
-        }
-      }
-      
-       // CLUT remapping 0..7
-      if (y===10) {
-        print ("CLUT remap new number = " + value) 
-        // Update the data
-        this.clut.setRemap(value)
-        // update the display
-        switch (value) {
-        case 0:row.setrow(replace(rowString,"Fg 0, Bg 0", 27));break;
-        case 1:row.setrow(replace(rowString,"Fg 0, Bg 1", 27));break;
-        case 2:row.setrow(replace(rowString,"Fg 0, Bg 2", 27));break;
-        case 3:row.setrow(replace(rowString,"Fg 1, Bg 1", 27));break;
-        case 4:row.setrow(replace(rowString,"Fg 1, Bg 2", 27));break;
-        case 5:row.setrow(replace(rowString,"Fg 2, Bg 1", 27));break;
-        case 6:row.setrow(replace(rowString,"Fg 2, Bg 2", 27));break;
-        case 7:row.setrow(replace(rowString,"Fg 2, Bg 3", 27));break;
+        
+         // CLUT remapping 0..7
+        if (y===10) {
+          print ("CLUT remap new number = " + value) 
+          // Update the data
+          this.clut.setRemap(value)
+          // update the display
+          switch (value) {
+          case 0:row.setrow(replace(rowString,"Fg 0, Bg 0", 27));break;
+          case 1:row.setrow(replace(rowString,"Fg 0, Bg 1", 27));break;
+          case 2:row.setrow(replace(rowString,"Fg 0, Bg 2", 27));break;
+          case 3:row.setrow(replace(rowString,"Fg 1, Bg 1", 27));break;
+          case 4:row.setrow(replace(rowString,"Fg 1, Bg 2", 27));break;
+          case 5:row.setrow(replace(rowString,"Fg 2, Bg 1", 27));break;
+          case 6:row.setrow(replace(rowString,"Fg 2, Bg 2", 27));break;
+          case 7:row.setrow(replace(rowString,"Fg 2, Bg 3", 27));break;
+          }
         }
       }
       break;

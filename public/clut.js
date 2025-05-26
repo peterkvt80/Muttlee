@@ -80,7 +80,7 @@ class Clut {
     this.defaultScreenColour = 0 // black. [!] Assume that bits 4,3 are CLUT, 2,1,0 are Colour
     this.defaultRowColour = 0 // black
     this.remap = 0 // 0..7 Colour Table remapping
-    this.blackBackground = true // Don't let CLUT change the background colour
+    this.blackBackgroundSub = false // Allow CLUT to change the background colour
     this.enableLeftPanel = false
     this.enableRightPanel = false
     this.sidePanelStatusFlag = false
@@ -181,8 +181,8 @@ class Clut {
     this.remap = remap & 0x7
   }
 
-  setBlackBackground(bgFlag) {
-    this.blackBackground = bgFlag!==0
+  setBlackBackgroundSub(bgFlag) {
+    this.blackBackgroundSub = bgFlag!==0
   }
 
   /** Used by X28/0 to swap entire cluts
@@ -215,7 +215,7 @@ class Clut {
     }
     // Black Background Colour Substitution
     // If this is set, then colour 0 in a row is replaced by the default row colour
-    if (this.blackBackground && !foreground && colourIndex===0) {
+    if (this.blackBackgroundSub && !foreground && colourIndex===0) {
       let value = this.defaultRowColour
       let clut = (value >> 3) & 0x03
       let colour = value & 0x07
@@ -275,7 +275,7 @@ class Clut {
     this.clut3[6] = color(127, 255, 255) // pastel cyan
     this.clut3[7] = color(0xdd, 0xdd, 0xdd) // pastel white
     
-    this.blackBackground = true
+    this.blackBackgroundSub = false
     this.remap = 0 // Default to CLUT 0
   }
 
@@ -373,7 +373,7 @@ class Clut {
     dest.defaultScreenColour = src.defaultScreenColour
     dest.defaultRowColour = src.defaultRowColour
     dest.remap = src.remap
-    dest.blackBackground = src.blackBackground
+    dest.blackBackgroundSub = src.blackBackgroundSub
     dest.enableLeftPanel = src.enableLeftPanel
     dest.enableRightPanel = src.enableRightPanel
     dest.leftColumns = src.leftColumns
@@ -399,5 +399,19 @@ class Clut {
     print()
   }
   */
+  
+  /** Return the 12 bit RGB value of the default screen colour
+   */
+  getDefaultScreenRGB() {
+    let val = this.getValue(this.getDefaultScreenClut(), this.getDefaultScreenColourIndex())
+    print("screen clut = " + this.getDefaultScreenClut() + " screen index = " + this.getDefaultScreenColourIndex() + " value = " + val)
+    return val
+  }
+
+  /** Return the 12 bit RGB value of the default screen colour
+   */
+  getDefaultRowRGB() {
+    return this.getValue(this.getDefaultRowClut(), this.getDefaultRowColourIndex())
+  }
 
 }

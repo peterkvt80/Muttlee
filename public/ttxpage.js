@@ -1057,7 +1057,7 @@ function Row (ttxpage, page, y, str, clut) {
           ch = this.mapchar(ch)
           // If cpos is negative, we can't be editing anything
           if (changed[i] && cpos>=0) {
-            fill(200, 100, 0)
+            fill(200, 100, 0) // If the text has been edited then make it orange until the server replies that it has been saved
           }
 
           this.drawchar(ch, i, this.row, dblHeight)
