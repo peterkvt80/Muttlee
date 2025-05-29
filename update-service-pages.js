@@ -126,7 +126,7 @@ async function readBackServices () {
 
       // Copy updated files
       async function cp (src, dest) {
-        const { stdout, stderr } = await exec('cp -uv ' + src + ' ' + dest)
+        const { stdout, stderr } = await exec('cp -uv ' + src + ' ' + dest + '2>/dev/null || :') //fail silently the first time this is run
         //console.log('stdout:', stdout)
         //console.log('stderr:', stderr)
         if (stdout.length > 0) {
