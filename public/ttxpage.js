@@ -610,8 +610,10 @@ window.TTXPAGE = function () {
    * \param data : {p: page x: column y: row s: subpage S: service
    */
   this.IsGraphics = function (data) {
+    let gfxMode = false
+
     if (data === undefined) {
-      return false
+      return gfxMode
     }
 
     const subpage = data.s
@@ -625,18 +627,20 @@ window.TTXPAGE = function () {
         LOG.LOG_LEVEL_INFO
       )
 
-      return false
+      return gfxMode
     }
-
-    const myPage = this.subPageList[data.s]
+    
+    const myPage = this.subPageList[data.s]    
     const row = myPage[data.y].txt
+    
+    if (row === 'undefined' || row === null) {
+      return gxfMode
+    }
 
     let len = data.x
     if (len > CONFIG[CONST.CONFIG.NUM_COLUMNS]) {
       len = CONFIG[CONST.CONFIG.NUM_COLUMNS]
     }
-
-    let gfxMode = false
 
     for (let i = 0; i < len; i++) {
       const ch = row.charCodeAt(i) & 0x7f

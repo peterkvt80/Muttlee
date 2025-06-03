@@ -1,8 +1,12 @@
 // update-service-pages.js
 //   - Fetches / updates teletext services pages from remote repositories to a local location (as defined in config.js)
 // How to auto run this...
-// pm2 start update-service-pages.js --no-autorestart --instances 1 --cron "*/5 * * * *
+// pm2 start update-service-pages.js --cron "*/5 * * * *" --no-autorestart
 // by Danny Allen (me@dannya.com)
+//
+// When problem solving, remove the pm2 process and run this manually and see if it crashes.
+// $ pm2 delete update-service-pages.js
+// $ node update-service-pages.js -v
 'use strict'
 const fs = require('fs')
 const path = require('path')
@@ -126,9 +130,12 @@ async function readBackServices () {
 
       // Copy updated files
       async function cp (src, dest) {
-        const { stdout, stderr } = await exec('cp -uv ' + src + ' ' + dest + '2>/dev/null || :') //fail silently the first time this is run
-        //console.log('stdout:', stdout)
-        //console.log('stderr:', stderr)
+        // const { stdout, stderr } = await exec('cp --update -v ' + src + ' ' + dest + '2>/dev/null || :') //fail silently the first time this is run
+        const { stdout, stderr } = await exec('cp --update -v ' + src + ' ' + dest)
+        console.log('src:', src)
+        console.log('dest:', dest)
+        console.log('stdout:', stdout)
+        console.log('stderr:', stderr)
         if (stdout.length > 0) {
           console.log('A page file changed')
           global_changed.push(serviceId)

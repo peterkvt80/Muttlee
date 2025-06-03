@@ -35,7 +35,7 @@ const CONST = {
   EDITMODE_NORMAL: 0,    // normal viewing
   EDITMODE_EDIT: 1,      // edit mode
   EDITMODE_ESCAPE: 2,    // expect next character to be either an edit.tf function or Escape again to exit.
-  EDITMODE_INSERT: 3,    // The next character is ready to insert
+  EDITMODE_INSERT: 3,    // The next character is ready to insert. Not sure what this does. @todo
   EDITMODE_PROPERTIES: 4,// Editing page properties. Description, X26/X28 enhancements etc.
   EDITMODE_MAX: 5,       // Range check       
 

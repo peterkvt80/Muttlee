@@ -827,7 +827,7 @@ function newChar (data, local = true) { // 'keystroke'
   let advanceCursor = local // Cursor advances, unless it is a remote user or a graphics twiddle
 
   if (local) {
-    // Do the graphics, unless this an edit tf escape. Or an upper case letter.
+    // Do the graphics, unless this is an edit tf escape. Or an upper case letter.
     if (graphicsMode && editMode !== CONST.EDITMODE_INSERT && !alphaInGraphics(key)) { // Take the original pixel and xor our selected bit
       key = data.k.toUpperCase() // @todo. Do we need to consider subpages and services? Maybe just subpages.
       let bit = 0
@@ -898,6 +898,7 @@ function newChar (data, local = true) { // 'keystroke'
 
   if (editMode === CONST.EDITMODE_INSERT) {
     editMode = CONST.EDITMODE_EDIT
+    myPage.setEditMode(editMode)
   }
 
   return key
@@ -1869,7 +1870,7 @@ function editTF (key) {
       */
     default: // nothing matched?
       editMode = CONST.EDITMODE_EDIT
-
+            
       return
   }
 
@@ -1886,6 +1887,12 @@ function editTF (key) {
   socket.emit('keystroke', data)
 
   newChar(data)
+  
+  // This may need to be at the top of this function?
+  // If we have a problem with a vanishing cursor, this would be the problem
+  if (editMode === CONST.EDITMODE_INSERT) {
+    editMode = CONST.EDITMODE_EDIT
+  }  
 }
 
 /** Transmit a row of text
