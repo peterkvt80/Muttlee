@@ -578,7 +578,7 @@ class TTXPROPERTIES {
       // Now put this colour value into the CLUT of each row
       {
         // The new colour
-        let colour = this.clut.colour12to24(value)
+        let colour = Clut.colour12to24(value)
         // Which CLUT?
         let clutIndex = field.clutIndex
         // Which colour in the CLUT
