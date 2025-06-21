@@ -55,7 +55,7 @@ window.TTXPAGE = function () {
   this.description = ''
   this.showGrid = false
   this.subPageZeroBase = false
-  this.editProperties = undefined
+  this.editProperties = new TTXPROPERTIES() // Just in case we are going to edit the properties later
 
   // this.timer=7 // This is global. Replaced by a per page timer
 
@@ -106,12 +106,12 @@ window.TTXPAGE = function () {
         // create the properties object if it doesn't exist
         if (this.editProperties === undefined) {      
           this.editProperties = new TTXPROPERTIES()
-          // Hook up the cursor callback so we can edit the properties
-          this.cursor.setCallback(this.editProperties.getCursorCallback())
         }
-        // populate with data from the current subpage
-        this.editProperties.doInits(this.pageNumber, this.description, this.metadata[this.subPage].clut, this.cursor)
       }
+      // Hook up the cursor callback so we can edit the properties
+      this.cursor.setCallback(this.editProperties.getCursorCallback())
+      // populate with data from the current subpage // @wsfn clrt3
+      this.editProperties.doInits(this.pageNumber, this.description, this.metadata[this.subPage].clut, this.cursor)
     }
     if (mode < CONST.EDITMODE_MAX) {
       this.editMode = mode

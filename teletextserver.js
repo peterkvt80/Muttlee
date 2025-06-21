@@ -546,8 +546,9 @@ function doSetDescription (data) {
 }
 
 /** Clear the current page to blank
+ *  First write out a blank page, then load it in
  */
-function doClearPage (data) {
+function doClearPage (data) { // wsfn cpb
   LOG.fn(
     ['teletextserver', 'doClearPage'],
     [
@@ -556,10 +557,20 @@ function doClearPage (data) {
     ],
     LOG.LOG_LEVEL_VERBOSE
   )
+  
+  // Write the blank page in the same way as createPage()
+  createBlankPage(data,
+    function() {
+      doLoad(data)
+    }
+  )
+  
+  // @todo Remove clearPage from keystroke
+  // clearPage is very inefficient and doesn't always work correctly.
+  // keystroke.clearPage(data) // Clear the page
 
-  keystroke.clearPage(data) // Clear the page
-
-  io.sockets.emit('blank', data) // Clear down old data on the clients
+  // This is done by doLoad()
+  // io.sockets.emit('blank', data) // Clear down old data on the clients
 }
 
 /** Create the page and load it
@@ -922,7 +933,7 @@ function findService (name) {
 function createPage (data, callback) {
   const servicesData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE]
 
-  // don't create page if service is not defined, or is not a known service
+  // Don't create page if service is not defined, or is not a known service
   if (!data.S || !servicesData[data.S]) {
     LOG.fn(
       ['teletextserver', 'createPage'],
@@ -933,7 +944,7 @@ function createPage (data, callback) {
     return false
   }
 
-  // don't create page if service is not editable
+  // Don't create page if service is not editable
   if (!servicesData[data.S].isEditable) {
     LOG.fn(
       ['teletextserver', 'createPage'],
@@ -950,6 +961,7 @@ function createPage (data, callback) {
     LOG.LOG_LEVEL_VERBOSE
   )
 
+  // Construct the filename
   const filename = path.join(
     CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],
     data.S,
@@ -962,10 +974,10 @@ function createPage (data, callback) {
     LOG.LOG_LEVEL_VERBOSE
   )
 
-  // open write file stream
+  // Open the write file stream
   const wstream = fs.createWriteStream(filename)
 
-  // write the template
+  // Write the template
   wstream.write('DE,Topic: Created by user\n')
   wstream.write('DS,' + CONFIG[CONST.CONFIG.TITLE] + '\n')
   wstream.write('SP,' + filename + '\n')
@@ -973,7 +985,6 @@ function createPage (data, callback) {
   wstream.write('PN,' + data.p.toString(16) + '00\n') // @todo How can we add subpages?
   wstream.write('SC,0000\n')
   wstream.write('PS,8000\n') // To do languages
-  wstream.write('RE,0\n')
   wstream.write('OL,0,XXXXXXXXWT-FAX mpp DAY dd MTH C hh:nn.ss\n')
   wstream.write('OL,1,Q73#35R7ss35S7sskT]C| Wiki |FFacts at  |\n')
   wstream.write('OL,2,Q55555R5 5 5S5=$jT]C| Tel  |Fyour      |\n')
@@ -1003,6 +1014,97 @@ function createPage (data, callback) {
   wstream.write('FL,' + (parseInt(data.p.toString(16)) + 1) + ',8ff,8ff,700,8ff,8ff  \n')
   wstream.end()
 
-  // signal completion
+  // Signal completion
+  wstream.on('finish', callback)
+}
+
+
+/** Create a blank page and save
+ *  @param data - object containing the service and page number
+ *  @param callback -  Callback function to trigger when the page has been saved
+ */
+function createBlankPage (data, callback) {
+  const servicesData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE]
+
+  // Don't create page if service is not defined, or is not a known service
+  if (!data.S || !servicesData[data.S]) {
+    LOG.fn(
+      ['teletextserver', 'createBlankPage'],
+      `Error: Could not create page, service=${data.S} unknown`,
+      LOG.LOG_LEVEL_ERROR
+    )
+    return false
+  }
+
+  // Don't create page if service is not editable
+  if (!servicesData[data.S].isEditable) {
+    LOG.fn(
+      ['teletextserver', 'createBlankPage'],
+      `Error: Could not create page, service=${data.S} is not editable`,
+      LOG.LOG_LEVEL_ERROR
+    )
+    return false
+  }
+
+  LOG.fn(
+    ['teletextserver', 'createBlankPage'],
+    `Creating blank page=${data.p.toString(16)}`,
+    LOG.LOG_LEVEL_VERBOSE
+  )
+
+  // Construct the filename
+  const filename = path.join(
+    CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],
+    data.S,
+    `p${data.p.toString(16)}${CONST.PAGE_EXT_TTI}`
+  )
+
+  LOG.fn(
+    ['teletextserver', 'createBlankPage'],
+    `filename=${filename}`,
+    LOG.LOG_LEVEL_VERBOSE
+  )
+
+  // Open the write file stream
+  const wstream = fs.createWriteStream(filename)
+
+  // Write the template
+  wstream.write('DE,Enter your description here\n')
+  wstream.write('DS,' + CONFIG[CONST.CONFIG.TITLE] + '\n')
+  wstream.write('SP,' + filename + '\n')
+  wstream.write('CT,8,T\n')
+  wstream.write('PN,' + data.p.toString(16) + '00\n')
+  wstream.write('SC,0000\n')
+  wstream.write('PS,8000\n') // To do languages
+  wstream.write('OL,0,XXXXXXXXARTFAX mpp DAY dd MTH C hh:nn.ss\n') // Todo. Make this service dependent ARTFAX, WT-FAX etc
+  wstream.write('OL,1,                                        \n')
+  wstream.write('OL,2,                                        \n')
+  wstream.write('OL,3,                                        \n')
+  wstream.write('OL,4,                                        \n')
+  wstream.write('OL,5,                                        \n')
+  wstream.write('OL,6,                                        \n')
+  wstream.write('OL,7,                                        \n')
+  wstream.write('OL,8,                                        \n')
+  wstream.write('OL,9,                                        \n')
+  wstream.write('OL,10,                                        \n')
+  wstream.write('OL,11,                                        \n')
+  wstream.write('OL,12,                                        \n')
+  wstream.write('OL,13,                                        \n')
+  wstream.write('OL,14,                                        \n')
+  wstream.write('OL,15,                                        \n')
+  wstream.write('OL,16,                                        \n')
+  wstream.write('OL,17,                                        \n')
+  wstream.write('OL,18,                                        \n')
+  wstream.write('OL,19,                                        \n')
+  wstream.write('OL,20,                                        \n')
+  wstream.write('OL,21,                                        \n')
+  wstream.write('OL,22,                                        \n')
+  wstream.write('OL,23,                                        \n')
+  wstream.write('OL,24,A Next   B....       C....      FHelp   \n')
+  // Write hex then read as decimal, so we don't increment to any hex pages.
+  wstream.write('FL,' + (parseInt(data.p.toString(16)) + 1) + ',8ff,8ff,700,8ff,8ff  \n')
+  wstream.end()
+
+  // Signal completion
   wstream.on('finish', callback)
 }

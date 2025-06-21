@@ -351,13 +351,30 @@ class Clut {
 
   /** colour24to12
    * @param p5js colour
-   * @return - colour12 -  a 12 bit colour
+   * @return - colour12 -  a 12 bits of four bits per channel RGB colour
    */
   static colour24to12(colour24) {
     print(colour24)
     let c = colour24 // The p5js colour
-    let cs = (c.levels[0]>>4) << 8 | (c.levels[1]>>4) << 4 | (c.levels[2]>>4) // The 12 bit colour
+    // let cs = (c.levels[0]>>4) << 8 | (c.levels[1]>>4) << 4 | (c.levels[2]>>4) // The 12 bit colour
+    let cs = 0
+    for (let i=0; i<3; ++i) {
+      let cv = c.levels[i] // 0 = red, 1= green, 2 = blue
+      // Truncate from 8 to 4 bits
+      let cval = (cv >> 4)
+      cs <<= 4 // Shift one nybble left
+      cs += cval
+    }
     return cs
+  }
+  
+  /** p5js colour to 12 bit hex code
+   *  @param clr - three character hex number
+   *  @return Three digit hex colour
+   */
+  static colourToHex(clr) {
+    let clr12 = Clut.colour24to12(clr)
+    return ('00' + clr12.toString(16)).slice(-3)   // three digit hex colour
   }
 
   /** 
@@ -365,7 +382,22 @@ class Clut {
    */
   static copyClut(src, dest) {
     for (let i=0; i<8; i++) {
-      dest.clut0[i]=src.clut0[i]
+      if (typeof dest==='undefined') {
+        console.log('PUT A BREAKPOINT HERE AND FIND OUT WHAT WENT WRONG - 1')
+      }
+      if (typeof dest.clut0==='undefined') {
+        console.log('PUT A BREAKPOINT HERE AND FIND OUT WHAT WENT WRONG - 1a')
+        return
+      }
+      if (typeof src==='undefined') {
+        console.log('PUT A BREAKPOINT HERE AND FIND OUT WHAT WENT WRONG - 3')
+      }
+      if (typeof src.clut0[i]==='undefined') {
+        console.log('PUT A BREAKPOINT HERE AND FIND OUT WHAT WENT WRONG - 4')
+      }
+      //print("clut dest = " + dest.clut0[i])
+      //print("clut src = " + src.clut0[i])
+      dest.clut0[i]=src.clut0[i] // Not sure CLUT 0 and 1 need to be done
       dest.clut1[i]=src.clut1[i]
       dest.clut2[i]=src.clut2[i]
       dest.clut3[i]=src.clut3[i]

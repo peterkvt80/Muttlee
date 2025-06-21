@@ -667,6 +667,11 @@ function fastextIndex () {
  * @param index 1-4, 6
  */
 function fastext (index) {
+  // Ignore fastext if we are in edit mode
+  if (myPage.getEditMode() >= CONST.EDITMODE_EDIT) {
+    return
+  }
+  
   let createPage = false // Special case. If yellow link is >0x0fff then create a page
   let page = 0
 
@@ -910,8 +915,9 @@ function setRow (r) {
   if (r.id !== gClientID && gClientID !== null) return // Not for us?
   if (r.y < 25) {
     myPage.setRow(r.y, r.rowText)    
-  } else if (r.y === 28) {
+  } else if (r.y === 28) { // @wsfn clrt1
     console.log(r.X28F1) // here is the data
+    let clut = myPage.metadata[myPage.subPage].clut
     for (let i = 0; i < 16; i++) {
       let val = r.X28F1.colourMap[i] // The 12 bit colour value
       // convert to a p5.Color object
@@ -919,9 +925,8 @@ function setRow (r) {
       let colourValue = color(hash)
       let clutIndex = 2 + Math.trunc(i / 8) // Either CLUT 2 or 3 are updatable
       let colourIndex = i % 8
-      myPage.metadata[myPage.subPage].clut.setValue(colourValue, clutIndex, colourIndex)
+      clut.setValue(colourValue, clutIndex, colourIndex)
     }
-    let clut = myPage.metadata[myPage.subPage].clut
     clut.setDC(r.X28F1.dc)
     clut.setPageFunction(r.X28F1.pageFunction)
     clut.setPageCoding(r.X28F1.pageCoding)
@@ -941,15 +946,19 @@ function setRow (r) {
 }
 
 // Clear the page to blank (all black)
-function setBlank (data) { // 'blank'
+function setBlank (data) { // 'blank' wsfn cpb
   if (!matchpage(data)) return
   if (data.id !== gClientID && gClientID !== null) return // Not for us?
 
   myPage.setBlank()
   myPage.setLocked(false)
+  
+  // For some reason, we can end up with CONST.EDITMODE_INSERT and this stops the cursor from blinking
+  if (myPage.getEditMode() > CONST.EDITMODE_EDIT) {    myPage.setEditMode(CONST.EDITMODE_EDIT)
+  }
 
   // clear the description too
-  data.desc = ''
+  data.desc = 'Edit here to change description'
   setDescription(data)
 }
 
@@ -1302,6 +1311,7 @@ function processKey (keyPressed) {
         // Copy the clut to the corresponding X28F1 message format
         // Make a row 28 object
         let clut = myPage.metadata[myPage.subPage].clut
+        print(clut) // @wsfn
         let X28F1 = {
           dc : clut.dc,
           pageFunction : clut.pageFunction,
@@ -1783,7 +1793,7 @@ function editTF (key) {
 
       return
 
-    case 'I' : // Delete row
+    case 'I' : // Delete row and shuffle up the rows below @todo Add this command to the cheat sheet
       editMode = CONST.EDITMODE_EDIT
       {
         const y = myPage.cursor.y
@@ -1808,9 +1818,18 @@ function editTF (key) {
       chr = '\x7f'
       break
 
-    case 'Z' : { // clear screen
+    case 'Z' : { // clear screen // wsfn cpb clear page bug
       // @todo At this point, send a signal to the server
       // Send the page details so we know which page to clear!
+      
+      // This bit was added as clearPage seems to have a bug in it, but it makes it worse. Race hazard?
+      if (false) for (let i=1; i<24; i++) {
+        myPage.setRow(i, '                                        ')
+        sendRow(i, '                                        ')
+      }
+      // @todo Add the default header and fastext
+      // @todo Put "click here to add description" in the description field
+      
       const data = {
         S: myPage.service, // service number
         p: myPage.pageNumber,
@@ -1955,6 +1974,7 @@ function windowResized () {
 }
 
 function toggleMenu () {
+  event.preventDefault()
   // toggle menu state
   menuOpen = !menuOpen
 

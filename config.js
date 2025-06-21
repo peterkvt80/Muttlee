@@ -5,7 +5,7 @@ const CONFIG = {
   [CONST.CONFIG.IS_DEV]: false,
 
   [CONST.CONFIG.LOG_LEVEL_TELETEXT_SERVER]: CONST.LOG_LEVEL_VERBOSE,
-  [CONST.CONFIG.LOG_LEVEL_TELETEXT_VIEWER]: CONST.LOG_LEVEL_INFO,
+  [CONST.CONFIG.LOG_LEVEL_TELETEXT_VIEWER]: CONST.LOG_LEVEL_VERBOSE, // CONST.LOG_LEVEL_INFO,
 
   // this is used by `update-service-pages.js` as the place where the
   // raw source service pages directories (likely SVN repositories)

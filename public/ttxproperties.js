@@ -19,7 +19,7 @@ class TTXPROPERTIES {
     print("[TTXPROPERTIES] Constructor")    
     this.totalPages = 2 // How many configuration pages
     this.pageIndex = 0 // Which configuration page we are on
-    this.description = description
+    this.description = 'description not set'
     this.rows = []
     this.clut = undefined
     this.savedClut = new Clut  // Make a copy of the clut if we need to revert it
@@ -76,7 +76,7 @@ class TTXPROPERTIES {
       new Row(this, pageNumber, 0, "          Muttlee Properties Editor     ", newClut)
     )
     this.rows[0].setpagetext(pageNumber)
-    for (let i = 1; i < 26; i++) {
+    for (let i = 1; i < 26; i++) { // @wsfn clrt2
       let newClut = new Clut
       // clut.copyClut(clut, newClut)
       this.rows.push(
@@ -88,16 +88,59 @@ class TTXPROPERTIES {
   } // constructor
   
   /** doInits
-   *  When entering ttxproperties, call this to set up the page parameters
+   *  When entering ttxproperties, call this to set up the page parameters.
+   *  Only needs to be done when going from edit to properties mode.
+   *  @param pageNumber - The teletext page number to show to the user
+   *  @param description - The page meta description. Don't think we use it
+   *  @param clut - The clut of the subpage we are editing
+   *  @param cursor - The cursor object so that we can move around the page
    */
   doInits(pageNumber, description, clut, cursor) {
-    // do we care about page number at all?
+    print('[teletextproperties::doInit] enters')
+    LOG.fn(
+      ['ttxproperties', 'doInits'],
+      `enters`,
+      LOG.LOG_LEVEL_VERBOSE
+    )  
+    // page number is displayed in the header to show in which page we are editing the properties
     this.rows[0].pagetext = pageNumber.toString(16)
     this.rows[0].page = pageNumber
     this.description = description
     this.clut = clut // A reference to the page clut which is also the working clut
     Clut.copyClut(clut, this.savedClut) // Copy the working clut before we modify it
     this.cursor = cursor
+    // @todo. Copy the clut to each of the rows.
+    // Needs a lot of thought. A bad choice of colours can make the UI completely unusable.
+    // Probably want to hack the CLUT to use CLUT 0 for UI and CLUT 2 and 3 to show the chosen colour
+    // We should use the foreground for the UI and background for the CLUT colours
+    for (let i = 1; i < 25; i++) { // @wsfn clrt4
+      let row = this.rows[i]
+      if (typeof row !== 'undefined') { // If the row exists
+        row.clut.resetTable()
+        Clut.copyClut(clut, row.clut) // Copy the CLUT to the row
+        // Each row gets colours differently
+        let remap = 2 // Default clut 0/2
+        // For the properties page, we can use a different X28 per line.
+        // Obviously this hack is not possible outside of Muttlee
+        /*
+        if (this.pageIndex === 0) { // property page 0 needs alternate cluts
+          remap = 0
+          if (i===7 || i===8) {remap = 0} // clut 0:0
+          if (i===11 || i===12) {remap = 1} // clut 0:1
+          if (i===15 || i===16) {remap = 2} // clut 0:2
+          if (i===19 || i===20) {remap = 7} // clut 2:3
+        }
+        */
+        row.clut.setRemap(0) // fg0, bg0) // Text and UI colours default teletext
+        row.clut.setDefaultScreenColour(0) // black
+        row.clut.setDefaultRowColour(0) // black
+      } else {
+        console.log("Crash averted on row " + i + " You are welcome")
+        // @todo Make sure that this message never happens and delete this branch
+      }
+    }
+    // In case this is the first time, set up the palette text
+    this.drawPalettes()
   }
   
   /** When the user changes the configuration page with pg up/pg dn
@@ -187,17 +230,23 @@ class TTXPROPERTIES {
   
   /** Draw the palettes
    */
-  drawPalettes() {
-    let xLeft = 4
-    let yLoc = 4 + 2
-    let yStep = 4
-    for (let pal=0; pal<4; pal++) {
+  drawPalettes() { // @wsfn clrt5
+    if (this.pageIndex !== 0) { // Make sure we only do this on page 0 (1/2)
+      return
+    }
+    print('[teletextproperties::drawPalettes] enters')
+    let xLeft = 4 // palette origin
+    let yLoc = 4 + 2 // palette offset
+    let yStep = 4 // rows per palette
+    for (let palette=0; palette<4; palette++) {
       // Draw the Clut caption
       let r = this.rows[yLoc++]
-      r.setrow(replace(r.txt, String.fromCharCode(0x07) + "Clut " + pal + String.fromCharCode(0x13), xLeft))
+      r.setrow(replace(r.txt, String.fromCharCode(0x07) + "Clut " + palette + String.fromCharCode(0x13), xLeft))
+      
+      r = this.rows[yLoc]
+      let r2 = this.rows[yLoc+1]
       // Which clut to use?
       let clut
-      let palette = pal
       switch (palette) {
       case 0: 
         clut = r.clut.clut0
@@ -210,6 +259,11 @@ class TTXPROPERTIES {
         break
       case 3: 
         clut = r.clut.clut3
+        // Also set fg colours in palette 2 for the black and white text
+        r.clut.setValue(color(0,0,0), 2, 0) // 2:0 is black
+        r2.clut.setValue(color(0,0,0), 2, 0) // 2:0 is black
+        r.clut.setValue(color(255,255,255), 2, 7) // 2:7 is white
+        r2.clut.setValue(color(255,255,255), 2, 7) // 2:7 is white
         break
       }
       if (palette===3) {
@@ -223,8 +277,7 @@ class TTXPROPERTIES {
       for (let palcol=0; palcol<4; palcol++) {
         // What colour to make the text?        
         let c = clut[palcol] // The colour
-        let cs = (c.levels[0]>>4) << 8 | (c.levels[1]>>4) << 4 | (c.levels[2]>>4) // The 12 bit colour
-        let csh = ('00' + cs.toString(16)).slice(-3)   // three digit hex colour
+        let cHex = Clut.colourToHex(c)
         let luma =  0.299 * c.levels[0] + 0.587 * c.levels[1] + 0.114 * c.levels[2]
         let textColour = 0x07 // white
         if (luma > 0x60) {
@@ -233,10 +286,9 @@ class TTXPROPERTIES {
         palstr1 += String.fromCharCode(0x00+palcol) +
           String.fromCharCode(29) +
           String.fromCharCode(textColour) +
-          csh + '  '
+          cHex + '  '
         c = clut[palcol+4]
-        cs = (c.levels[0]>>4) << 8 | (c.levels[1]>>4) << 4 | (c.levels[2]>>4) // The 12 bit colour
-        csh = ('00' + cs.toString(16)).slice(-3)   // three digit hex colour
+        cHex = Clut.colourToHex(c)
         luma =  0.299 * c.levels[0] + 0.587 * c.levels[1] + 0.114 * c.levels[2]
         textColour = 0x07 // white
         if (luma > 0x60) {
@@ -245,7 +297,7 @@ class TTXPROPERTIES {
         palstr2 += String.fromCharCode(0x04+palcol) +
           String.fromCharCode(29) + // new background
           String.fromCharCode(textColour) +
-          csh + '  '
+          cHex + '  '
       }
       // first four colours
       palstr1+=String.fromCharCode(28) + String.fromCharCode(0x13) // new background, yellow mosaic
@@ -272,7 +324,6 @@ class TTXPROPERTIES {
     this.drawHeader("PAGE ENHANCEMENTS-X/28/0 format 1")
     this.drawPageIndex(1)
     this.drawBox(1,4,39,19,"Palette")
-    this.drawPalettes()
     this.drawFastext(String.fromCharCode(1)+"Next  " + String.fromCharCode(2) + "Colour remap  "
     + String.fromCharCode(3) + "Metadata  "+String.fromCharCode(6)+"Exit")
     this.pageHandler = this.page0Handler
@@ -315,6 +366,7 @@ class TTXPROPERTIES {
     this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 23, 20, 3, 1, 3  , "Three hex digit colour"))
     this.editableFields.push(new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 31, 20, 3, 1, 3  , "Three hex digit colour"))
     
+    this.drawPalettes()
   }
   
   // X/28 clut editor
@@ -521,28 +573,27 @@ class TTXPROPERTIES {
       // @todo Backward tab
       // @todo Wrap around forward or backward tab
       // Are we in the editable zone?
-      if ( (xp >= field.xLoc) && (xp < field.xLoc + field.xWidth) &&
-        (yp >= field.yLoc) && (yp < field.yLoc + field.yHeight)) {
-        // @todo Test if the character is valid
+      if (field.inField(xp, yp)) {
         key = field.validateKey(key)
-        // @todo Write the new character to the screen
-        // Don't draw special codes
         // [!] Test for special TAB code *before* testing for a character
-        if (this.pageIndex === 0) {
-          // A 12 bit RGB colour edit
-          let test1 = (key < 0x80)  || (key >='a' && key<='f')
-          if (test1 && key.charCodeAt(0) < 0x80) {
+        if (key !== 0xff) { // Key is valid for this field?
+           // @todo I think we don't need to test for the page number here. We can use the same code
+           // @todo Any specific coding can go in updateField
+          if (this.pageIndex === 0) {
+            // A 12 bit RGB colour edit
             this.rows[yp].setchar(key, xp)
             // The field changed. What is the new value?
+            field.key = key
             this.updateField(field)
           }
-        }
-        
-        if (this.pageIndex === 1) {
-          // Mainly look at blackBackgroundSub
-          print("Need to process key = " + key)
-          field.key = key
-          this.updateField(field)
+          
+          if (this.pageIndex === 1) {
+            // Mainly look at blackBackgroundSub
+            this.rows[yp].setchar(key, xp)
+            print("Need to process key = " + key)
+            field.key = key
+            this.updateField(field)
+          }
         }
         // Advance cursor
         // @todo Backwards TAB
@@ -574,7 +625,7 @@ class TTXPROPERTIES {
     let value = rowString.substring(field.xLoc, field.xLoc + field.xWidth)
     switch (field.uiType) {
     case CONST.UI_FIELD.FIELD_HEXCOLOUR: // This is only used on page 0
-      print ("new value = " + value)
+      print ("new hex value = " + value)
       // Now put this colour value into the CLUT of each row
       {
         // The new colour
@@ -603,10 +654,12 @@ class TTXPROPERTIES {
         if ((field.yLoc % 2) == 0) {
           colourIndex+=4
         }
-        for (const ttxrow of this.rows) {
-          ttxrow.clut.setValue(colour, clutIndex, colourIndex)
-        }
-        // Update the master clut
+        // Update the current row so that we can see the change
+        row.clut.setValue(colour, clutIndex, colourIndex)
+        
+        this.drawPalettes() // Only really need to call this to set the font colour
+        
+        // Update the master clut so that the change will be saved
         this.clut.setValue(colour, clutIndex, colourIndex)
       }
       break;
