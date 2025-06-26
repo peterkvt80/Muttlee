@@ -431,7 +431,12 @@ function newConnection (socket) {
     return
   }
 
+  if ( typeof socket.handshake.headers.referer === 'undefined') {
+    return
+  }
   // determine parameters from socket URL
+  console.log(clientIp)
+  console.log(socket.handshake.headers.referer) // wsfn
   const viewerUrl = new URL(socket.handshake.headers.referer)
   const viewerSearchParams = new URLSearchParams(viewerUrl.search)
 

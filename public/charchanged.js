@@ -18,14 +18,21 @@ const CHARCHANGED = function () {
   }
 
   this.get = function (x, y) {
+    if (x > 39  || y > 24) {
+      return " "
+    }
     return (this.rows[y][x])
   }
 
   this.set = function (x, y) {
-    this.rows[y][x] = true
+    if (x < 40  && y < 25) {
+      this.rows[y][x] = true
+    }  
   }
 
   this.clear = function (x, y) {
-    this.rows[y][x] = false
+    if (x < 40  && y < 25) {
+      this.rows[y][x] = false
+    }
   }
 } // CHARCHANGED

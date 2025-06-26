@@ -21,7 +21,7 @@ function toggle () {
 }
 
 /// /////////////////////////////////////////////////////////////////////////////////////////////////////
-// Store subpage data other than the displayable rows 
+// Store subpage data other than the displayable rows
 function MetaData (displayTiming, clut) {
   this.timer = displayTiming
   this.clut = clut // x28
@@ -35,15 +35,15 @@ const servicesData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE]
 
 window.TTXPAGE = function () {
   // Basic page properties
-  this.pageNumber = CONST.PAGE_MIN  
+  this.pageNumber = CONST.PAGE_MIN
   this.subPage = undefined // Integer: The current sub page being shown or edited
-  function dummy(myX, myY){print("[TTXPAGE]Cursor callback test " + myX + " " + myY )}
+  function dummy (myX, myY) { print('[TTXPAGE]Cursor callback test ' + myX + ' ' + myY) }
   this.cursor = new TTXCURSOR()
-  this.cursor.setCallback(dummy); // Temporary test
+  this.cursor.setCallback(dummy) // Temporary test
   // this.clut = new Clut() // moved to myPage.metaData[subpage].clut
   this.service = undefined
   this.serviceData = {}
-  this.locked = false;
+  this.locked = false
 
   // Misc page properties
   this.redLink = 0x900
@@ -78,13 +78,13 @@ window.TTXPAGE = function () {
 
     this.addPage(number)
   }
-  
+
   // locked
-  this.setLocked = function(value) {
+  this.setLocked = function (value) {
     this.locked = value
   }
-  
-  this.isLocked = function() {
+
+  this.isLocked = function () {
     return this.locked
   }
 
@@ -104,7 +104,7 @@ window.TTXPAGE = function () {
       // If we are switching to properties mode
       if (this.editMode !== CONST.EDITMODE_PROPERTIES) {
         // create the properties object if it doesn't exist
-        if (this.editProperties === undefined) {      
+        if (this.editProperties === undefined) {
           this.editProperties = new TTXPROPERTIES()
         }
       }
@@ -118,8 +118,8 @@ window.TTXPAGE = function () {
       this.cursor.hide = (mode === CONST.EDITMODE_NORMAL) || (mode === CONST.EDITMODE_PROPERTIES)
     }
   }
-  
-  this.getEditMode = function() {
+
+  this.getEditMode = function () {
     return this.editMode
   }
 
@@ -229,8 +229,8 @@ window.TTXPAGE = function () {
       */
     }
     this.rows = []
-    
-    let clut = new Clut
+
+    const clut = new Clut()
 
     // As rows go from 0 to 31 and pages start at 100, we can use the same parameter for both
     this.rows.push(
@@ -338,7 +338,7 @@ window.TTXPAGE = function () {
         this.subPage--
       } else {
         this.subPage = this.subPageList.length - 1 // wrap
-      }      
+      }
     } else {
       if (this.subPage > 1) {
         this.subPage--
@@ -364,13 +364,12 @@ window.TTXPAGE = function () {
   }
 
   this.draw = function (changed) {
-    
-    // Properties are special local pages    
+    // Properties are special local pages
     if (this.getEditMode() === CONST.EDITMODE_PROPERTIES) {
       this.editProperties.draw()
-      return;
+      return
     }
-       
+
     // Sometimes the carousel isn't ready
     if (typeof this.subPage === 'undefined') {
       return
@@ -479,6 +478,9 @@ window.TTXPAGE = function () {
 
   //  Draw ch at (x,y) on subpage s
   this.drawchar = function (ch, x, y, s) {
+    if ( y > 24 || typeof ch==='undefined') {
+      return
+    }
     // Select the subpage to update
     const v = this.subPageList[s]
 
@@ -629,12 +631,15 @@ window.TTXPAGE = function () {
 
       return gfxMode
     }
-    
-    const myPage = this.subPageList[data.s]    
-    const row = myPage[data.y].txt
-    
-    if (row === 'undefined' || row === null) {
-      return gxfMode
+
+    const myPage = this.subPageList[data.s]
+    let row
+    if (data.y < 25) {
+      row = myPage[data.y].txt
+    }
+
+    if (typeof row === 'undefined' || row === null) {
+      return gfxMode
     }
 
     let len = data.x
@@ -679,10 +684,10 @@ window.TTXPAGE = function () {
 
     return ch
   } // getChar
-  
+
   /** handlePropertiesKey - keystroke on the properties page
    */
-  this.handlePropertiesKey = function(key) {
+  this.handlePropertiesKey = function (key) {
     if (this.editProperties !== undefined) {
       this.editProperties.handleKeyPress(key)
     }
@@ -716,12 +721,12 @@ function Row (ttxpage, page, y, str, clut) {
 
   this.setchar = function (ch, n) {
     // Out of range?
-    if (n<0 || n>40) {
+    if (n < 0 || n > 40) {
       return
     }
     // Pad with spaces to 40 characters if needed
     if (this.txt.length < 40) {
-      this.txt = this.txt + "                                        "
+      this.txt = this.txt + '                                        '
       this.txt = this.txt.substring(0, 40)
     }
     this.txt = setCharAt(this.txt, n, ch)
@@ -730,8 +735,8 @@ function Row (ttxpage, page, y, str, clut) {
   this.setrow = function (txt) {
     // @todo Pad with spaces if needed
     if (txt.length < 40) {
-      txt = txt + "                                        "
-      this.txt = txt.substring(0, 40)      
+      txt = txt + '                                        '
+      this.txt = txt.substring(0, 40)
     }
     this.txt = txt
   }
@@ -746,7 +751,6 @@ function Row (ttxpage, page, y, str, clut) {
    * @return True if there was a double height code in this row
    */
   this.draw = function (cpos, revealMode, holdMode, editMode, subPage, changed) {
-    
     let txt = this.txt // Copy the row text because a header row will modify it
 
     // Special treatment for row 0
@@ -1038,6 +1042,9 @@ function Row (ttxpage, page, y, str, clut) {
       // Paint the background colour always
       noStroke()
       let myColour = clut.remapColourTable(bgColor, false)
+      if (this.row === 0) { // 9.4.2.2 Don't remap row 0
+        myColour = clut.clut0[bgColor]
+      }
       fill(myColour) // @todo work out which clut we are using
 
       // except if this is the cursor position
@@ -1055,12 +1062,15 @@ function Row (ttxpage, page, y, str, clut) {
 
       if (printable && (flashState || !flashMode) && !concealed) {
         let myColour = this.clut.remapColourTable(fgColor, true)
+        if (this.row === 0) { // Don't remap row 0
+          myColour = this.clut.clut0[fgColor]
+        }
         fill(myColour) // Normal
 
         if (textmode || (ch.charCodeAt(0) >= 0x40 && ch.charCodeAt(0) < 0x60)) {
           ch = this.mapchar(ch)
           // If cpos is negative, we can't be editing anything
-          if (changed[i] && cpos>=0) {
+          if (changed[i] && cpos >= 0) {
             fill(200, 100, 0) // If the text has been edited then make it orange until the server replies that it has been saved
           }
 
@@ -1080,7 +1090,11 @@ function Row (ttxpage, page, y, str, clut) {
           }
 
           if (contiguous) {
-            stroke(this.clut.remapColourTable(fgColor, true))
+            let foregroundColour = this.clut.remapColourTable(fgColor, true)
+            if (this.row === 0) { // 9.4.2.2 Don't remap the header colours
+              foregroundColour = this.clut.clut0[fgColor]
+            }
+            stroke(foregroundColour)
             this.drawchar(String.fromCharCode(ic2 + 0x0e680 - 0x20), i, this.row, dblHeight)
           } else {
             this.drawchar(String.fromCharCode(ic2 + 0x0e680), i, this.row, dblHeight)

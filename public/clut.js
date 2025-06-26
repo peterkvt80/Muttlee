@@ -127,7 +127,7 @@ class Clut {
       self.defaultRowColour &= 0x18
       self.defaultRowColour |= (value & 0x07)
     }   
-      } // constructor
+  } // constructor
   
   // Setters and getters
     
