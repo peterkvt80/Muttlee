@@ -182,7 +182,7 @@ class Clut {
   }
 
   setBlackBackgroundSub(bgFlag) {
-    this.blackBackgroundSub = bgFlag!==0
+    this.blackBackgroundSub = bgFlag!=0
   }
 
   /** Used by X28/0 to swap entire cluts
@@ -289,20 +289,19 @@ class Clut {
    * @param clrIndex - 0..7 colour index
    */
   setValue(colour, clutIndex, clrIndex) {
-    clrIndex = clrIndex % 8 // need to trap this a bit better. This is masking a problem
-    clutIndex = clutIndex % 4
-    switch (clutIndex) {
+    let colourI = clrIndex % 8 // need to trap this a bit better. This is masking a problem
+    switch (clutIndex % 4) {
     case 0:
-      this.clut0[clrIndex] = colour
+      this.clut0[colourI] = colour
       break
     case 1:
-      this.clut1[clrIndex] = colour
+      this.clut1[colourI] = colour
       break
     case 2:
-      this.clut2[clrIndex] = colour
+      this.clut2[colourI] = colour
       break
     case 3:
-      this.clut3[clrIndex] = colour
+      this.clut3[colourI] = colour
       break
     }
     // console.log("clut value: clut" + clutIndex + " set[" + clrIndex + '] = ' + colour)
@@ -344,9 +343,9 @@ class Clut {
     let g = (colour12 >> 4) & 0x0f
     let b = colour12 & 0x0f    
     return color(
-      (r<<4 || r),
-      (g<<4 || g),
-      (b<<4 || b))
+      (r<<4 | r),
+      (g<<4 | g),
+      (b<<4 | b))
   }
 
   /** colour24to12

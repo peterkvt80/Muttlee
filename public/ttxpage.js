@@ -107,11 +107,11 @@ window.TTXPAGE = function () {
         if (this.editProperties === undefined) {
           this.editProperties = new TTXPROPERTIES()
         }
+        // Hook up the cursor callback so we can edit the properties
+        this.cursor.setCallback(this.editProperties.getCursorCallback())
+        // populate with data from the current subpage // @wsfn clrt3
+        this.editProperties.doInits(this.pageNumber, this.description, this.metadata[this.subPage].clut, this.cursor)
       }
-      // Hook up the cursor callback so we can edit the properties
-      this.cursor.setCallback(this.editProperties.getCursorCallback())
-      // populate with data from the current subpage // @wsfn clrt3
-      this.editProperties.doInits(this.pageNumber, this.description, this.metadata[this.subPage].clut, this.cursor)
     }
     if (mode < CONST.EDITMODE_MAX) {
       this.editMode = mode
@@ -154,6 +154,7 @@ window.TTXPAGE = function () {
   this.setPage = function (p) {
     tickCounter = 1
 
+    this.holdMode = false // Don't inherit hold mode from the last page
     this.subPage = undefined // This should be set soon
     this.pageNumber = p /// @todo Convert this to do all sub pages
     this.pageNumberEntry = p.toString(16)

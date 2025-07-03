@@ -28,7 +28,7 @@ class TTXPROPERTIES {
     this.cursorRow = 0
     this.editableFields = [] // UI elements that we can interact with
     this.remapField = 0
-    this.backBackgroundSubField = 0 // Allow black background to be substituted
+    this.blackBackgroundSubField = 0 // Allow black background to be substituted
     
     let self = this // Ensure we use the correct "this" on callbacks
     this.cursorCallback // When the cursor changes
@@ -96,7 +96,6 @@ class TTXPROPERTIES {
    *  @param cursor - The cursor object so that we can move around the page
    */
   doInits(pageNumber, description, clut, cursor) {
-    print('[teletextproperties::doInit] enters')
     LOG.fn(
       ['ttxproperties', 'doInits'],
       `enters`,
@@ -119,7 +118,9 @@ class TTXPROPERTIES {
         row.clut.resetTable()
         Clut.copyClut(clut, row.clut) // Copy the CLUT to the row
         // Each row gets colours differently
-        let remap = 2 // Default clut 0/2
+        let remap = 2 // Default clut 0/2        
+        row.clut.setBlackBackgroundSub(false); // Don't want to substitute black in the UI
+
         // For the properties page, we can use a different X28 per line.
         // Obviously this hack is not possible outside of Muttlee
         /*
@@ -246,20 +247,26 @@ class TTXPROPERTIES {
       r = this.rows[yLoc]
       let r2 = this.rows[yLoc+1]
       // Which clut to use?
-      let clut
+      let clutA // Upper row of palette
+      let clutB // Lower row of palette
       switch (palette) {
       case 0: 
-        clut = r.clut.clut0
+        clutA = r.clut.clut0
+        clutB = r2.clut.clut0
         break
       case 1: 
-        clut = r.clut.clut1
+        clutA = r.clut.clut1
+        clutB = r2.clut.clut1
         break
       case 2: 
-        clut = r.clut.clut2
+        clutA = r.clut.clut2
+        clutB = r2.clut.clut2
         break
       case 3: 
-        clut = r.clut.clut3
+        clutA = r.clut.clut3
+        clutB = r2.clut.clut3
         // Also set fg colours in palette 2 for the black and white text
+        // These colours are for UI rendering and do not affect the actual page
         r.clut.setValue(color(0,0,0), 2, 0) // 2:0 is black
         r2.clut.setValue(color(0,0,0), 2, 0) // 2:0 is black
         r.clut.setValue(color(255,255,255), 2, 7) // 2:7 is white
@@ -276,7 +283,7 @@ class TTXPROPERTIES {
       let palstr2=''
       for (let palcol=0; palcol<4; palcol++) {
         // What colour to make the text?        
-        let c = clut[palcol] // The colour
+        let c = clutA[palcol] // The colour
         let cHex = Clut.colourToHex(c)
         let luma =  0.299 * c.levels[0] + 0.587 * c.levels[1] + 0.114 * c.levels[2]
         let textColour = 0x07 // white
@@ -284,10 +291,10 @@ class TTXPROPERTIES {
           textColour = 0x00 // black
         }
         palstr1 += String.fromCharCode(0x00+palcol) +
-          String.fromCharCode(29) +
+          String.fromCharCode(29) + // new background
           String.fromCharCode(textColour) +
           cHex + '  '
-        c = clut[palcol+4]
+        c = clutB[palcol+4]
         cHex = Clut.colourToHex(c)
         luma =  0.299 * c.levels[0] + 0.587 * c.levels[1] + 0.114 * c.levels[2]
         textColour = 0x07 // white
@@ -299,12 +306,12 @@ class TTXPROPERTIES {
           String.fromCharCode(textColour) +
           cHex + '  '
       }
-      // first four colours
+      // finish the first four colours
       palstr1+=String.fromCharCode(28) + String.fromCharCode(0x13) // new background, yellow mosaic
       r = this.rows[yLoc++]
       r.setrow(replace(r.txt, palstr1, 4))
 
-      // last four colours
+      // finish the last four colours
       palstr2+=String.fromCharCode(28) + String.fromCharCode(0x13)
       r = this.rows[yLoc++]
       r.setrow(replace(r.txt, palstr2, 4))
@@ -321,6 +328,7 @@ class TTXPROPERTIES {
   // X/28 palette editor
   loadPage0(pageIndex) {
     print("loading page 0")
+    
     this.drawHeader("PAGE ENHANCEMENTS-X/28/0 format 1")
     this.drawPageIndex(1)
     this.drawBox(1,4,39,19,"Palette")
@@ -428,7 +436,7 @@ class TTXPROPERTIES {
     // Blk background sub.
     field = new uiField(CONST.UI_FIELD.FIELD_CHECKBOX, 30, 12, 3, 1, clutIndex, "Y = yes, N = no, <space> = toggle")
     this.editableFields.push(field)
-    this.backBackgroundSubField = field
+    this.blackBackgroundSubField = field
     
     // Left columns (0..20)
     field = new uiField(CONST.UI_FIELD.FIELD_NUMBER, 30, 16, 2, 1, clutIndex, "Left columns 0 to 20"  )
@@ -595,9 +603,9 @@ class TTXPROPERTIES {
             this.updateField(field)
           }
         }
-        // Advance cursor
+        // Advance cursor for a valid key
         // @todo Backwards TAB
-        if  ((xp < field.xLoc + field.xWidth - 1) && (key < 0x80)) {
+        if  ((xp < field.xLoc + field.xWidth - 1) && (key < 0x80) || ((field.uiType===CONST.UI_FIELD.FIELD_HEXCOLOUR) && (key >= 'a') && (key<='f')) ) {
           this.cursor.right() // Advance right after a character
         }
         // We went off the end of the field or TAB, flip to the next one
@@ -651,16 +659,16 @@ class TTXPROPERTIES {
           print("[TTXPROPERTIES::updateFields] BUG")
         }
         // lower row of colours?
-        if ((field.yLoc % 2) == 0) {
+        if ((field.yLoc % 2) === 0) {
           colourIndex+=4
         }
         // Update the current row so that we can see the change
         row.clut.setValue(colour, clutIndex, colourIndex)
         
-        this.drawPalettes() // Only really need to call this to set the font colour
-        
         // Update the master clut so that the change will be saved
         this.clut.setValue(colour, clutIndex, colourIndex)
+
+        this.drawPalettes() // Only really need to call this to set the font colour        
       }
       break;
     case CONST.UI_FIELD.FIELD_CHECKBOX: // This is only used on page 1

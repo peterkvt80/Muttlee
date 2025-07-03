@@ -911,6 +911,17 @@ function newChar (data, local = true) { // 'keystroke'
 
 // A whole line is updated at a time
 function setRow (r) {
+  // If this happens when in X28 properties mode....
+  // we can ignore it and so lose updates
+  // or execute it and our X28 properties page is overwritten and the UI is confusing
+  // @todo Set a flag if while in X28 properties mode the page is updated but
+  // ignore the update. Then on exiting ask to load the current state.
+  
+  // If we are on the properties page then ignore any incoming page update
+  if (editMode > CONST.EDITMODE_INSERT) {
+    /// @todo Set a flag so that we can request a full page update when we exit the properties page
+    return
+  }
   if (!matchpage(r)) return
   if (r.id !== gClientID && gClientID !== null) return // Not for us?
   if (r.y < 25) {
@@ -1090,6 +1101,11 @@ function keyPressed () {
       
         if (myPage.isLocked()) // If the page has an "LK," command, don't allow editing
           break
+          
+        // Property page does not use Escapes
+        if (myPage.getEditMode() >= CONST.EDITMODE_PROPERTIES) {
+          break
+        }
           
         const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][myPage.service]
 
