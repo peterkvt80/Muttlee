@@ -1,4 +1,4 @@
-"use strict"
+'use strict'
 /* global CONFIG, CONST, loadFont, hex, io, textFont, textSize, textWidth, createCanvas, int, mouseX, mouseY, location, exportPage */
 /* global saveToHash, LOG, touchStarted, touchX, touchY, PI, createVector, pixelDensity, windowResized */
 /* global key, keyTyped, keyCode */
@@ -296,14 +296,14 @@ function setup () {
 
         // Move the cursor if we are editing
         if (editMode !== CONST.EDITMODE_NORMAL) {
-            myPage.cursor.moveTo(xLoc, yLoc)
-            LOG.fn(
-              ['sketch', 'setup', 'mousePressed'],
-              `The mouse was clicked at x=${xLoc}, y=${yLoc}`,
-              LOG.LOG_LEVEL_VERBOSE
-            )
+          myPage.cursor.moveTo(xLoc, yLoc)
+          LOG.fn(
+            ['sketch', 'setup', 'mousePressed'],
+            `The mouse was clicked at x=${xLoc}, y=${yLoc}`,
+            LOG.LOG_LEVEL_VERBOSE
+          )
         }
-      }      
+      }
       return false // Prevent default behaviour
     }
   )
@@ -576,8 +576,7 @@ function setSubPage (data) {
 
 /** Mark the page as locked
  */
-function setLocked(r)
-{
+function setLocked(r) {
   if (!matchpage(r)) return // Not for us
 
   LOG.fn(
@@ -1791,6 +1790,8 @@ function editTF (key) {
 
     case 'i' : { // Insert row
       editMode = CONST.EDITMODE_EDIT
+      myPage.setEditMode(editMode)
+
       const y = myPage.cursor.y
       if (y <= 0 || y >= 24) { // Can't insert row on the header or fastext row
         return
@@ -1811,6 +1812,8 @@ function editTF (key) {
 
     case 'I' : // Delete row and shuffle up the rows below @todo Add this command to the cheat sheet
       editMode = CONST.EDITMODE_EDIT
+      myPage.setEditMode(editMode)
+
       {
         const y = myPage.cursor.y
         if (y <= 0 || y >= 24) { // Can't delete header or fastext
@@ -1905,7 +1908,6 @@ function editTF (key) {
       */
     default: // nothing matched?
       editMode = CONST.EDITMODE_EDIT
-            
       return
   }
 

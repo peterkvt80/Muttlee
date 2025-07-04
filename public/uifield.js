@@ -35,8 +35,10 @@ class uiField {
    * @param xWidth - Width of the field
    * @param yHeight - Width of the field
    * @param clutIndex - index of the CLUT this colour comes from
+   * @param hint - Hint text
+   * @param enable - Field can be edited if true
    */
-  constructor(uiType, xLoc, yLoc, xWidth, yHeight, clutIndex, hint) {
+  constructor(uiType, xLoc, yLoc, xWidth, yHeight, clutIndex, hint, enable = true) {
     this.uiType = uiType
     this.xLoc = xLoc
     this.yLoc = yLoc
@@ -44,6 +46,7 @@ class uiField {
     this.yHeight = yHeight
     this.clutIndex = clutIndex
     this.hint = hint
+    this.enable = enable
   }
   
   /** validateKey
@@ -51,7 +54,10 @@ class uiField {
    *  This comes from a callback in TTXPROPERTIES
    */  
   validateKey(key)
-  {  
+  {
+    if (!this.enable) {
+      return 0xff // Field exists but can not be updated
+    }
     // Is the cursor in our field
     // Is the key valid for this type of field?
     if (Number.isInteger(key)) { // TAB, Page Up, Page Down etc.
