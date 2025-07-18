@@ -101,8 +101,14 @@ global.Page = function () {
 
       if (code === 'FL') { // Fastext Link: Save the fastext link
         fastext = line
-        if ((rowIndex === -1) && (key.subcode === pageSubCode)) { // did we get to the end of the page without finding any rows?
+        if (key.s === pageSubCode) { // did we get to the end of the page without finding any rows?
           rowIndex = i - 1 // Splice before the FL // [!] todo Not sure that i is correct.
+          LOG.fn(
+            ['page', 'keyMessage'],
+            `FL found instead of target row rowIndex = ${rowIndex}`,
+            LOG.LOG_LEVEL_VERBOSE
+          )
+          break
         }
       }
 
@@ -169,28 +175,39 @@ global.Page = function () {
   //        console.log("[Page::keyMessage] X28 insert TODO")
     //    }
         if (key.s === pageSubCode) { // if we are on the right page
-          if (false) LOG.fn(
+          // 1) Find the matching row and return that rowIndex
+          // 2) If not, find the first row with a bigger row number and insert before that
+          // 3) If not insert before whichever comes first: FL, PN, end of file. (FL is nahdled above)
+          // @TODO Check that insert fallback happens on PN and end of file
+          LOG.fn(
             ['page', 'keyMessage'],
             `Subcode matches, decoded row=${row}, line=${line}`,
             LOG.LOG_LEVEL_VERBOSE
           )
-
-          // [!] @TODO Doesn't this assume that rows are ordered?
-          if (key.y >= row) { // Save the new index if it is ahead of here
-            if (key.y === 28) { // We want the X28 to be first of the OL
-              if (rowIndex === -1) {
-                rowIndex = i      
-              }
-            }
-            else {
-              rowIndex = i            
-            }
+          
+          if (row < 25) { // Only consider normal rows
+          
+            // Row seek 1 - We have found the row that we want
             if (key.y === row) { // If we have found the line that we want
-              insert = false
-              break
+              rowIndex = i    // The line that we are editing
+              insert = false  // Don't insert a new line, edit the existing line
+              break           // Don't seek any further
             }
+            
+            // Row seek 2 - Find the first row with a bigger row number and insert before that
+            if (key.y < row) { // We didn't find the row (assuming that the rows are sequential)
+              rowIndex = i - 1 // Insert before this row
+              LOG.fn(
+                ['page', 'keyMessage'],
+                `Row seek 2 didn't find key.y=${key.y} in row=${row}`,
+                LOG.LOG_LEVEL_VERBOSE
+              )
+              break // Don't seek any further
+            }
+            
           }
-        }
+          
+        } // We are in the correct subpage
         // How do we choose the insert point?
         // 1) If there is a matching row we edit that
         // 2) If there are other rows we add the new row in the correct order
@@ -201,12 +218,19 @@ global.Page = function () {
     } // Find the splice point
 
     if ((key.s === pageSubCode) && (rowIndex === -1)) { // If no splice point was found then add to the end of the file
+      // If this message pops up, then we probably have the wrong insert point
+      LOG.fn(
+        ['page', 'keyMessage'],
+        `No insert point was found. Sticking this at the end of the file`,
+        LOG.LOG_LEVEL_ERROR
+      )
+
       rowIndex = this.ttiLines.length - 1
     }
 
     LOG.fn(
       ['page', 'keyMessage'],
-      `Insert point=${rowIndex}`,
+      `Insert point=${rowIndex} Insert mode = ${insert}`,
       LOG.LOG_LEVEL_VERBOSE
     )
 
@@ -233,7 +257,21 @@ global.Page = function () {
 
     // we should now have the line in which we are going to do the insert
     if (insert) {
-      this.ttiLines.splice(++rowIndex, 0, 'OL,' + key.y + ',xyzzy                                   ')
+      if (rowIndex === -1) { // We don't have a valid rowIndex
+        LOG.fn(
+          ['page', 'keyMessage'],
+          `Failed to insert row. Invalid rowIndex -1`,
+          LOG.LOG_LEVEL_ERROR
+        )
+        this.ttiLines.splice(++rowIndex, 0, 'OL,' + key.y + ',This line is in the wrong place ERROR   ')
+      } else {
+        LOG.fn(
+          ['page', 'keyMessage'],
+          `Inserting row number = ${key.y} `,
+          LOG.LOG_LEVEL_ERROR
+        )
+        this.ttiLines.splice(++rowIndex, 0, 'OL,' + key.y + ',                                        ')
+      }
     }
 
     let offset = 5 // OL,n,
@@ -317,8 +355,8 @@ global.Page = function () {
    * Rules:
    * 1) A header starts with the first line of the page
    * 2) A header can contain any of these line types in any order DE, DS, SP, CT, PN, SC, PS, RE
-   * 3) Each header can have zero or one occurence of these line types, except PN which must exist.
-   * 4) A header must have a valid PN. Any OL that arrives with a valid PN is discarded.
+   * 3) Each header can have zero or one occurence of these line types, except PN which must occur once.
+   * 4) A header must have a valid PN. Any OL that arrives without a valid PN is discarded.
    * 5) When OL is received, it becomes the page body.
    * 6) When FL is received, expect the next header.
    * 7) If a header arrives while in body mode, go to header mode
@@ -366,7 +404,7 @@ global.Page = function () {
           if ((mpp > 0 && mpp !== mag) || (ss > -1 && ss >= subpage)) {
             // Subsequent subpage is invalid.
             // Either the mpp doesn't match or subpage is not increasing
-            this.ttiLines[li] = 'RM,1,INVALID PN. MARKED FOR DELETION'
+            this.ttiLines[li] = 'RM,1,INVALID PN. MARKED FOR DELETION' + this.ttiLines[li]
           } else {
             mpp = mag
             ss = subpage
@@ -388,11 +426,11 @@ global.Page = function () {
             break
           case EXPECT_HEADER: // OL not yet expected
             console.log('[PARSER] Unexpected OL before header')
-            this.ttiLines[li] = 'RM,2,UNEXPECTED OL. MARKED FOR DELETION'
+            this.ttiLines[li] = 'RM,2,UNEXPECTED OL BEFORE HEADER. MARKED FOR DELETION' + this.ttiLines[li]
             break
           case IN_HEADER: // OL not yet expected
             console.log('[PARSER] Unexpected OL in header')
-            this.ttiLines[li] = 'RM,3,UNEXPECTED OL. MARKED FOR DELETION'
+            this.ttiLines[li] = 'RM,3,UNEXPECTED OL IN HEADER. MARKED FOR DELETION' + this.ttiLines[li]
             break
           case IN_BODY: // Another OL. Carry on
             break
