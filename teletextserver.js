@@ -436,7 +436,7 @@ function newConnection (socket) {
   }
   // determine parameters from socket URL
   console.log(clientIp)
-  console.log(socket.handshake.headers.referer) // wsfn
+  console.log(socket.handshake.headers.referer)
   const viewerUrl = new URL(socket.handshake.headers.referer)
   const viewerSearchParams = new URLSearchParams(viewerUrl.search)
 
@@ -553,7 +553,7 @@ function doSetDescription (data) {
 /** Clear the current page to blank
  *  First write out a blank page, then load it in
  */
-function doClearPage (data) { // wsfn cpb
+function doClearPage (data) {
   LOG.fn(
     ['teletextserver', 'doClearPage'],
     [
@@ -730,7 +730,7 @@ function processServicePageLine (serviceData, data, line) {
   }
 
   data.k = '?' // k and x are ignored
-  data.x = -1
+  data.x = 0  // (!) Don't use anything in CONST.<state signals>
   data.y = row // The row that we are sending out
 
   if ((!serviceData || !serviceData.forceServiceHeader) || (row !== 0)) {

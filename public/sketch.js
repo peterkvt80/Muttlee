@@ -687,8 +687,8 @@ function fastext (index) {
       // if yellow fastext has been set to a number greater than 0x0fff then it is a request to create the page
       page = myPage.yellowLink
 
-      if (page > 0x0fff) {
-        page &= 0x0fff
+      if (page > 0x0fff) { // Is this flagged to create a new page?
+        page &= 0x0fff // Mask off the flag to get the page number
         createPage = true
       }
 
@@ -704,6 +704,12 @@ function fastext (index) {
 
     default:
       page = myPage.redLink
+  }
+  
+  // ETSI 7.3 pages XFF are time fillers, not a real page, so don't create a page or jump there
+  if ((page & 0xff) === 0xff) {
+    page = 0
+    createPage = false
   }
 
   LOG.fn(
