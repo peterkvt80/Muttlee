@@ -1184,12 +1184,17 @@ function keyPressed () {
         myPage.home()
         break
 
+      // @TODO These should be moved to the <esc> menu as this is too easy for the user to destroy a page
       case 45: // INSERT - Add a subpage
-        myPage.addSubPage()
+        if (editMode === CONST.EDITMODE_EDIT) {
+          myPage.addSubPage()
+        }
         break
 
       case 46: // DELETE - Delete a subpage
-        myPage.removeSubPage()
+        if (editMode === CONST.EDITMODE_EDIT) {
+          myPage.removeSubPage()
+        }
         break
 
       default:

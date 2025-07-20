@@ -216,11 +216,9 @@ window.TTXPAGE = function () {
   }
 
   /** @brief Add a page to the sub page list
+   * @todo This should INSERT, not APPEND a subpage
    */
   this.addPage = function (number) {
-    allocationCount++ // wsfn Won't need this.
-    console.log('[addPage] number = ' + number.toString(16) + ' ' + ' pages = ' + allocationCount) // wsfn Won't need this
-
     // clear out data from previous page
     if (this.rows !== undefined) {
     /* Suspect that this doesn't work
@@ -243,10 +241,34 @@ window.TTXPAGE = function () {
         new Row(this, number, i, ''.padStart(CONFIG[CONST.CONFIG.NUM_COLUMNS]), clut)
       )
     }
-
+    
+    // @todo Copy the Fastext and header from another subpage.
+    
+    // @todo Push adds to the end. We'd rather do an insert
     this.subPageList.push(this.rows)
     this.metadata.push(new MetaData(7, clut))
   }
+  
+
+  /** Remove a subpage
+   *  Splices out the subpage and its associated metadata
+   *  @todo Check that the change is saved. [Dear Reader, it isn't yet]
+   */
+  this.removePage = function() {
+    // What subpage are we deleting?
+    print('[ttxpage::removePage] enters. subpage = ' + this.subPage + ' subPageList.length = ' + this.subPageList.length)
+    // Splice out the metadata
+    let deletedMetadata = this.metadata.splice(this.subPage, 1)
+    // Splice out the current sub page from the list
+    let deletedSubpage = this.subPageList.splice(this.subPage, 1)
+    print("Hacked out this page = " + deletedSubpage)
+    // Set the current page to the previous subpage
+    if (this.subPage > 0) {
+      this.subPage--
+    }
+    this.setSubPage(this.subPage)
+    // @todo Probably need a new message "deleteSubPage" to be sent back to the server at this point
+  }  
 
   /**
    * @param s Subpage number. All subsequent row/char updates go to this subpage.
@@ -349,9 +371,13 @@ window.TTXPAGE = function () {
     }
   }
 
+  /** 
+   * @brief Add subpage
+   * Add a subpage to the subpage list.
+   * @todo Need to INSERT after the current subpage, not to the end of the list
+   */
   this.addSubPage = function () {
     this.addPage(this.pageNumber)
-
     this.setSubPage(this.subPageList.length - 1)
   }
 
@@ -360,8 +386,9 @@ window.TTXPAGE = function () {
     LOG.fn(
       ['ttxpage', 'removeSubPage'],
       'Remove subpage not implemented.',
-      LOG.LOG_LEVEL_INFO
+      LOG.LOG_LEVEL_ERROR
     )
+    this.removePage()
   }
 
   this.draw = function (changed) {
