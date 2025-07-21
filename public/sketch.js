@@ -1193,7 +1193,11 @@ function keyPressed () {
 
       case 46: // DELETE - Delete a subpage
         if (editMode === CONST.EDITMODE_EDIT) {
-          myPage.removeSubPage()
+          let saveSubpage = myPage.subPage
+          if (myPage.removeSubPage()) { // Remove the subpage locally
+            // If OK then also do it on the server
+            deleteSubpage(saveSubpage)
+          }
         }
         break
 
@@ -1204,6 +1208,28 @@ function keyPressed () {
 
   // Signal whether the key should be processed any further
   return !handled
+}
+
+/** This deletes a subpage on the server and any listening client,
+ *  Not on our own page as we have already done this.
+ */
+function deleteSubpage (subpage) {
+  LOG.fn(
+    ['sketch', 'deleteSubpage'],
+    `subpage s=${subpage}`,
+    LOG.LOG_LEVEL_VERBOSE
+  )
+
+  const txt = {
+    S: myPage.service, // service number
+    p: myPage.pageNumber,
+    s: subpage,
+    k: ' ',
+    x: CONST.SIGNAL_DELETE_SUBPAGE,
+    y: 0,
+    id: gClientID
+  }
+  socket.emit('deleteSubpage', txt)
 }
 
 /** This inserts a space on the server and any listening client,

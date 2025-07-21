@@ -500,6 +500,7 @@ function newConnection (socket) {
   socket.on('initialLoad', doInitialLoad)
   socket.on('create', doCreate)
   socket.on('clearPage', doClearPage)
+  socket.on('deleteSubpage', doDeleteSubPage)
   socket.on('description', doSetDescription)
   socket.on('x28f1', doX28f1)
 
@@ -548,6 +549,21 @@ function doSetDescription (data) {
   keystroke.addEvent(txt)
   // Broadcast the changed description to all listeners
   // [!] @TODO
+}
+
+/** Delete the subpage s
+ */
+function doDeleteSubPage( data ) {
+ LOG.fn(
+    ['teletextserver', 'doDeleteSubPage'],
+    [
+      `Setting description = ${data.desc}` ,
+      ` keyMessage S=${data.S}, p=${data.p}, s=${data.s}`
+    ],
+    LOG.LOG_LEVEL_VERBOSE
+  )
+  // could check that x === CONST.SIGNAL_DELETE_SUBPAGE
+  keystroke.addEvent(data)
 }
 
 /** Clear the current page to blank

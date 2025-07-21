@@ -39,10 +39,11 @@ const CONST = {
   EDITMODE_PROPERTIES: 4,// Editing page properties. Description, X26/X28 enhancements etc.
   EDITMODE_MAX: 5,       // Range check       
 
-  // state signals
+  // state signals (placed in the X parameter of messages)
   SIGNAL_PAGE_NOT_FOUND: -1,
   SIGNAL_INITIAL_LOAD: 2000,
   SIGNAL_DESCRIPTION_CHANGE: 2001,
+  SIGNAL_DELETE_SUBPAGE: 2002,
 
   // display modes
   DISPLAY_STANDARD: 'standard',

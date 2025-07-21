@@ -253,21 +253,26 @@ window.TTXPAGE = function () {
   /** Remove a subpage
    *  Splices out the subpage and its associated metadata
    *  @todo Check that the change is saved. [Dear Reader, it isn't yet]
+   *  @return true if success, false if failed
    */
   this.removePage = function() {
+    // Can't delete the last subpage
+    if (this.subPageList.length < 2) {
+      return false
+    }
+    
     // What subpage are we deleting?
     print('[ttxpage::removePage] enters. subpage = ' + this.subPage + ' subPageList.length = ' + this.subPageList.length)
     // Splice out the metadata
     let deletedMetadata = this.metadata.splice(this.subPage, 1)
     // Splice out the current sub page from the list
     let deletedSubpage = this.subPageList.splice(this.subPage, 1)
-    print("Hacked out this page = " + deletedSubpage)
     // Set the current page to the previous subpage
     if (this.subPage > 0) {
       this.subPage--
     }
     this.setSubPage(this.subPage)
-    // @todo Probably need a new message "deleteSubPage" to be sent back to the server at this point
+    return true // We got here, so success
   }  
 
   /**
@@ -381,14 +386,17 @@ window.TTXPAGE = function () {
     this.setSubPage(this.subPageList.length - 1)
   }
 
+  /** Remove page - delete the current subpage
+   *  @return true if it succeeded
+   */
   this.removeSubPage = function () {
-    // Remove subpage not implemented. @todo
+    // Remove subpage
     LOG.fn(
       ['ttxpage', 'removeSubPage'],
-      'Remove subpage not implemented.',
+      'Local remove subpage.',
       LOG.LOG_LEVEL_ERROR
     )
-    this.removePage()
+    return this.removePage() // Use this value to check if the server also needs to be updated
   }
 
   this.draw = function (changed) {
