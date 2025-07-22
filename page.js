@@ -92,6 +92,12 @@ global.Page = function () {
       `Entered, row=${key.y}`,
       LOG.LOG_LEVEL_VERBOSE
     )
+    
+    
+    if (key.x === CONST.SIGNAL_DELETE_SUBPAGE) {
+      this.deleteSubpage(key)
+      return
+    }
 
     // Scan for the subpage of the key
     for (let i = 0; i < this.ttiLines.length; i++) {
@@ -305,6 +311,54 @@ global.Page = function () {
       }
     }
   }
+  
+  /** deleteSubpage deletes subpage
+   * Updates this.ttiLines - Array of tti lines from the page file
+   * @param key - The muttlee key event object
+   *  Delete the subpage where
+   *  Service - key.S
+   *  page - key.p
+   *  subpage - key.s
+   */  
+  this.deleteSubpage = function(key) {
+    console.log(key)
+    LOG.fn(
+      ['page', 'deleteSubpage'],
+      `Removing subpage=${key.s}`,
+      LOG.LOG_LEVEL_VERBOSE
+    )
+    // Decode each line looking for PN and match our subpage
+    // If the subpage matches then splice out lines until the next subpage arrives
+    // Scan for the subpage of the key
+    let pageSubCode = 0
+    for (let i = 0; i < this.ttiLines.length; i++) {
+      let line = this.ttiLines[i] // get the next line
+      const code = line.substring(0, 2) // get the two character command
+      line = line.substring(3) // get the tail from the line
+      
+      if (code === 'PN') { // Page Number: Don't need the mpp
+        // Check the SS. Don't rely on the SC.
+        pageSubCode = parseInt(line.substring(3, 5)) // Get SS
+        LOG.fn(
+          ['page', 'keyMessage'],
+          `Parser in pageSubCode=${pageSubCode}`,
+          LOG.LOG_LEVEL_VERBOSE
+        )
+      }
+      
+      if (code === 'FL') { // Treat FL as the last command in the current subpage
+        // @TODO Remember this point in csse we have moved into the page that is being deleted
+        // @TODO If this is the end of the subpage being deleted, what do we do?
+      }
+      
+      if (pageSubCode === key.s) {
+        // @TODO If there is an FL remembered then delete all the lines from there first
+        console.log('[page::deleteSubpage] we are going to delete ' + this.ttiLines[i])
+        // Probably have to mark the lines up with RM, and delete them in a second pass
+      }
+      
+    } // For each line in file 
+  } // deleteSubpage
 
   this.savePage = function (filename, cb, error) {
     // WARNING. We are saving to the stored filename!
