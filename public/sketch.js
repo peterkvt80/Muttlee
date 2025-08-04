@@ -1184,20 +1184,23 @@ function keyPressed () {
         myPage.home()
         break
 
-      // @TODO These should be moved to the <esc> menu as this is too easy for the user to destroy a page
-      case 45: // INSERT - Add a subpage
-        if (editMode === CONST.EDITMODE_EDIT) {
+      case 45: // INSERT - Add a subpage then revert to edit mode
+        if (editMode === CONST.EDITMODE_ESCAPE) {
           myPage.addSubPage()
         }
+        editMode = CONST.EDITMODE_EDIT
+        myPage.setEditMode(editMode)
         break
 
-      case 46: // DELETE - Delete a subpage
-        if (editMode === CONST.EDITMODE_EDIT) {
+      case 46: // DELETE - Delete a subpage then revert to edit mode
+        if (editMode === CONST.EDITMODE_ESCAPE) {
           let saveSubpage = myPage.subPage
           if (myPage.removeSubPage()) { // Remove the subpage locally
             // If OK then also do it on the server
             deleteSubpage(saveSubpage)
           }
+          editMode = CONST.EDITMODE_EDIT
+          myPage.setEditMode(editMode)
         }
         break
 
