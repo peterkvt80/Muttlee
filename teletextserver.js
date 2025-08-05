@@ -661,6 +661,9 @@ function processServicePageLine (serviceData, data, line) {
       missingPage = data.p.toString(16)
 
       data.desc += ` - page ${missingPage}`
+      
+      // Save the file not found flag for when we create the fastext links
+      data.fnf = CONST.SIGNAL_PAGE_NOT_FOUND // enable creating a new page 
     }
 
     io.sockets.emit('description', data)
@@ -694,7 +697,7 @@ function processServicePageLine (serviceData, data, line) {
     }
 
     // if page has page not found signal set...
-    if (data.x === CONST.SIGNAL_PAGE_NOT_FOUND) {
+    if (typeof data.fnf != "undefined" && data.fnf === CONST.SIGNAL_PAGE_NOT_FOUND) {
       // ...and service is editable, change the yellow fastext link to allow creating of a new page at this page number
       if (serviceData && serviceData.isEditable) {
         data.fastext[2] = `1${missingPage}`
@@ -746,7 +749,7 @@ function processServicePageLine (serviceData, data, line) {
   }
 
   data.k = '?' // k and x are ignored
-  data.x = 0  // (!) Don't use anything in CONST.<state signals>
+  data.x = 0  // (!) Don't use anything in CONST.<state signals>. It can trigger overwriting our page
   data.y = row // The row that we are sending out
 
   if ((!serviceData || !serviceData.forceServiceHeader) || (row !== 0)) {
