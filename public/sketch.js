@@ -1684,8 +1684,9 @@ function editTF (key) {
   let chr // The character that the editTF escape creates
 
   switch (key) {
-    case '8' : // intentional fall through
+    case '8' : // intentional fall through. Alpha black
       // zxnet
+    case '0' : // intentional fall through Alpha black
     case 'k' :
       chr = '\x00'
       break // alpha black
@@ -1747,6 +1748,8 @@ function editTF (key) {
 
     case '*' : // intentional fall through
       // zxnet
+    case ')' : // intentional fall through
+      // alpha black
     case 'K' :
       chr = '\x10'
       break // graphics black
