@@ -933,29 +933,37 @@ function setRow (r) {
     myPage.setRow(r.y, r.rowText)    
   } else if (r.y === 28) { // @wsfn clrt1
     console.log(r.X28F1) // here is the data
-    let clut = myPage.metadata[myPage.subPage].clut
-    for (let i = 0; i < 16; i++) {
-      let val = r.X28F1.colourMap[i] // The 12 bit colour value
-      // convert to a p5.Color object
-      let hash = '#'+hex(val).substring(5) // eg. #c8f
-      let colourValue = color(hash)
-      let clutIndex = 2 + Math.trunc(i / 8) // Either CLUT 2 or 3 are updatable
-      let colourIndex = i % 8
-      clut.setValue(colourValue, clutIndex, colourIndex)
+    if (myPage.subPage < myPage.metadata.length ) { // [!] Problem! The PN or SC number is greater than the actual subpages that we have
+      let clut = myPage.metadata[myPage.subPage].clut
+      for (let i = 0; i < 16; i++) {
+        let val = r.X28F1.colourMap[i] // The 12 bit colour value
+        // convert to a p5.Color object
+        let hash = '#'+hex(val).substring(5) // eg. #c8f
+        let colourValue = color(hash)
+        let clutIndex = 2 + Math.trunc(i / 8) // Either CLUT 2 or 3 are updatable
+        let colourIndex = i % 8
+        clut.setValue(colourValue, clutIndex, colourIndex)
+      }
+      clut.setDC(r.X28F1.dc)
+      clut.setPageFunction(r.X28F1.pageFunction)
+      clut.setPageCoding(r.X28F1.pageCoding)
+      clut.setDefaultG0G2CharacterSet(r.X28F1.defaultG0G2CharacterSet)
+      clut.setSecondG0G2CharacterSet(r.X28F1.secondG0G2CharacterSet)
+      clut.setDefaultScreenColour(r.X28F1.defaultScreenColour)
+      clut.setDefaultRowColour(r.X28F1.defaultRowColour)
+      clut.setRemap(r.X28F1.colourTableRemapping)
+      clut.setBlackBackgroundSub(r.X28F1.backBackgroundSubRow)
+      clut.setEnableLeftPanel(r.X28F1.enableLeftPanel)
+      clut.setEnableRightPanel(r.X28F1.enableRightPanel)
+      clut.setSidePanelStatusFlag(r.X28F1.sidePanelStatusFlag)
+      clut.setLeftColumns(r.X28F1.leftColumns)
+    } else {
+      LOG.fn(
+        ['sketch', 'setRow'],
+        `Subpage out of range subpages=${myPage.metadata.length} requested subpage=${myPage.subPage}`, // PN are probably out of sequence
+        LOG.LOG_LEVEL_ERROR
+      )      
     }
-    clut.setDC(r.X28F1.dc)
-    clut.setPageFunction(r.X28F1.pageFunction)
-    clut.setPageCoding(r.X28F1.pageCoding)
-    clut.setDefaultG0G2CharacterSet(r.X28F1.defaultG0G2CharacterSet)
-    clut.setSecondG0G2CharacterSet(r.X28F1.secondG0G2CharacterSet)
-    clut.setDefaultScreenColour(r.X28F1.defaultScreenColour)
-    clut.setDefaultRowColour(r.X28F1.defaultRowColour)
-    clut.setRemap(r.X28F1.colourTableRemapping)
-    clut.setBlackBackgroundSub(r.X28F1.backBackgroundSubRow)
-    clut.setEnableLeftPanel(r.X28F1.enableLeftPanel)
-    clut.setEnableRightPanel(r.X28F1.enableRightPanel)
-    clut.setSidePanelStatusFlag(r.X28F1.sidePanelStatusFlag)
-    clut.setLeftColumns(r.X28F1.leftColumns)
     // @TODO Save packet
     // remembering to clear packet on carousel, new or load page etc
   }
