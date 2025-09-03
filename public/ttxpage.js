@@ -110,7 +110,7 @@ window.TTXPAGE = function () {
         // Hook up the cursor callback so we can edit the properties
         this.cursor.setCallback(this.editProperties.getCursorCallback())
         // populate with data from the current subpage // @wsfn clrt3
-        this.editProperties.doInits(this.pageNumber, this.description, this.metadata[this.subPage].clut, this.cursor)
+        this.editProperties.doInits(this.pageNumber, this.description, this.metadata[this.subPage].clut, this.cursor, this.redLink, this.greenLink, this.yellowLink, this.cyanLink)
       }
     }
     if (mode < CONST.EDITMODE_MAX) {

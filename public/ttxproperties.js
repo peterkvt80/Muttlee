@@ -17,7 +17,7 @@ class TTXPROPERTIES {
   // @todo Need to pass description, X28 clut and palette etc.
   constructor(/*pageNumber, description, clut, cursor*/) {
     print("[TTXPROPERTIES] Constructor")    
-    this.totalPages = 2 // How many configuration pages
+    this.totalPages = 3 // How many configuration pages
     this.pageIndex = 0 // Which configuration page we are on
     this.description = 'description not set'
     this.rows = []
@@ -29,6 +29,10 @@ class TTXPROPERTIES {
     this.editableFields = [] // UI elements that we can interact with
     this.remapField = 0
     this.blackBackgroundSubField = 0 // Allow black background to be substituted
+    this.redLink = 0x8ff // fastext links
+    this.greenLink = 0x8ff
+    this.yellowLink = 0x8ff
+    this.cyanLink = 0x8ff
     
     let self = this // Ensure we use the correct "this" on callbacks
     this.cursorCallback // When the cursor changes
@@ -94,8 +98,12 @@ class TTXPROPERTIES {
    *  @param description - The page meta description. Don't think we use it
    *  @param clut - The clut of the subpage we are editing
    *  @param cursor - The cursor object so that we can move around the page
+   *  @param redLink - Red fastext link 0x100 to 0x8fe
+   *  @param greenLink - Green fastext link 0x100 to 0x8fe
+   *  @param yellowLink - Yellow fastext link 0x100 to 0x8fe
+   *  @param cyanLink - Cyan fastext link 0x100 to 0x8fe
    */
-  doInits(pageNumber, description, clut, cursor) {
+  doInits(pageNumber, description, clut, cursor, redLink, greenLink, yellowLink, cyanLink) {
     LOG.fn(
       ['ttxproperties', 'doInits'],
       `enters`,
@@ -142,6 +150,12 @@ class TTXPROPERTIES {
     }
     // In case this is the first time, set up the palette text
     this.drawPalettes()
+    
+    // Set up the fastext links
+    this.redLink = redLink
+    this.greenLink = greenLink
+    this.yellowLink = yellowLink
+    this.cyanLink = cyanLink
   }
   
   /** When the user changes the configuration page with pg up/pg dn
@@ -154,9 +168,11 @@ class TTXPROPERTIES {
     }
     switch (this.pageIndex)
     {
-      case 0: this.loadPage0()
+      case 0: this.loadPage0() // X26 Palette editor
         break;
-      case 1: this.loadPage1()
+      case 1: this.loadPage1() // Other X26 properties
+        break;
+      case 2: this.loadPage2() // Metadata: Fastext, Description, Page timing etc.
         break;
       default:
         print("[ttxproperties::updateIndex] Invalid index " + this.pageIndex)
@@ -320,13 +336,32 @@ class TTXPROPERTIES {
     }
   }
   
-  // Maybe do something a bit more automated and also records the required actions or targets
+  // Maybe do something a bit more automated and also record the required actions or targets
   drawFastext(txt) {
     this.rows[24].setrow(txt)    
   }
+  
+  /** A simple button used as a graphics of a fastext button
+   * The button is fixed size 6 characters long and two rows high 
+   * @param colour - Button colour 0..7
+   * @param xpos - Start column of button (will be a colour graphics code)
+   * @param rowNum - Number of the first row of the button.
+   */  
+  drawButton(colour, xpos, rowNum) {
+    // Upper row
+    let r = this.rows[rowNum]
+    let col = String.fromCharCode(0x10 + colour)
+    let button = col + "x|||t"
+    r.setrow(replace(r.txt, button, xpos))
+
+    // Lower row
+    r = this.rows[rowNum + 1]
+    button = col + "o?"
+    r.setrow(replace(r.txt, button, xpos))
+  }
 
   // X/28 palette editor
-  loadPage0(pageIndex) {
+  loadPage0() {
     print("loading page 0")
     
     this.drawHeader("PAGE ENHANCEMENTS-X/28/0 format 1")
@@ -378,7 +413,7 @@ class TTXPROPERTIES {
   }
   
   // X/28 clut editor
-  loadPage1(pageIndex) {
+  loadPage1() {
     print("loading page 1")
     
     // Use the default CLUT for all rows
@@ -444,6 +479,48 @@ class TTXPROPERTIES {
     // Right columns are implied. @todo
     
     this.updateFieldsPage1()
+  }
+  
+  // Metadata editor
+  loadPage2(pageIndex) {
+    print("loading page 2")
+    
+    // Use the default CLUT for all rows
+    for (const i of this.rows) {
+      i.clut.setRemap(0)
+    }
+    
+    this.drawHeader("METADATA (TBA)")
+    this.drawPageIndex(3)
+
+    this.drawBox(1,4,39,16,"Fastext links")
+    this.drawBox(1,10,39,4,"Page timing")
+    
+    // Fastext
+    this.drawButton(1, 4,5) // Red
+    this.drawButton(2,10,5) // Green 
+    this.drawButton(3,16,5) // Yellow
+    this.drawButton(6,22,5) // Cyan          
+
+    this.drawCaption( 5,  8, ('00' + this.redLink.toString(16)).slice(-3))
+    this.drawCaption(11,  8, ('00' + this.greenLink.toString(16)).slice(-3))
+    this.drawCaption(17,  8, ('00' + this.yellowLink.toString(16)).slice(-3))
+    this.drawCaption(23,  8, ('00' + this.cyanLink.toString(16)).slice(-3))
+
+    // Editable fields
+    this.editableFields = []
+
+    // @TODO Add FIELD_FASTEXT_LINK. HEXCOLOUR is close enough for now
+//      constructor(uiType, xLoc, yLoc, xWidth, yHeight, clutIndex, hint, enable = true) {
+
+    let field = new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 6, 8, 1, 1, clutIndex, "Red fastext link" ) // 
+    this.editableFields.push(field) 
+    field = new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 12, 8, 1, 1, clutIndex, "Green fastext link" ) // 
+    this.editableFields.push(field) 
+    field = new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 18, 8, 1, 1, clutIndex, "Yellow fastext link" ) // 
+    this.editableFields.push(field) 
+    field = new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 24, 8, 1, 1, clutIndex, "Cyan fastext link" ) // 
+    this.editableFields.push(field) 
   }
   
   /** Load the page data into the UI

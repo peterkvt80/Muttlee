@@ -26,6 +26,7 @@
 #*/
 "use strict"
 
+// @TODO Add CONST.UI.FIELD.FIELD_FASTEXT_LINK
 class uiField {
 
   /** 
@@ -33,7 +34,7 @@ class uiField {
    * @param xLoc - X origin of the field
    * @param yLoc - Y origin of the field
    * @param xWidth - Width of the field
-   * @param yHeight - Width of the field
+   * @param yHeight - Height of the field
    * @param clutIndex - index of the CLUT this colour comes from
    * @param hint - Hint text
    * @param enable - Field can be edited if true
