@@ -51,6 +51,10 @@ class TTXPROPERTIES {
     this.getCursorCallback = function() {    
       return self.cursorCallback
     }
+    
+    /** Not just page0. This is for all the properties pages
+     *  Given the cursor position, it scans the editfields to see what hint text is shown
+     */
     this.page0Handler = function(xLoc, yLoc) {
       print("[TTXPROPERTIES::page0Handler] x,y = ("+xLoc+","+yLoc+")")
       // @todo look at the xLoc/yLoc and see if it affects any UI element
@@ -59,7 +63,7 @@ class TTXPROPERTIES {
       // Scan all the fields
       let foundField
       for (const field of this.editableFields) {
-        if (field.inField(xLoc, yLoc)) {
+        if (field.inField(xLoc, yLoc) >= 0) {
           foundField = field
           break
         }
@@ -69,7 +73,7 @@ class TTXPROPERTIES {
       } else {
         this.rows[23].setrow(String.fromCharCode(0x03) + " Hint:" + String.fromCharCode(0x07) + foundField.getHint())    // Found UI field, add the hint on row 23
       }
-    }
+    } // page0Handler
 
     this.pageHandler = 99 // The page handler that processes cursor changes
     // Row 0    
@@ -510,17 +514,19 @@ class TTXPROPERTIES {
     // Editable fields
     this.editableFields = []
 
-    // @TODO Add FIELD_FASTEXT_LINK. HEXCOLOUR is close enough for now
 //      constructor(uiType, xLoc, yLoc, xWidth, yHeight, clutIndex, hint, enable = true) {
+    let clutIndex = 0
+    let field = new uiField(CONST.UI_FIELD.FIELD_PAGENUMBER, 6, 8, 3, 1, clutIndex, "Red fastext link" ) // 
+    this.editableFields.push(field) 
+    field = new uiField(CONST.UI_FIELD.FIELD_PAGENUMBER, 12, 8, 3, 1, clutIndex, "Green fastext link" ) // 
+    this.editableFields.push(field) 
+    field = new uiField(CONST.UI_FIELD.FIELD_PAGENUMBER, 18, 8, 3, 1, clutIndex, "Yellow fastext link" ) // 
+    this.editableFields.push(field) 
+    field = new uiField(CONST.UI_FIELD.FIELD_PAGENUMBER, 24, 8, 3, 1, clutIndex, "Cyan fastext link" ) // 
+    this.editableFields.push(field) 
+    
+    this.pageHandler = this.page0Handler
 
-    let field = new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 6, 8, 1, 1, clutIndex, "Red fastext link" ) // 
-    this.editableFields.push(field) 
-    field = new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 12, 8, 1, 1, clutIndex, "Green fastext link" ) // 
-    this.editableFields.push(field) 
-    field = new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 18, 8, 1, 1, clutIndex, "Yellow fastext link" ) // 
-    this.editableFields.push(field) 
-    field = new uiField(CONST.UI_FIELD.FIELD_HEXCOLOUR, 24, 8, 1, 1, clutIndex, "Cyan fastext link" ) // 
-    this.editableFields.push(field) 
   }
   
   /** Load the page data into the UI
@@ -658,30 +664,31 @@ class TTXPROPERTIES {
       // @todo Backward tab
       // @todo Wrap around forward or backward tab
       // Are we in the editable zone?
-      if (field.inField(xp, yp)) {
-        key = field.validateKey(key)
+      let pos = field.inField(xp, yp) // Are we in a field, and what is our position in the field?
+      LOG.fn(
+      ['ttxproperties', 'handleKeyPress'],
+      `field position = ${pos}`,
+      LOG.LOG_LEVEL_VERBOSE
+    )  
+
+      if (pos >=0 ) {
+        key = field.validateKey(key, pos)
         // [!] Test for special TAB code *before* testing for a character
         if (key !== 0xff) { // Key is valid for this field?
            // @todo I think we don't need to test for the page number here. We can use the same code
            // @todo Any specific coding can go in updateField
-          if (this.pageIndex === 0) {
-            // A 12 bit RGB colour edit
+          if (this.pageIndex === 0 || true) { // Same code for all pageIndex
+            // page0 = A 12 bit RGB colour edit, page1 = X26 settings, page2 = timings and fastext
             this.rows[yp].setchar(key, xp)
             // The field changed. What is the new value?
             field.key = key
             this.updateField(field)
           }
           
-          if (this.pageIndex === 1) {
-            // Mainly look at blackBackgroundSub
-            this.rows[yp].setchar(key, xp)
-            print("Need to process key = " + key)
-            field.key = key
-            this.updateField(field)
-          }
         }
         // Advance cursor for a valid key
         // @todo Backwards TAB
+        // @todo This probably applies to PAGENUMBER also
         if  ((xp < field.xLoc + field.xWidth - 1) && (key < 0x80) || ((field.uiType===CONST.UI_FIELD.FIELD_HEXCOLOUR) && (key >= 'a') && (key<='f')) ) {
           this.cursor.right() // Advance right after a character
         }
@@ -702,7 +709,8 @@ class TTXPROPERTIES {
   }   
 
   // Unfortunately, this handler is used for all pages, so the logic may be
-  // a little muddled
+  // a little muddled.
+  // When a field is changed, then this will update anything that the field needs to do
   updateField(field) {
     // Get the updated data
     let row = this.rows[field.yLoc]
@@ -712,6 +720,7 @@ class TTXPROPERTIES {
     case CONST.UI_FIELD.FIELD_HEXCOLOUR: // This is only used on page 0
       print ("new hex value = " + value)
       // Now put this colour value into the CLUT of each row
+      if (this.pageIndex === 0)
       {
         // The new colour
         let colour = Clut.colour12to24(value)
@@ -841,8 +850,18 @@ class TTXPROPERTIES {
         }
       }
       break;
-    default:
+    case CONST.UI_FIELD.FIELD_NUMBER: // This is only used on page 2 
       print("[TTXPROPERTIES::updateField] switch todo")
+      // @todo This is the fastext links, we only implement the first four
+      // @todo Which fastext button is it?
+      // @todo Copy the value back to this.redLink etc.
+      break
+    default:
+      LOG.fn(
+        ['ttxproperties', 'updateField'],
+        `Unimplemented switch`,
+        LOG.LOG_LEVEL_ERROR
+      )  
     }
     // update the display
   }

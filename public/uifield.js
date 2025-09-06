@@ -53,8 +53,9 @@ class uiField {
   /** validateKey
    *  Update this field according to the key press and its location
    *  This comes from a callback in TTXPROPERTIES
+   * @param pos - Character position where we are in the field
    */  
-  validateKey(key)
+  validateKey(key, pos)
   {
     if (!this.enable) {
       return 0xff // Field exists but can not be updated
@@ -86,6 +87,16 @@ class uiField {
     case CONST.UI_FIELD.FIELD_COMBO: // Yeah. Could be interesting! Don't know how to control this
       return key // @todo Replace this placeholder. 
       break
+    case CONST.UI_FIELD.FIELD_PAGENUMBER: // Hex number PAGE_MIN to PAGE_MAX
+      if  ( ((key >= '0') && (key <='9')) || 
+        ((key >='a') && (key <='f'))) {
+          // If the first digit is 0 or over 9 (or 8!) then it is not a valid page number
+          if ((key ==='0' || (key >= 'a' && key <= 'f')) && pos === 0) {
+            break
+          }
+          return key
+        }
+      break
     }
     // update the display
     // update the source data
@@ -103,13 +114,15 @@ class uiField {
     return this.hint
   }
   
-  // Return true if (xp, yp) is in this field 
+  /** Test if the x,y coordinate is in this field.
+   *  Return The index of the character in this field or -1 if not in this field 
+   */
   inField(xp, yp) {
     if ((xp >= this.xLoc) && (xp < this.xLoc + this.xWidth) &&
         (yp >= this.yLoc) && (yp < this.yLoc + this.yHeight)) {
-        return true
+        return xp - this.xLoc
     }
-    return false
+    return -1
   }
   
   

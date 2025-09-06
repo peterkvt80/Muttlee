@@ -160,6 +160,7 @@ const CONST = {
     FIELD_CHECKBOX:  1, // Checkbox
     FIELD_NUMBER:    2, // Decimal number
     FIELD_COMBO:     3, // Combo box
+    FIELD_PAGENUMBER:   4, // Page number PAGE_MIN to PAGE_MAX
   },
 };
 
