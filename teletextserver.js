@@ -503,6 +503,7 @@ function newConnection (socket) {
   socket.on('deleteSubpage', doDeleteSubPage)
   socket.on('description', doSetDescription)
   socket.on('x28f1', doX28f1)
+  socket.on('fastext', doFastext)
 
   // When this connection closes we remove the connection id
   socket.on('disconnect', function () {
@@ -629,8 +630,7 @@ function doInitialLoad (data) {
  * Returns this message to update any clients viewing the same page
  * @param data - X28F1 settings wrapped up in a keyevent message
  */
-function doX28f1(data)
-{
+function doX28f1(data) {
   // Data returned from X28F1 properties editor
   console.log("Message from client:\n" + JSON.stringify(data, null, 4));
   // let ol28 = EncodeOL28(data.X28F1)
@@ -639,6 +639,19 @@ function doX28f1(data)
   
   keystroke.addEvent(data) // probably some form of keystroke event
   // @todo Send the update to any clients looking at the same page
+}
+
+/** doFastext - Update the fastext links for this page
+ *
+ */
+function doFastext(data) {
+  // Add a fastext event
+  LOG.fn(
+    ['teletextserver', 'doFastext'],
+    'Got fastext event',
+    LOG.LOG_LEVEL_VERBOSE
+  )
+  // @todo Actually add it and implement a handler in the event playback
 }
 
 function processServicePageLine (serviceData, data, line) {
@@ -686,7 +699,7 @@ function processServicePageLine (serviceData, data, line) {
     ix = 3
     data.fastext = []
 
-    for (let link = 0; link < 4; link++) {
+    for (let link = 0; link < 5; link++) {
       let flink = ''
       for (ch = line.charAt(ix++); ch !== ',';) {
         flink = flink + ch

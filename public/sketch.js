@@ -753,7 +753,8 @@ function setFastext (data) {
   myPage.greenLink = parseInt('0x' + data.fastext[1])
   myPage.yellowLink = parseInt('0x' + data.fastext[2])
   myPage.cyanLink = parseInt('0x' + data.fastext[3])
-  myPage.indexLink = parseInt('0x' + data.fastext[5])
+  myPage.indexLink = parseInt('0x' + data.fastext[4])
+  // @todo There should be six links? 
 }
 
 function draw () {
@@ -1410,7 +1411,28 @@ function processKey (keyPressed) {
         id: gClientID
         }
         socket.emit('x28f1', packet28)
-        // Probably need to wrap it up in a packet to indicate the page, connection etc.
+        // Metadata (fastext, page timing, transmission flags etc.)
+        // @todo :
+        // Make a fastext json packet
+        // Copy the fastext links from ttxproperties
+        // Send fastext to the server
+        
+        let fastextPacket = {
+        S: myPage.service,
+        p: myPage.pageNumber,
+        s: myPage.subPage,
+        y: 28,
+        id: gClientID,
+        fastext: []
+        }
+        fastextPacket.fastext[0] = myPage.editProperties.redLink
+        fastextPacket.fastext[1] = myPage.editProperties.greenLink
+        fastextPacket.fastext[2] = myPage.editProperties.yellowLink
+        fastextPacket.fastext[3] = myPage.editProperties.cyanLink
+        // @todo The other two links
+        socket.emit('fastext', fastextPacket)
+        // @todo Page timing
+        // @todo transmission flags
       }
     }
     // @todo Think about this. If we delete the object, it loses all state.

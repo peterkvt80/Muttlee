@@ -850,16 +850,39 @@ class TTXPROPERTIES {
         }
       }
       break;
-    case CONST.UI_FIELD.FIELD_NUMBER: // This is only used on page 2 
+    case CONST.UI_FIELD.FIELD_PAGENUMBER: 
       print("[TTXPROPERTIES::updateField] switch todo")
-      // @todo This is the fastext links, we only implement the first four
-      // @todo Which fastext button is it?
+      value = Number('0x' + value) // Convert the hex page number to a numeric value
+      if (this.pageIndex === 2) { // Fastext are on page 2 
+        // We only implement the first four fastext links
+        // Which fastext button is it?
+        switch (x) {
+        case 6 : // red
+          this.redLink = value
+          break
+        case 12 : // green
+          this.greenLink = value
+          break
+        case 18 : // yellow
+          this.yellowLink = value
+          break
+        case 24 : // cyan
+          this.cyanLink = value
+          break
+        default:
+          LOG.fn(
+            ['ttxproperties', 'updateField'],
+            `Unimplemented switch 1: fastext field not found at x = ${x}`,
+            LOG.LOG_LEVEL_ERROR
+          )  
+        }
+      }
       // @todo Copy the value back to this.redLink etc.
       break
     default:
       LOG.fn(
         ['ttxproperties', 'updateField'],
-        `Unimplemented switch`,
+        `Unimplemented switch 2: field.uiType = ${field.uiType}`,
         LOG.LOG_LEVEL_ERROR
       )  
     }

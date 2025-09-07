@@ -105,11 +105,11 @@ class uiField {
   
   // Set a hint string for the user
   setHint(hint) {
-    // Probably should limit size and contents. Todo
+    // Probably should limit size and contents. @Todo
     this.hint = hint
   }
   
-  // Return The hint string
+  // Return - The hint string for this field
   getHint() {
     return this.hint
   }
