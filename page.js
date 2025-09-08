@@ -85,7 +85,7 @@ global.Page = function () {
     let pageNumber = 0x100 // the mpp of mppss
     let pageSubCode = 0 // The ss of mppss
     let rowIndex = -1 // The index of the line OR where we want to splice. -1 = not found
-    let fastext = '8ff,8ff,8ff,8ff,8ff,8ff'
+    let fastext = '8ff,8ff,8ff,8ff,8ff,100'
     let noDescription = true // If we don't have a description, we need to add one
 
     LOG.fn(
@@ -110,13 +110,14 @@ global.Page = function () {
         fastext = line
         // Replace the fastext
         if (key.x === CONST.SIGNAL_FASTEXT_CHANGE) {
+          // Don't actually need to do this slice thing. It should never have leading zeros
           this.ttiLines[i] = 'FL,'
             + ('000'+key.fastext[0].toString(16)).slice(-3) + ','
             + ('000'+key.fastext[1].toString(16)).slice(-3) + ','
             + ('000'+key.fastext[2].toString(16)).slice(-3) + ','
             + ('000'+key.fastext[3].toString(16)).slice(-3) + ','
-            + '8ff,'
-            + '8ff'
+            + ('000'+key.fastext[4].toString(16)).slice(-3) + ','
+            + ('000'+key.fastext[5].toString(16)).slice(-3)
             console.log('Setting FL to ' + this.ttiLines[i])
         } else
         if (key.s === pageSubCode) { // did we get to the end of the page without finding any rows?

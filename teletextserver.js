@@ -652,7 +652,7 @@ function doFastext(data) {
     LOG.LOG_LEVEL_VERBOSE
   )
   // broadcast to clients
-  io.sockets.emit('fastext', data) // [!] NO! Probably want to do this later
+  io.sockets.emit('fastext', data) // [!] Probably want to do this later but I guess it can't hurt
   // And stack it for replay
   keystroke.addEvent(data)
 }
@@ -700,14 +700,15 @@ function processServicePageLine (serviceData, data, line) {
     let ch
 
     ix = 3
-    data.fastext = []
-
-    for (let link = 0; link < 5; link++) {
+    data.fastext = [0x8ff,0x8ff,0x8ff,0x8ff,0x8ff,0x100]
+    console.log('FL line = "' + line +'"')
+    for (let link = 0; link < 6; link++) { // Check that we are sending out ALL the links correctly
       let flink = ''
-      for (ch = line.charAt(ix++); ch !== ',';) {
+      for (ch = line.charAt(ix++); ch !== ',' && ch !==' ' && ix < line.length;) {
         flink = flink + ch
         ch = line.charAt(ix++)
       }
+      console.log(`flink[${link}] = ${flink}`)
 
       data.fastext[link] = flink
     }
@@ -1051,7 +1052,7 @@ function createPage (data, callback) {
   wstream.write('OL,23,F                                       \n')
   wstream.write('OL,24,A Next   B....       C....      FHelp   \n')
   // Write hex then read as decimal, so we don't increment to any hex pages.
-  wstream.write('FL,' + (parseInt(data.p.toString(16)) + 1) + ',8ff,8ff,700,8ff,8ff  \n')
+  wstream.write('FL,' + (parseInt(data.p.toString(16)) + 1) + ',8ff,8ff,700,8ff,100  \n')
   wstream.end()
 
   // Signal completion

@@ -50,6 +50,7 @@ window.TTXPAGE = function () {
   this.greenLink = CONST.PAGE_MIN
   this.yellowLink = CONST.PAGE_MIN
   this.cyanLink = CONST.PAGE_MIN
+  this.spareLink = 0x8ff
   this.indexLink = CONST.PAGE_MIN
   this.editMode = CONST.EDITMODE_NORMAL
   this.description = ''
@@ -110,7 +111,8 @@ window.TTXPAGE = function () {
         // Hook up the cursor callback so we can edit the properties
         this.cursor.setCallback(this.editProperties.getCursorCallback())
         // populate with data from the current subpage // @wsfn clrt3
-        this.editProperties.doInits(this.pageNumber, this.description, this.metadata[this.subPage].clut, this.cursor, this.redLink, this.greenLink, this.yellowLink, this.cyanLink)
+        this.editProperties.doInits(this.pageNumber, this.description, this.metadata[this.subPage].clut, this.cursor,
+          this.redLink, this.greenLink, this.yellowLink, this.cyanLink, this.spareLink, this.indexLink)
       }
     }
     if (mode < CONST.EDITMODE_MAX) {

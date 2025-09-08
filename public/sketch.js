@@ -753,8 +753,8 @@ function setFastext (data) {
   myPage.greenLink = parseInt('0x' + data.fastext[1])
   myPage.yellowLink = parseInt('0x' + data.fastext[2])
   myPage.cyanLink = parseInt('0x' + data.fastext[3])
-  myPage.indexLink = parseInt('0x' + data.fastext[4])
-  // @todo There should be six links? 
+  myPage.spareLink = parseInt('0x' + data.fastext[4])
+  myPage.indexLink = parseInt('0x' + data.fastext[5])
 }
 
 function draw () {
@@ -1430,7 +1430,8 @@ function processKey (keyPressed) {
         fastextPacket.fastext[1] = myPage.editProperties.greenLink
         fastextPacket.fastext[2] = myPage.editProperties.yellowLink
         fastextPacket.fastext[3] = myPage.editProperties.cyanLink
-        // @todo The other two links
+        fastextPacket.fastext[4] = myPage.editProperties.spareLink
+        fastextPacket.fastext[5] = myPage.editProperties.indexLink
         socket.emit('fastext', fastextPacket)
         // @todo Page timing
         // @todo transmission flags

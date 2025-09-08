@@ -33,6 +33,8 @@ class TTXPROPERTIES {
     this.greenLink = 0x8ff
     this.yellowLink = 0x8ff
     this.cyanLink = 0x8ff
+    this.spareLink = 0x8ff
+    this.indexLink = 0x100
     
     let self = this // Ensure we use the correct "this" on callbacks
     this.cursorCallback // When the cursor changes
@@ -106,8 +108,10 @@ class TTXPROPERTIES {
    *  @param greenLink - Green fastext link 0x100 to 0x8fe
    *  @param yellowLink - Yellow fastext link 0x100 to 0x8fe
    *  @param cyanLink - Cyan fastext link 0x100 to 0x8fe
+   *  @param spareLink - Cyan fastext link 0x100 to 0x8fe
+   *  @param indexLink - Cyan fastext link 0x100 to 0x8fe
    */
-  doInits(pageNumber, description, clut, cursor, redLink, greenLink, yellowLink, cyanLink) {
+  doInits(pageNumber, description, clut, cursor, redLink, greenLink, yellowLink, cyanLink, spareLink, indexLink) {
     LOG.fn(
       ['ttxproperties', 'doInits'],
       `enters`,
@@ -160,6 +164,8 @@ class TTXPROPERTIES {
     this.greenLink = greenLink
     this.yellowLink = yellowLink
     this.cyanLink = cyanLink
+    this.spareLink = spareLink
+    this.indexLink = indexLink
   }
   
   /** When the user changes the configuration page with pg up/pg dn
@@ -494,7 +500,7 @@ class TTXPROPERTIES {
       i.clut.setRemap(0)
     }
     
-    this.drawHeader("METADATA (TBA)")
+    this.drawHeader("METADATA")
     this.drawPageIndex(3)
 
     this.drawBox(1,4,39,16,"Fastext links")
