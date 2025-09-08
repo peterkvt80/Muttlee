@@ -651,7 +651,10 @@ function doFastext(data) {
     'Got fastext event',
     LOG.LOG_LEVEL_VERBOSE
   )
-  // @todo Actually add it and implement a handler in the event playback
+  // broadcast to clients
+  io.sockets.emit('fastext', data) // [!] NO! Probably want to do this later
+  // And stack it for replay
+  keystroke.addEvent(data)
 }
 
 function processServicePageLine (serviceData, data, line) {
@@ -721,7 +724,7 @@ function processServicePageLine (serviceData, data, line) {
 
     return data
   } else if (line.indexOf('CT,') === 0) { // Counter timer
-    // Hack: Send the time in Fastext[0]
+    // [!] Hack: Send the time in Fastext[0]
     const tokens = line.split(',') // Token[2] is C or T and is not currently used
     data.fastext = []
     data.fastext[0] = parseInt(tokens[1])

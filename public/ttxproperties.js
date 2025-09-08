@@ -855,8 +855,8 @@ class TTXPROPERTIES {
       value = Number('0x' + value) // Convert the hex page number to a numeric value
       if (this.pageIndex === 2) { // Fastext are on page 2 
         // We only implement the first four fastext links
-        // Which fastext button is it?
-        switch (x) {
+        // Which fastext button is it?        
+        switch (field.xLoc) {
         case 6 : // red
           this.redLink = value
           break
@@ -872,7 +872,7 @@ class TTXPROPERTIES {
         default:
           LOG.fn(
             ['ttxproperties', 'updateField'],
-            `Unimplemented switch 1: fastext field not found at x = ${x}`,
+            `Unimplemented switch 1: fastext field not found at x = ${field.xLoc}`,
             LOG.LOG_LEVEL_ERROR
           )  
         }

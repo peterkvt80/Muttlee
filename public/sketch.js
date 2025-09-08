@@ -1403,12 +1403,12 @@ function processKey (keyPressed) {
         print(X28F1)
         // Wrap it up in an identifier packet
         let packet28 = {
-        S: myPage.service,
-        p: myPage.pageNumber,
-        s: myPage.subPage,
-        y: 28,
-        x28f1: X28F1,
-        id: gClientID
+          S: myPage.service,
+          p: myPage.pageNumber,
+          s: myPage.subPage,
+          y: 28,
+          x28f1: X28F1,
+          id: gClientID
         }
         socket.emit('x28f1', packet28)
         // Metadata (fastext, page timing, transmission flags etc.)
@@ -1418,12 +1418,13 @@ function processKey (keyPressed) {
         // Send fastext to the server
         
         let fastextPacket = {
-        S: myPage.service,
-        p: myPage.pageNumber,
-        s: myPage.subPage,
-        y: 28,
-        id: gClientID,
-        fastext: []
+          S: myPage.service,
+          p: myPage.pageNumber,
+          s: myPage.subPage,
+          x: CONST.SIGNAL_FASTEXT_CHANGE,
+          y: 9999, // big invalid number so the server scans the whole page
+          id: gClientID,
+          fastext: []
         }
         fastextPacket.fastext[0] = myPage.editProperties.redLink
         fastextPacket.fastext[1] = myPage.editProperties.greenLink

@@ -1,6 +1,6 @@
 /** keystroke.js
  *  Part of the Muttlee system
- *  Copyright Peter Kwan (c) 2018
+ *  Copyright Peter Kwan (c) 2018 - 2025
  *  MIT license blah blah.
  *  Records keystrokes received from connected clients
  *  Used to keep a record of edits to pages

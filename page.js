@@ -78,6 +78,7 @@ global.Page = function () {
 
   // Editing
   // Handle keyMessage
+  // Given an edit event parameter called key, it scans the page to find where the event should go.
   this.keyMessage = function (key) {
     let subcode = -1 // Signal an invalid code until we get a real one
     let insert = true
@@ -89,7 +90,7 @@ global.Page = function () {
 
     LOG.fn(
       ['page', 'keyMessage'],
-      `Entered, row=${key.y}`,
+      `Entered, x=${key.x}, row=${key.y}`,
       LOG.LOG_LEVEL_VERBOSE
     )
     
@@ -107,16 +108,27 @@ global.Page = function () {
 
       if (code === 'FL') { // Fastext Link: Save the fastext link
         fastext = line
+        // Replace the fastext
+        if (key.x === CONST.SIGNAL_FASTEXT_CHANGE) {
+          this.ttiLines[i] = 'FL,'
+            + ('000'+key.fastext[0].toString(16)).slice(-3) + ','
+            + ('000'+key.fastext[1].toString(16)).slice(-3) + ','
+            + ('000'+key.fastext[2].toString(16)).slice(-3) + ','
+            + ('000'+key.fastext[3].toString(16)).slice(-3) + ','
+            + '8ff,'
+            + '8ff'
+            console.log('Setting FL to ' + this.ttiLines[i])
+        } else
         if (key.s === pageSubCode) { // did we get to the end of the page without finding any rows?
           rowIndex = i - 1 // Splice before the FL // [!] todo Not sure that i is correct.
           LOG.fn(
             ['page', 'keyMessage'],
             `FL found instead of target row rowIndex = ${rowIndex}`,
-            LOG.LOG_LEVEL_VERBOSE
+            LOG.LOG_LEVEL_ERROR
           )
           break
         }
-      }
+     }
 
       if (code === 'PN') { // Page Number: Get the MPP
         pageNumber = parseInt(line.substring(0, 3), 16)
@@ -262,21 +274,23 @@ global.Page = function () {
     }
 
     // we should now have the line in which we are going to do the insert
-    if (insert) {
-      if (rowIndex === -1) { // We don't have a valid rowIndex
-        LOG.fn(
-          ['page', 'keyMessage'],
-          `Failed to insert row. Invalid rowIndex -1`,
-          LOG.LOG_LEVEL_ERROR
-        )
-        this.ttiLines.splice(++rowIndex, 0, 'OL,' + key.y + ',This line is in the wrong place ERROR   ')
-      } else {
-        LOG.fn(
-          ['page', 'keyMessage'],
-          `Inserting row number = ${key.y} `,
-          LOG.LOG_LEVEL_ERROR
-        )
-        this.ttiLines.splice(++rowIndex, 0, 'OL,' + key.y + ',                                        ')
+    if (key.row < 25) { // Edits only apply to displayable rows
+      if (insert) {
+        if (rowIndex === -1) { // We don't have a valid rowIndex
+          LOG.fn(
+            ['page', 'keyMessage'],
+            `Failed to insert row. Invalid rowIndex -1`,
+            LOG.LOG_LEVEL_ERROR
+          )
+          this.ttiLines.splice(++rowIndex, 0, 'OL,' + key.y + ',This line is in the wrong place ERROR   ')
+        } else {
+          LOG.fn(
+            ['page', 'keyMessage'],
+            `Inserting row number = ${key.y} `,
+            LOG.LOG_LEVEL_ERROR
+          )
+          this.ttiLines.splice(++rowIndex, 0, 'OL,' + key.y + ',                                        ')
+        }
       }
     }
 
