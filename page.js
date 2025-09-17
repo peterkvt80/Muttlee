@@ -196,7 +196,7 @@ global.Page = function () {
         if (key.s === pageSubCode) { // if we are on the right page
           // 1) Find the matching row and return that rowIndex
           // 2) If not, find the first row with a bigger row number and insert before that
-          // 3) If not insert before whichever comes first: FL, PN, end of file. (FL is nahdled above)
+          // 3) If not insert before whichever comes first: FL, PN, end of file. (FL is handled above)
           // @TODO Check that insert fallback happens on PN and end of file
           LOG.fn(
             ['page', 'keyMessage'],

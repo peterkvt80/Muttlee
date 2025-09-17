@@ -738,9 +738,17 @@ function processServicePageLine (serviceData, data, line) {
 
     row = parseInt(arr[0], 10)
     ix = (4 + arr[0].length)
+  } else if (line.indexOf('PS') === 0) { // Page control bits
+    // @todo Need to get the language bits out of the PS command
+    // and integrate it with X/28/0 format 1 G0G2 character set options
+    const tokens = line.split(',')
+    data.control = parseInt('0x'+tokens[1])
+    io.sockets.emit('control', data)
+    return data
   } else {
     return data // Not a row. Not interested
   }
+  
 
   data.y = row
 

@@ -329,6 +329,7 @@ function setup () {
   socket.on('timer', setTimer) // Subpage timing. Currently this is just an overall value. Need to implement for animations
   socket.on('id', setID) // id is a socket id that identifies this client. Use this when requesting a page load
   socket.on('locked', setLocked) // A page with "LK," can not be edited
+  socket.on('control', setControl) // A 16 bit integer containing MiniTED flags in Fastext[0]
 
   // create page number input field
   inputPage = select('#pageNumber')
@@ -585,6 +586,20 @@ function setLocked(r) {
     LOG.LOG_LEVEL_INFO
   )
   myPage.setLocked(true)
+}
+
+/** Page control bits
+ */
+function setControl(data) {
+  if (!matchpage(data)) return // Not for us
+  print(data)
+  LOG.fn(
+    ['sketch', 'setControl'],
+    `MiniTED page control bits = ${data.control}`,
+    LOG.LOG_LEVEL_INFO
+  )
+  // Really should decode these bits into TPOF for convenience
+  // myPage.setControl(data.control)
 }
 
 /** We MUST be sent the connection ID or we won't be able to display anything
