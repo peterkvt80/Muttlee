@@ -600,6 +600,15 @@ function setControl(data) {
   )
   // Really should decode these bits into TPOF for convenience
   // myPage.setControl(data.control)
+  
+  // For now, just grab the language bits
+  let language = (data.control >> 7) & 0x07
+  LOG.fn(
+    ['sketch', 'setControl'],
+    `Language =   ${language}`,
+    LOG.LOG_LEVEL_INFO
+  )
+  myPage.mapChar.setCountry(language)
 }
 
 /** We MUST be sent the connection ID or we won't be able to display anything

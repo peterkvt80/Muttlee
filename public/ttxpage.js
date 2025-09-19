@@ -57,6 +57,8 @@ window.TTXPAGE = function () {
   this.showGrid = false
   this.subPageZeroBase = false
   this.editProperties = new TTXPROPERTIES() // Just in case we are going to edit the properties later
+  this.mapChar = new MAPCHAR()
+
 
   // this.timer=7 // This is global. Replaced by a per page timer
 
@@ -235,12 +237,12 @@ window.TTXPAGE = function () {
 
     // As rows go from 0 to 31 and pages start at 100, we can use the same parameter for both
     this.rows.push(
-      new Row(this, number, 0, this.getServiceHeader(), clut)
+      new Row(this, number, 0, this.getServiceHeader(), clut, this.mapChar)
     )
 
     for (let i = 1; i < 26; i++) {
       this.rows.push(
-        new Row(this, number, i, ''.padStart(CONFIG[CONST.CONFIG.NUM_COLUMNS]), clut)
+        new Row(this, number, i, ''.padStart(CONFIG[CONST.CONFIG.NUM_COLUMNS]), clut, this.mapChar)
       )
     }
     
@@ -747,8 +749,9 @@ function isMosaic (ch) {
  *  @param y - Row number 0..24 Higher row numbers are not handled here
  *  @param str - Text to initialise this row
  *  @param clut - Clut object to use with this row
+ *  @param mapChar - A mapChar object (managed by ttxpage)
  */
-function Row (ttxpage, page, y, str, clut) {
+function Row (ttxpage, page, y, str, clut, mapChar) {
   this.ttxpage = ttxpage
 
   this.page = page
@@ -756,6 +759,7 @@ function Row (ttxpage, page, y, str, clut) {
   this.txt = str
   this.pagetext = 'xxx'
   this.clut = clut // @todo This clut should be in the subpage list
+  this.mapChar = mapChar
 
   this.setchar = function (ch, n) {
     // Out of range?
@@ -1106,7 +1110,7 @@ function Row (ttxpage, page, y, str, clut) {
         fill(myColour) // Normal
 
         if (textmode || (ch.charCodeAt(0) >= 0x40 && ch.charCodeAt(0) < 0x60)) {
-          ch = this.mapchar(ch)
+          ch = this.mapChar.map(ch)
           // If cpos is negative, we can't be editing anything
           if (changed[i] && cpos >= 0) {
             fill(200, 100, 0) // If the text has been edited then make it orange until the server replies that it has been saved
@@ -1232,43 +1236,6 @@ function Row (ttxpage, page, y, str, clut) {
     text(ch, x * gTtxW, (y + 1 + (dblH ? 1 : 0)) * gTtxH)
   }
 
-  this.mapchar = function (ch) {
-    // Temporary mappings for Germany
-    /*
-    switch(ch)
-    {
-      case '|':  return char(0x00f6) // 7/C o umlaut
-        case '}':  return char(0x00fc) // 7/D u umlaut
-      } */
-    switch (ch) {
-      case '#':
-        return '£'
-      case '[':
-        return char(0x2190) // 5/B Left arrow.
-      case '\\':
-        return char(0xbd) // 5/C Half
-      case ']':
-        return char(0x2192) // 5/D Right arrow.
-      case '^':
-        return char(0x2191) // 5/E Up arrow.
-      case '_':
-        return char(0x0023) // 5/F Underscore is hash sign
-      case '`' :
-        return String.fromCharCode(0x2014) // 6/0 Centre dash. The full width dash e731
-      case '{':
-        return char(0xbc) // 7/B Quarter
-      case '|':
-        return char(0x2016) // 7/C Double pipe
-      case '}':
-        return char(0xbe) // 7/D Three quarters
-      case '~':
-        return char(0x00f7) // 7/E Divide
-      case String.fromCharCode(0x7f):
-        return char(0xe65f) // 7/F Bullet (rectangle block)
-    }
-
-    return ch
-  }
 } // Row class
 
 /// ///////////////////////////////////////////////////////////////////////////////////////////////////////////
