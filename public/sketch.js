@@ -608,7 +608,13 @@ function setControl(data) {
     `Language =   ${language}`,
     LOG.LOG_LEVEL_INFO
   )
+  // Reverse bits!
+  language = ((language & 0x01) << 2) | (language & 0x02) | ((language & 0x04) >> 2)
   myPage.mapChar.setCountry(language)
+  
+  // @TODO
+  // [!] This doesn't work for pages with multiple languages. See wtf/p801.tti
+  // Subpages can have different languages.
 }
 
 /** We MUST be sent the connection ID or we won't be able to display anything
