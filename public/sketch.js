@@ -553,7 +553,12 @@ function autoplayChange () {
 }
 
 function setTimer (data) {
-  myPage.setTimer(data.fastext[0])
+  let time = data.fastext[0] // Time in seconds. We don't do cycle time
+  let subPage = myPage.subPage // If we hit this early, it won't be defined. 
+  if (typeof subPage ==='undefined') {
+    subPage = 0
+  }
+  myPage.metadata[subPage].setTimer(time)
 }
 
 function setSubPage (data) {
@@ -609,12 +614,14 @@ function setControl(data) {
     LOG.LOG_LEVEL_INFO
   )
   // Reverse bits!
-  language = ((language & 0x01) << 2) | (language & 0x02) | ((language & 0x04) >> 2)
-  myPage.mapChar.setCountry(language)
+  // language = ((language & 0x01) << 2) | (language & 0x02) | ((language & 0x04) >> 2)
   
-  // @TODO
-  // [!] This doesn't work for pages with multiple languages. See wtf/p801.tti
+  // [!] @todo resurrect this for whole magazine language mapping
+  // myPage.mapChar.setCountry(language)
+
   // Subpages can have different languages.
+  myPage.metadata[myPage.subPage].mapping.setLanguage(language)
+  
 }
 
 /** We MUST be sent the connection ID or we won't be able to display anything

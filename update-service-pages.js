@@ -293,163 +293,164 @@ async function updateServices () {
 
     const servicePageFiles = fs.readdirSync(serviceTargetDir)
     let manifestChanged = false // Flag if the manifest needs rewriting
+    if (servicePageFiles.length > 1) { // Problem if there is a service with no pages
 
-    for (const filename of servicePageFiles) {
-      // if (options.verbose) {
-      //  console.log(
-      //  `\nChecking 'file ${filename}' for updates...`
-      //  )
-      // }
-      if (filename.endsWith(PAGE_FILE_EXT)) {
-        // determine full source filepath
-        const sourceFilePath = path.join(
-          serviceTargetDir,
-          filename
-        )
-
-        // read file content as a string
-        let fileContent = fs.readFileSync(
-          sourceFilePath,
-          FILE_ENCODING_INPUT
-        ).toString()
-
-        // hash the original file content string
-        hasher.reset()
-        const fileContentHash = hasher.update(fileContent).digest('hex')
-
-        // make specified character replacements
-        for (const char in FILE_CHAR_REPLACEMENTS) {
-          fileContent = fileContent.replace(char, FILE_CHAR_REPLACEMENTS[char])
+      for (const filename of servicePageFiles) {
+        if (options.verbose && false) {
+          console.log(
+          `\nChecking 'file ${filename}' for updates...`
+          )
         }
-
-        // hash the modified (above) file content string
-        hasher.reset()
-        const fileContentUpdatedHash = hasher.update(fileContent).digest('hex')
-
-        // attempt to extract useful data items from the file content...
-        let description
-        let pageNumber
-
-        const fileContentLines = fileContent.split('\n')
-
-        for (const i in fileContentLines) {
-          if (fileContentLines[i].startsWith('DE,')) {
-            description = fileContentLines[i].slice(3)
-          }
-
-          if (fileContentLines[i].startsWith('PN,')) {
-            pageNumber = fileContentLines[i].slice(3, 6)
-          }
-        }
-
-        // normalise the description data item
-        if (!description) {
-          description = null
-        } else {
-          description = description.trim()
-
-          if (!description || DESCRIPTION_NULLIFY.includes(description)) {
-            description = null
-          }
-        }
-
-        // if we have a valid page number...
-        if (pageNumber) {
-          if (recalculatedManifestPages[pageNumber]) {
-            console.log(
-              colorette.redBright(
-                `ERROR: p${pageNumber} already defined in ${recalculatedManifestPages[pageNumber].f}, please fix this in ${filename} (change to an unused page number)`
-              )
-            )
-
-            continue // next service page file
-          }
-
-          // if no changes to this page file, no further processing needed...
-          if (serviceManifest.pages[pageNumber] && (serviceManifest.pages[pageNumber].oh === fileContentHash)) {
-            // add unmodified manifest page object into processed data structure
-            recalculatedManifestPages[pageNumber] = serviceManifest.pages[pageNumber]
-
-            continue // next service page file
-          }
-          manifestChanged = true // something changed
-
-          // if changes have been made to this page file, freshly recreate its manifest page object
-          const manifestPageEntry = {
-            f: filename,
-            p: pageNumber,
-            oh: fileContentHash
-          }
-
-          if (fileContentUpdatedHash !== fileContentHash) {
-            manifestPageEntry.nh = fileContentUpdatedHash
-          }
-
-          if (description) {
-            manifestPageEntry.d = description
-          }
-
-          recalculatedManifestPages[pageNumber] = manifestPageEntry
-
-          // determine new filename and target file path
-          const targetFilePath = path.join(
-            serviceServeDir,
+        if (filename.endsWith(PAGE_FILE_EXT)) {
+          // determine full source filepath
+          const sourceFilePath = path.join(
+            serviceTargetDir,
             filename
           )
 
-          // write file contents out to file
+          // read file content as a string
+          let fileContent = fs.readFileSync(
+            sourceFilePath,
+            FILE_ENCODING_INPUT
+          ).toString()
+
+          // hash the original file content string
+          hasher.reset()
+          const fileContentHash = hasher.update(fileContent).digest('hex')
+
+          // make specified character replacements
+          for (const char in FILE_CHAR_REPLACEMENTS) {
+            fileContent = fileContent.replace(char, FILE_CHAR_REPLACEMENTS[char])
+          }
+
+          // hash the modified (above) file content string
+          hasher.reset()
+          const fileContentUpdatedHash = hasher.update(fileContent).digest('hex')
+
+          // attempt to extract useful data items from the file content...
+          let description
+          let pageNumber
+
+          const fileContentLines = fileContent.split('\n')
+
+          for (const i in fileContentLines) {
+            if (fileContentLines[i].startsWith('DE,')) {
+              description = fileContentLines[i].slice(3)
+            }
+
+            if (fileContentLines[i].startsWith('PN,')) {
+              pageNumber = fileContentLines[i].slice(3, 6)
+            }
+          }
+
+          // normalise the description data item
+          if (!description) {
+            description = null
+          } else {
+            description = description.trim()
+
+            if (!description || DESCRIPTION_NULLIFY.includes(description)) {
+              description = null
+            }
+          }
+
+          // if we have a valid page number...
+          if (pageNumber) {
+            if (recalculatedManifestPages[pageNumber]) {
+              console.log(
+                colorette.redBright(
+                  `ERROR: p${pageNumber} already defined in ${recalculatedManifestPages[pageNumber].f}, please fix this in ${filename} (change to an unused page number)`
+                )
+              )
+
+              continue // next service page file
+            }
+
+            // if no changes to this page file, no further processing needed...
+            if (serviceManifest.pages[pageNumber] && (serviceManifest.pages[pageNumber].oh === fileContentHash)) {
+              // add unmodified manifest page object into processed data structure
+              recalculatedManifestPages[pageNumber] = serviceManifest.pages[pageNumber]
+
+              continue // next service page file
+            }
+            manifestChanged = true // something changed
+
+            // if changes have been made to this page file, freshly recreate its manifest page object
+            const manifestPageEntry = {
+              f: filename,
+              p: pageNumber,
+              oh: fileContentHash
+            }
+
+            if (fileContentUpdatedHash !== fileContentHash) {
+              manifestPageEntry.nh = fileContentUpdatedHash
+            }
+
+            if (description) {
+              manifestPageEntry.d = description
+            }
+
+            recalculatedManifestPages[pageNumber] = manifestPageEntry
+
+            // determine new filename and target file path
+            const targetFilePath = path.join(
+              serviceServeDir,
+              filename
+            )
+
+            // write file contents out to file
+            try {
+              fs.writeFileSync(
+                targetFilePath,
+                fileContent,
+                FILE_ENCODING_OUTPUT
+              )
+
+              if (options.verbose) {
+                console.log(
+                  `p${pageNumber} (${filename}) has changed, copied to live`
+                )
+              }
+            } catch (err) {
+              if (!options.silent) {
+                console.error(err)
+              }
+            }
+
+            // update the last modified timestamp
+            serviceManifest.lastModified = new Date() // [!] Not sure if we need to do something with manifestChanged at this point
+          } else {
+            // page number could not be extracted
+            if (!options.silent) {
+              console.log(`ERROR: Page number could not be extracted from ${sourceFilePath}`)
+            }
+          }
+        }
+      } // for all servicePageFiles  (continue resumes here)
+
+      // if pages have been removed from the repository since the last run, also delete them from the target directory
+      const deletedPageFiles = deletedDiff(serviceManifest.pages, recalculatedManifestPages)
+
+      if (Object.keys(deletedPageFiles).length > 0) {
+        for (const pageNumber in deletedPageFiles) {
           try {
-            fs.writeFileSync(
-              targetFilePath,
-              fileContent,
-              FILE_ENCODING_OUTPUT
+            fs.unlinkSync(
+              path.join(serviceServeDir, serviceManifest.pages[pageNumber].f)
             )
 
             if (options.verbose) {
               console.log(
-                `p${pageNumber} (${filename}) has changed, copied to live`
+                `Page removed from source, deleting p${pageNumber} (${serviceManifest.pages[pageNumber].f})`
               )
             }
-          } catch (err) {
-            if (!options.silent) {
-              console.error(err)
-            }
-          }
-
-          // update the last modified timestamp
-          serviceManifest.lastModified = new Date() // [!] Not sure if we need to do something with manifestChanged at this point
-        } else {
-          // page number could not be extracted
-          if (!options.silent) {
-            console.log(`ERROR: Page number could not be extracted from ${sourceFilePath}`)
-          }
+          } catch (err) {}
         }
+
+        // update the last modified timestamp
+        serviceManifest.lastModified = new Date()
+        manifestChanged = true
       }
-    } // for all servicePageFiles  (continue resumes here)
-
-    // if pages have been removed from the repository since the last run, also delete them from the target directory
-    const deletedPageFiles = deletedDiff(serviceManifest.pages, recalculatedManifestPages)
-
-    if (Object.keys(deletedPageFiles).length > 0) {
-      for (const pageNumber in deletedPageFiles) {
-        try {
-          fs.unlinkSync(
-            path.join(serviceServeDir, serviceManifest.pages[pageNumber].f)
-          )
-
-          if (options.verbose) {
-            console.log(
-              `Page removed from source, deleting p${pageNumber} (${serviceManifest.pages[pageNumber].f})`
-            )
-          }
-        } catch (err) {}
-      }
-
-      // update the last modified timestamp
-      serviceManifest.lastModified = new Date()
-      manifestChanged = true
-    }
-
+    } // If service has pages
     // update manifest fields
     if (manifestChanged) {
       serviceManifest.systemName = PACKAGE_JSON.name
@@ -476,6 +477,9 @@ async function updateServices () {
       ) // write out manifest
     }
   } // for each service (contnue here if there are no manifest updates)
+  console.log("UpdateServices completed")
+    
+  process.exit(0) // Not sure why we need to do this. The process hung about doing nothing
 } // updateServices
 
 // For editable pages, write them back to the repo

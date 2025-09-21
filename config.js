@@ -228,6 +228,7 @@ const CONFIG = {
 
 
     // NMS Ceefax services
+    /*
     [CONST.SERVICE_NMS_CEEFAX_NATIONAL]: {
       // group: 'NMS Ceefax',
       name: 'Ceefax (National)',
@@ -240,7 +241,6 @@ const CONFIG = {
       updateInterval: 5,
       isEditable: false,
     },
-/*
     [CONST.SERVICE_NMS_CEEFAX__EAST]: {
       group: 'NMS Ceefax',
       name: 'East',

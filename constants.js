@@ -80,8 +80,8 @@ const CONST = {
   //SERVICE_CHANNEL19: 'channel19',
   //SERVICE_CHRISLUCA: 'chrisluca',
   
-
-  SERVICE_NMS_CEEFAX_NATIONAL: 'nms_cf_national',
+  // Sadly, these all seem dead.
+  //SERVICE_NMS_CEEFAX_NATIONAL: 'nms_cf_national',
   //SERVICE_NMS_CEEFAX__EAST: 'nms_cf_east',
   //SERVICE_NMS_CEEFAX__EASTMIDLANDS: 'nms_cf_eastmidlands',
   //SERVICE_NMS_CEEFAX__LONDON: 'nms_cf_london',

@@ -1,10 +1,11 @@
+'use strict'
 // These mappings are for the teletext2 font
 
 class MAPCHAR {  
 
-  constructor() {
-    this.region = 0 // West Europe
-    this.country = 0 // UK
+  constructor(region, language) {
+    this.region = region // West Europe
+    this.language = language // English
   }
   
   setRegion(region) {
@@ -12,9 +13,9 @@ class MAPCHAR {
     this.region = region
   }
   
-  setCountry(country) {
-    if (country > 7 || country < 0) {country = 0}
-    this.country = country
+  setLanguage(language) {
+    if (language > 7 || language < 0) {language = 0}
+    this.language = language
   }
   
   map(ch) {
@@ -26,7 +27,7 @@ class MAPCHAR {
 
     switch (this.region) {
       case 0 : // West Europe
-        switch (this.country) {
+        switch (this.language) {
           case 0: return this.MapEnglish(ch)
           case 1: return this.MapFrench(ch)
           case 2: return this.MapSwedish(ch)

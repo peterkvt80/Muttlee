@@ -22,10 +22,23 @@ function toggle () {
 
 /// /////////////////////////////////////////////////////////////////////////////////////////////////////
 // Store subpage data other than the displayable rows
-function MetaData (displayTiming, clut) {
-  this.timer = displayTiming
-  this.clut = clut // x28
-  /// @todo Add packets 26, 28, 29
+class MetaData {
+  constructor(displayTiming, clut) {
+    this.timer = displayTiming
+    this.clut = clut // x28
+    /// @todo Add packets 26, 28, 29
+
+    this.mapping = new MAPCHAR(0, 0) // Character mappings for region and language
+  }
+  
+  setTimer(t) {
+    this.timer = t
+  }
+
+  setLanguage(lang) {
+    this.mapping.setLanguage(lang)
+  }
+
 }
 
 /// /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -57,15 +70,15 @@ window.TTXPAGE = function () {
   this.showGrid = false
   this.subPageZeroBase = false
   this.editProperties = new TTXPROPERTIES() // Just in case we are going to edit the properties later
-  this.mapChar = new MAPCHAR()
+  // this.mapChar = new MAPCHAR() // Wrong. It is per subpage, not per page
 
 
   // this.timer=7 // This is global. Replaced by a per page timer
 
   // subPageList contains the pages of rows. metadata contains other data like timing.
   // if subPageList is modified, then metadata must be done at the same time
+  this.metadata = [] // Metadata contains other things that a subpage needs, such as the timer and language selection
   this.subPageList = [] // Subpage just contains rows.
-  this.metadata = [] // Metadata contains other things that a subpage needs, just the timer at the moment
 
   this.pageNumberEntry = '100' // Page number as entered (used to allow partial page numbers)
 
@@ -89,16 +102,6 @@ window.TTXPAGE = function () {
 
   this.isLocked = function () {
     return this.locked
-  }
-
-  // timer
-  this.setTimer = function (t) {
-    // this.timer=t
-    if (this.metadata[this.subPage] !== undefined) {
-      this.metadata[this.subPage].timer = t
-    } else {
-      // console.log('[setTimer] This should not happen. subPage should have been defined by now')
-    }
   }
 
   // edit mode
@@ -234,23 +237,23 @@ window.TTXPAGE = function () {
     this.rows = []
 
     const clut = new Clut()
+    let metadata = new MetaData(7, clut)
+    this.metadata.push(metadata)
 
     // As rows go from 0 to 31 and pages start at 100, we can use the same parameter for both
     this.rows.push(
-      new Row(this, number, 0, this.getServiceHeader(), clut, this.mapChar)
+      new Row(this, number, 0, this.getServiceHeader(), clut, metadata)
     )
 
     for (let i = 1; i < 26; i++) {
       this.rows.push(
-        new Row(this, number, i, ''.padStart(CONFIG[CONST.CONFIG.NUM_COLUMNS]), clut, this.mapChar)
+        new Row(this, number, i, ''.padStart(CONFIG[CONST.CONFIG.NUM_COLUMNS]), clut, metadata)
       )
     }
     
     // @todo Copy the Fastext and header from another subpage.
     
-    // @todo Push adds to the end. We'd rather do an insert
     this.subPageList.push(this.rows)
-    this.metadata.push(new MetaData(7, clut))
   }
   
 
@@ -749,9 +752,9 @@ function isMosaic (ch) {
  *  @param y - Row number 0..24 Higher row numbers are not handled here
  *  @param str - Text to initialise this row
  *  @param clut - Clut object to use with this row
- *  @param mapChar - A mapChar object (managed by ttxpage)
+ *  @param metadata - A metadata object with colour, timing, language etc
  */
-function Row (ttxpage, page, y, str, clut, mapChar) {
+function Row (ttxpage, page, y, str, clut, metadata) {
   this.ttxpage = ttxpage
 
   this.page = page
@@ -759,7 +762,7 @@ function Row (ttxpage, page, y, str, clut, mapChar) {
   this.txt = str
   this.pagetext = 'xxx'
   this.clut = clut // @todo This clut should be in the subpage list
-  this.mapChar = mapChar
+  this.metadata = metadata
 
   this.setchar = function (ch, n) {
     // Out of range?
@@ -1110,7 +1113,7 @@ function Row (ttxpage, page, y, str, clut, mapChar) {
         fill(myColour) // Normal
 
         if (textmode || (ch.charCodeAt(0) >= 0x40 && ch.charCodeAt(0) < 0x60)) {
-          ch = this.mapChar.map(ch)
+          ch = this.metadata.mapping.map(ch)
           // If cpos is negative, we can't be editing anything
           if (changed[i] && cpos >= 0) {
             fill(200, 100, 0) // If the text has been edited then make it orange until the server replies that it has been saved
