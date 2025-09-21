@@ -619,6 +619,13 @@ function setControl(data) {
   // [!] @todo resurrect this for whole magazine language mapping
   // myPage.mapChar.setCountry(language)
 
+  if (myPage.metadata.length <= myPage.subPage) {
+    LOG.fn(
+      ['sketch', 'setControl'],
+      `subPage ${myPage.subPage} does not exist`,
+      LOG.LOG_LEVEL_ERROR
+    )
+  }
   // Subpages can have different languages.
   myPage.metadata[myPage.subPage].mapping.setLanguage(language)
   
