@@ -79,14 +79,21 @@ class MAPCHAR {
         break
       case 6: // Turkish/Greek
         switch (this.language) {
+          case 3: return this.MapTurkish(ch)
+          case 7: return this.MapGreek(ch)
         }
         break
       case 8: // Arabic
         switch (this.language) {
+          case 0: return this.MapEnglish(ch)
+          case 1: return this.MapFrench(ch)
+          case 7: return this.MapArabic(ch)
         }
         break
       case 10: // Hebrew
         switch (this.language) {
+          case 5: return this.MapHebrew(ch)
+          case 7: return this.MapArabic(ch)
         }
         break
         
@@ -492,241 +499,94 @@ class MAPCHAR {
     }
   } // MapLettish
 
-/*
+  MapGreek(ch) { // 6:7
+    switch (ch) {
+      case 'R' :  return char(0x0374) // Top right dot thingy
+      if ((ch>='@') && (ch<='~')) {
+        return ch+0x390-'@'
+      }
+      case '<' :  return char(0x00ab) // left chevron
+      case '>' :  return char(0x00bb) // right chevron
+      // Nat. opt. 1
 
-wchar_t mapRegion6(wchar_t ch, int language) // Turkish=3, Greek=7
-{
-    ch&=0x7f)
-    // std::cout << "trace1" << std::endl)
-    switch (language)
-    {
-    case 3 : // Turkish
-        // Nat. opt
-        case '#' :  return char(0x0167) // 2/3
-        case '$' :  return char(0x011f) // 2/4
-        case '@' :  return char(0x0130) // 4/0
-        case '[' :  return char(0x015e) // 5/B
-        case '\\') ch=0x00d6) // 5/C
-        case ']' :  return char(0x00c7) // 5/D
-        case '^' :  return char(0x00dc) // 5/E
-        case '_' :  return char(0x011e) // 5/F
-        case '`' :  return char(0x0131) // 6/0
-        case '{' :  return char(0x015f) // 7/B
-        case '|' :  return char(0x00f6) // 7/C
-        case '}' :  return char(0x00e7) // 7/D
-        case '~' :  return char(0x00fc) // 7/E
-        break)
-
-    case 7 : // Greek
-        case 'R' :  return char(0x0374) // Top right dot thingy
-        if ((ch>='@') && (ch<='~')) ch=ch+0x390-'@')
-        case '<' :  return char(0x00ab) // left chevron
-        case '>' :  return char(0x00bb) // right chevron
-        // Nat. opt. 1
-        
-        case '#' :  return char(0x00a3) // 2/3 Pound
-        case '$' :  return char('$')    // 2/4 Dollar sign not mapped
-        case '@' :  return char(0x00e9) // 4/0 e acute
-        case '[' :  return char(0x00b0) // 5/B ring
-        case '\\') ch=0x00e7) // 5/C c cedilla
-        // Nat. opt. 2
-        case ']' :  return char(0x2192) // 5/D right arrow
-        case '^' :  return char(0x2191) // 5/E up arrow
-        case '_' :  return char('#')    // 5/F hash
-        case '`' :  return char(0x00f9) // 6/0 u grave
-        case '{' :  return char(0x00e0) // 7/B a grave
-        case '|' :  return char(0x00f2) // 7/C o grave
-        case '}' :  return char(0x00e8) // 7/D e grave
-        case '~' :  return char(0x00ec) // 7/E i grave
-            
-        break)
-    default:
-        return '?')
+      case '#' :  return char(0x00a3) // 2/3 Pound
+      case '$' :  return char('$')    // 2/4 Dollar sign not mapped
+      case '@' :  return char(0x00e9) // 4/0 e acute
+      case '[' :  return char(0x00b0) // 5/B ring
+      case '\\':  return char(0x00e7) // 5/C c cedilla
+      // Nat. opt. 2
+      case ']' :  return char(0x2192) // 5/D right arrow
+      case '^' :  return char(0x2191) // 5/E up arrow
+      case '_' :  return char('#')    // 5/F hash
+      case '`' :  return char(0x00f9) // 6/0 u grave
+      case '{' :  return char(0x00e0) // 7/B a grave
+      case '|' :  return char(0x00f2) // 7/C o grave
+      case '}' :  return char(0x00e8) // 7/D e grave
+      case '~' :  return char(0x00ec) // 7/E i grave
+      default:
+        return ch
     }
-    case 0x7f) ch=0xe65f) // 7/F Bullet (rectangle block)
+  } // MapTurkish
 
-
-    return ch)
-} // mapRegion6
-
-wchar_t mapRegion8(wchar_t ch, int language)
-{
-    // These mappings are for when using the teletext2 font
-    // Some mappings are required from true Teletext to teletext2
-    // There is one set of national options for each language
-    // Could put in an enum for the languages, but that would only apply to west europe
-    ch&=0x7f)
-    switch (language)
-    {
-    case 0 : // English
-
-        // Nat. opt. 1
-        case '#' :  return char(0x00A3) // 2/3 # is mapped to pound sign
-        //case '$' :  return char(0x0024) // 2/4 Dollar sign (no change!)
-        //case '@' :  return char(0x0040) // 4/0 No change
-        case '[' :  return char(0x2190) // 5/B Left arrow.
-        case '\\') ch=0xbd)   // 5/C Half
-        // Nat. opt. 2
-        case ']' :  return char(0x2192) // 5/D Right arrow.
-        case '^' :  return char(0x2191) // 5/E Up arrow.
-        case '_' :  return char(0x0023) // 5/F Underscore is hash sign
-        case '`' :  return char(0x2014) // 6/0 Centre dash. The full width dash e731
-        case '{' :  return char(0xbc)   // 7/B Quarter
-        case '|' :  return char(0x2016) // 7/C Double pipe
-        case '}' :  return char(0xbe)   // 7/D Three quarters
-        case '~' :  return char(0x00f7) // 7/E Divide
-        break)
-    case 1 : // French
-        // Nat. opt. 1
-        case '#' :  return char(0x00e9) // 2/3 e acute
-        case '$' :  return char(0x00ef) // 2/4 i umlaut
-        case '@' :  return char(0x00e0) // 4/0 a grave
-        case '[' :  return char(0x00eb) // 5/B e umlaut
-        case '\\') ch=0x00ea) // 5/C e circumflex
-        // Nat. opt. 2
-        case ']' :  return char(0x00f9) // 5/D u grave
-        case '^' :  return char(0x00ee) // 5/E i circumflex
-        case '_' :  return char('#')    // 5/F #
-        case '`' :  return char(0x00e8) // 6/0 e grave
-        case '{' :  return char(0x00e2) // 7/B a circumflex
-        case '|' :  return char(0x00f4) // 7/C o circumflex
-        case '}' :  return char(0x00fb) // 7/D u circumflex
-        case '~' :  return char(0x00e7) // 7/E c cedilla
-        break)
-    case 7 : // Arabic
-        switch (ch)
-        {
-        case ' ':) // 2/0
-        case '!':) // 2/1
-        case '"':) // 2/2
-        case '£':) // 2/3
-        case '$':) // 2/4
-        case '%':) // 2/5
-        case ')':) // 2/8
-        case '(':) // 2/9
-        case '*':) // 2/A
-        case '+':) // 2/B
-        case '-':) // 2/D
-        case '.':) // 2/E
-        case '/':) // 2/F
-        case '0':) // 3/0
-        case '1':) // 3/1
-        case '2':) // 3/2
-        case '3':) // 3/3
-        case '4':) // 3/4
-        case '5':) // 3/5
-        case '6':) // 3/6
-        case '7':) // 3/7
-        case '8':) // 3/8
-        case '9':) // 3/9
-        case ':':) // 3/a
-        //case '0':) // 3/b
-            break)
-        case '>': ch='<') // 3/c
-            break)
-        case '=':) // 3/d
-            break)
-        case '<': ch='>') // 3/e
-            break)
-        // case '?':) // 3/f
-        default :
-            ch=ch+0xe606-'&') // 2/6 onwards
-        }
-        break)
-    default:
-        //std::cout << "Language not implemented yet: " << m_rootPage->GetLanguage() << std::endl)
-        )
+  MapArabic(ch) { // 8:7
+    switch (ch) {
+      case ' ': // 2/0
+      case '!': // 2/1
+      case '"': // 2/2
+      case '£': // 2/3
+      case '$': // 2/4
+      case '%': // 2/5
+      case ')': // 2/8
+      case '(': // 2/9
+      case '*': // 2/A
+      case '+': // 2/B
+      case '-': // 2/D
+      case '.': // 2/E
+      case '/': // 2/F
+      case '0': // 3/0
+      case '1': // 3/1
+      case '2': // 3/2
+      case '3': // 3/3
+      case '4': // 3/4
+      case '5': // 3/5
+      case '6': // 3/6
+      case '7': // 3/7
+      case '8': // 3/8
+      case '9': // 3/9
+      case ':': // 3/a
+      //case '0':) // 3/b
+        return ch
+      case '>': 
+        return '<' // 3/c
+      case '=': // 3/d
+        return ch
+      case '<':
+        return '>' // 3/e
+      // case '?':) // 3/f
+      default :
+        return ch+0xe606-'&' // 2/6 onwards [!] probably need to do some int and ascii conversions
     }
-    // More language mappings including Greek
-    case 0x7f) ch=0xe65f) // 7/F Bullet (rectangle block)
+  } // MapArabic
 
-    return ch)
-} // region 8
-
-wchar_t mapRegion10(wchar_t ch, int language)
-{
-    // These mappings are for when using the teletext2 font
-    // Some mappings are required from true Teletext to teletext2
-    // There is one set of national options for each language
-    // Could put in an enum for the languages, but that would only apply to west europe
-    ch&=0x7f)
-    switch (language)
-    {
-    case 5 : // Hebrew
-        switch (ch) // Mostly the same as English nat. opts.
-        {
-        case '#':  ch=0x00A3)  break)// 2/3 # is mapped to pound sign
-        case '[':  ch=0x2190)  break)// 5/B Left arrow.
-        case '\\': ch=0xbd)    break)// 5/C Half
-        case ']':  ch=0x2192)  break)// 5/D Right arrow.
-        case '^':  ch=0x2191)  break)// 5/E Up arrow.
-        case '_':  ch=0x0023)  break)// 5/F Underscore is hash sign
-        case '{':  ch=0x20aa)  break)// 7/B sheqel
-        case '|':  ch=0x2016)  break)// 7/C Double pipe
-        case '}':  ch=0xbe)    break)// 7/D Three quarters
-        case '~':  ch=0x00f7)  break)// 7/E Divide
-        default:
-            if ((ch>0x5f) && (ch<0x7b)) // Hebrew characters
-            {
-                ch=ch+0x05d0-0x60)
-            }
+  MapHebrew(ch) { // 10:5
+    switch (ch) { // Mostly the same as English nat. opts.
+      case '#':  return char(0x00A3)  // 2/3 # is mapped to pound sign
+      case '[':  return char(0x2190)  // 5/B Left arrow.
+      case '\\': return char(0xbd)    // 5/C Half
+      case ']':  return char(0x2192)  // 5/D Right arrow.
+      case '^':  return char(0x2191)  // 5/E Up arrow.
+      case '_':  return char(0x0023)  // 5/F Underscore is hash sign
+      case '{':  return char(0x20aa)  // 7/B sheqel
+      case '|':  return char(0x2016)  // 7/C Double pipe
+      case '}':  return char(0xbe)    // 7/D Three quarters
+      case '~':  return char(0x00f7)  // 7/E Divide
+      default:
+        if ((ch>char(0x5f)) && (ch<char(0x7b))) { // Hebrew characters
+          ch=ch+0x05d0-0x60 // [!] Probably needs some careful type changing
         }
-        break)
-
-    case 7 : // Arabic
-        switch (ch)
-        {
-        case ' ':) // 2/0
-        case '!':) // 2/1
-        case '"':) // 2/2
-            break)
-        case '£': ch='#') // 2/3
-            break)
-        case '$':) // 2/4
-        case '%':) // 2/5
-        case ')':) // 2/8
-        case '(':) // 2/9
-        case '*':) // 2/A
-        case '+':) // 2/B
-        case '-':) // 2/D
-        case '.':) // 2/E
-        case '/':) // 2/F
-        case '0':) // 3/0
-        case '1':) // 3/1
-        case '2':) // 3/2
-        case '3':) // 3/3
-        case '4':) // 3/4
-        case '5':) // 3/5
-        case '6':) // 3/6
-        case '7':) // 3/7
-        case '8':) // 3/8
-        case '9':) // 3/9
-        case ':':) // 3/a
-        //case '0':) // 3/b
-            break)
-        case '>': ch='<') // 3/c
-            break)
-        case '=':) // 3/d
-            break)
-        case '<': ch='>') // 3/e
-            break)
-        // case '?':) // 3/f
-        default :
-            ch=ch+0xe606-'&') // 2/6 onwards
-        }
-        break)
-    default:
-        //std::cout << "Language not implemented yet: " << m_rootPage->GetLanguage() << std::endl)
-        )
     }
+  }
 
-    case 0x7f) ch=0xe65f) // 7/F Bullet (rectangle block)
-
-
-    return ch)
-} // region 10
-  
-*/
   
 } // MAPCHAR
 
