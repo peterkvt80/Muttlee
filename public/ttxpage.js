@@ -36,7 +36,11 @@ class MetaData {
   }
 
   setLanguage(lang) {
-    this.mapping.setLanguage(lang)
+    this.mapping.setLanguage(lang & 0x07)
+  }
+
+  setRegion(region) {
+    this.mapping.setRegion(region & 0x0f)
   }
 
 }

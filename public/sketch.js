@@ -976,7 +976,7 @@ function setRow (r) {
   if (r.id !== gClientID && gClientID !== null) return // Not for us?
   if (r.y < 25) {
     myPage.setRow(r.y, r.rowText)    
-  } else if (r.y === 28) { // @wsfn clrt1
+  } else if (r.y === 28) {
     console.log(r.X28F1) // here is the data
     if (myPage.subPage < myPage.metadata.length ) { // [!] Problem! The PN or SC number is greater than the actual subpages that we have
       let clut = myPage.metadata[myPage.subPage].clut
@@ -993,6 +993,15 @@ function setRow (r) {
       clut.setPageFunction(r.X28F1.pageFunction)
       clut.setPageCoding(r.X28F1.pageCoding)
       clut.setDefaultG0G2CharacterSet(r.X28F1.defaultG0G2CharacterSet)
+      // The character set overrides the defaults
+      let charSet = r.X28F1.defaultG0G2CharacterSet & 0x7f // Mask extra bits
+      myPage.metadata[myPage.subPage].setRegion(charSet >> 3) // Region is not reversed
+      charSet &= 0x07 // language is reversed
+      charSet =
+        ((charSet & 0x01) << 2) |
+        (charSet & 0x02) |
+        (charSet >> 2);
+      myPage.metadata[myPage.subPage].setLanguage(charSet)
       clut.setSecondG0G2CharacterSet(r.X28F1.secondG0G2CharacterSet)
       clut.setDefaultScreenColour(r.X28F1.defaultScreenColour)
       clut.setDefaultRowColour(r.X28F1.defaultRowColour)

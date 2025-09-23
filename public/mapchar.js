@@ -340,15 +340,26 @@ class MAPCHAR {
 
   MapRussianBulgarian(ch) { // 4:0
     switch (ch) {
+      // Coloumn 20-2f
+      case '&' :  return char(0x044B) // ы
       // Sadly, much of this needs fixing up
       // Nat. opt. 2. Column 40-4f
       case '@' :  return char(0x042e)    // Cyrillic Capital Letter Yu
+      case 'A' :  return char(0x0410) // Cyrillic A
+      case 'B' :  return char(0x0411)
       case 'C' :  return char(0x0426) // Cyrillic
       case 'D' :  return char(0x0414) //
       case 'E' :  return char(0x0415)
       case 'F' :  return char(0x0424)
       case 'G' :  return char(0x0413) //
       case 'H' :  return char(0x0425) //
+      case 'I' :  return char(0x0418) // И
+      case 'J' :  return char(0x0419) // Й
+      case 'K' :  return char(0x041A) // К
+      case 'L' :  return char(0x041B) // Л
+      case 'M' :  return char(0x041C) // М
+      case 'N' :  return char(0x041D) // Н
+      case 'O' :  return char(0x041E) // О
       // Cyrillic G0 Column 50-5f
       case 'Q' :  return char(0x042f)
       case 'R' :  return char(0x0420)
