@@ -419,13 +419,25 @@ class MAPCHAR {
     }
   } // MapRussianBulgarian
 
-  MapEstonian(ch) { // 4:2 Latin G0 Set - Option 2 Estonian @todo
+  MapEstonian(ch) { // 4:2 Latin G0 Set - Option 2 Estonian
     LOG.fn(
       ['mapchar', 'MapEstonian'],
       `Estonian character mapping not implemented`,
       LOG.LOG_LEVEL_ERROR
     )
     switch (ch) {
+      case '$' :  return char(0x00f5) // õ
+      case '@' :  return char(0x0160) // Š
+      case '[' :  return char(0x00c4) // Ä
+      case '\\' : return char(0x00d6) // Ö
+      case ']' :  return char(0x017d) // Ž
+      case '^' :  return char(0x00dc) // Ü
+      case '_' :  return char(0x00d5) // Õ
+      case '{' :  return char(0x00e4) // ä
+      case '|' :  return char(0x00f6) // ö
+      case '}' :  return char(0x017e) // ž
+      case '~' :  return char(0x00fc) // ü
+      //case '~' :  return char(0x0161) // 7/E
       default:
         return ch
     }
