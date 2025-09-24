@@ -20,9 +20,8 @@ class MAPCHAR {
   
   map(ch) {
     ch = char(ch.charCodeAt(0) & 0x7f)
-    if (ch === 0x7f) { // 7/F Bullet (rectangle block)
-      ch = 0xe65f
-      return ch
+    if (ch.charCodeAt(0) === 0x7f) { // 7/F Bullet (rectangle block)
+      return char(0xe65f)
     }
 
     switch (this.region) {
@@ -342,7 +341,6 @@ class MAPCHAR {
     switch (ch) {
       // Coloumn 20-2f
       case '&' :  return char(0x044B) // ы
-      // Sadly, much of this needs fixing up
       // Nat. opt. 2. Column 40-4f
       case '@' :  return char(0x042e)    // Cyrillic Capital Letter Yu
       case 'A' :  return char(0x0410) // Cyrillic A
@@ -361,6 +359,7 @@ class MAPCHAR {
       case 'N' :  return char(0x041D) // Н
       case 'O' :  return char(0x041E) // О
       // Cyrillic G0 Column 50-5f
+      case 'P' :  return char(0x041f) // П
       case 'Q' :  return char(0x042f)
       case 'R' :  return char(0x0420)
       case 'S' :  return char(0x0421)
@@ -378,8 +377,8 @@ class MAPCHAR {
       case '_' :  return char(0x042b)
       // Cyrillic G0 Column 60-6f
       case '`' :  return char(0x044e) // Nat opt 2 stops here
-      // case 'a' :  return char(0x0430)
-      // case 'b' :  return char(0x0431)
+      case 'a' :  return char(0x0430) // а
+      case 'b' :  return char(0x0431) // б
       case 'c' :  return char(0x0446)
       case 'd' :  return char(0x0434)
       case 'e' :  return char(0x0435)
@@ -388,11 +387,17 @@ class MAPCHAR {
       case 'h' :  return char(0x0445)
       case 'i' :  return char(0x0438)
       case 'j' :  return char(0x0439)
+      case 'k' :  return char(0x043a) // к
+      case 'l' :  return char(0x043b) // л
+      case 'm' :  return char(0x043c) // м
+      case 'n' :  return char(0x043d) // н
+      case 'o' :  return char(0x043e) // о
       // Remaining are OK
       // Cyrillic G0 Column 70-7f
       // 70 is OK
-      case 'q' :  return char(0x044f)
-      case 'r' :  return char(0x0440)
+      case 'p' :  return char(0x043f) // п
+      case 'q' :  return char(0x044f) // 
+      case 'r' :  return char(0x0440) // р
       case 's' :  return char(0x0441)
       case 't' :  return char(0x0442)
       case 'u' :  return char(0x0443)
