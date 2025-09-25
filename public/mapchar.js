@@ -1,4 +1,5 @@
 'use strict'
+// Mappings in 15.6 Alphanumeric Character Sets of ETSI EN 300 706
 // These mappings are for the teletext2 font
 
 class MAPCHAR {  
@@ -34,8 +35,6 @@ class MAPCHAR {
           case 4: return this.MapGerman(ch)
           case 5: return this.MapSpanishPortuguese(ch)
           case 6: return this.MapItalian(ch)
-        default:
-          print("[MAPCHAR] ERROR: Undefined country")
         }
         break
       case 1: // West Europe plus Polish
@@ -314,7 +313,7 @@ class MAPCHAR {
       default:
         return ch
     }
-  } // MapEnglish
+  } // MapSerbian
 
   MapRumanian(ch) { // 3:7
     switch (ch) {
@@ -420,11 +419,6 @@ class MAPCHAR {
   } // MapRussianBulgarian
 
   MapEstonian(ch) { // 4:2 Latin G0 Set - Option 2 Estonian
-    LOG.fn(
-      ['mapchar', 'MapEstonian'],
-      `Estonian character mapping not implemented`,
-      LOG.LOG_LEVEL_ERROR
-    )
     switch (ch) {
       case '$' :  return char(0x00f5) // õ
       case '@' :  return char(0x0160) // Š
@@ -437,23 +431,33 @@ class MAPCHAR {
       case '|' :  return char(0x00f6) // ö
       case '}' :  return char(0x017e) // ž
       case '~' :  return char(0x00fc) // ü
-      //case '~' :  return char(0x0161) // 7/E
       default:
         return ch
     }
   } // MapEstonian
 
-  MapUkranian(ch) { // 4:5
+  MapUkrainian(ch) { // 4:5
     switch (ch) {
       // Nat. opt. 2. Column 40-4f
-      case '@' :  return char(0x042e)    // Cyrillic Capital Letter Yu
+      case '@' :  return char(0x042e)    // Ю Cyrillic Capital Letter Yu
+      case 'A' :  return char(0x0410) // А
+      case 'B' :  return char(0x0411) // Б
       case 'C' :  return char(0x0426) // Cyrillic
       case 'D' :  return char(0x0414) //
       case 'E' :  return char(0x0415)
       case 'F' :  return char(0x0424)
       case 'G' :  return char(0x0413) //
       case 'H' :  return char(0x0425) //
+      case 'I' :  return char(0x0418) // И
+      case 'J' :  return char(0x0419) // Й
+      case 'K' :  return char(0x041a) // К
+      case 'L' :  return char(0x041b) // Л
+      case 'M' :  return char(0x041c) // М
+      case 'N' :  return char(0x041d) // Н
+      case 'O' :  return char(0x041e) // О
+      
       // Cyrillic G0 Column 50-5f
+      case 'P' :  return char(0x041f) // П
       case 'Q' :  return char(0x042f) // 5/1
       case 'R' :  return char(0x0420) // 5/2
       case 'S' :  return char(0x0421)
@@ -471,8 +475,8 @@ class MAPCHAR {
       case '_' :  return char(0x0407) // 5/f russian 042b
       // Cyrillic G0 Column 60-6f
       case '`' :  return char(0x044e) // 6/0
-      // case 'a' :  return char(0x0430) // 6/1
-      // case 'b' :  return char(0x0431)
+      case 'a' :  return char(0x0430) // а 6/1
+      case 'b' :  return char(0x0431) // б
       case 'c' :  return char(0x0446)
       case 'd' :  return char(0x0434)
       case 'e' :  return char(0x0435)
@@ -481,9 +485,14 @@ class MAPCHAR {
       case 'h' :  return char(0x0445)
       case 'i' :  return char(0x0438)
       case 'j' :  return char(0x0439)
-      // Remaining are OK
+
+      case 'k' :  return char(0x043a) // к
+      case 'l' :  return char(0x043b) // л
+      case 'm' :  return char(0x043c) // м
+      case 'n' :  return char(0x043d) // н
+      case 'o' :  return char(0x043e) // о
       // Cyrillic G0 Column 70-7f
-      case 'p' :  return char(0x006e) // 7/0 Use lower case n for Ukrainian
+      case 'p' :  return char(0x043f) // п 7/0
       case 'q' :  return char(0x044f) // 7/1
       case 'r' :  return char(0x0440) // 7/2
       case 's' :  return char(0x0441) // 7/3
@@ -498,11 +507,7 @@ class MAPCHAR {
       case '|' :  return char(0x0454) // 7/c russian 044d
       case '}' :  return char(0x0449) // 7/d
       case '~' :  return char(0x0447) // 7/e russian 0447
-      // Stuff we map automatically ('n' is an exception because this is the only latin character)
       default:
-        if ((ch >= '@') && (ch <= '~') && ch != 'n') {
-          ch=ch+(0x040f)-'@' // [!] probably need to do some char<-->ascii conversions
-        }
         return ch
       }
     } // MapUkrainian      
@@ -528,18 +533,21 @@ class MAPCHAR {
   } // MapLettish
 
   MapGreek(ch) { // 6:7
+    if ((ch>='@') && (ch<='~')) {
+      let p1 = ch.charCodeAt(0)
+      let p2 = 0x390
+      let p3 = '@'.charCodeAt(0)
+      let p4 = p1 + p2 - p3
+      let ch2 = char(p4)
+      return ch2
+    }
     switch (ch) {
       case 'R' :  return char(0x0374) // Top right dot thingy
-      if ((ch>='@') && (ch<='~')) {
-        return ch+0x390-'@'
-      }
       case '<' :  return char(0x00ab) // left chevron
       case '>' :  return char(0x00bb) // right chevron
       // Nat. opt. 1
 
-      case '#' :  return char(0x00a3) // 2/3 Pound
-      case '$' :  return char('$')    // 2/4 Dollar sign not mapped
-      case '@' :  return char(0x00e9) // 4/0 e acute
+      // case '@' :  return char(0x00e9) // 4/0 e acute
       case '[' :  return char(0x00b0) // 5/B ring
       case '\\':  return char(0x00e7) // 5/C c cedilla
       // Nat. opt. 2
@@ -550,18 +558,17 @@ class MAPCHAR {
       case '{' :  return char(0x00e0) // 7/B a grave
       case '|' :  return char(0x00f2) // 7/C o grave
       case '}' :  return char(0x00e8) // 7/D e grave
-      case '~' :  return char(0x00ec) // 7/E i grave
+      // case '~' :  return char(0x03af) // 7/E ί i grave
       default:
         return ch
     }
-  } // MapTurkish
+  } // MapGreek
 
   MapArabic(ch) { // 8:7
     switch (ch) {
       case ' ': // 2/0
       case '!': // 2/1
       case '"': // 2/2
-      case '£': // 2/3
       case '$': // 2/4
       case '%': // 2/5
       case ')': // 2/8
@@ -584,6 +591,7 @@ class MAPCHAR {
       case ':': // 3/a
       //case '0':) // 3/b
         return ch
+      case '#': return '£' // 2/3
       case '>': 
         return '<' // 3/c
       case '=': // 3/d
@@ -592,11 +600,14 @@ class MAPCHAR {
         return '>' // 3/e
       // case '?':) // 3/f
       default :
-        return ch+0xe606-'&' // 2/6 onwards [!] probably need to do some int and ascii conversions
+        return char(ch.charCodeAt(0)+0xe606-'&'.charCodeAt(0)) // 2/6 onwards
     }
   } // MapArabic
 
   MapHebrew(ch) { // 10:5
+    if ((ch>char(0x5f)) && (ch<char(0x7b))) { // Hebrew characters
+      return char(ch.charCodeAt(0)+0x05d0-0x60) //
+    }
     switch (ch) { // Mostly the same as English nat. opts.
       case '#':  return char(0x00A3)  // 2/3 # is mapped to pound sign
       case '[':  return char(0x2190)  // 5/B Left arrow.
@@ -609,12 +620,9 @@ class MAPCHAR {
       case '}':  return char(0xbe)    // 7/D Three quarters
       case '~':  return char(0x00f7)  // 7/E Divide
       default:
-        if ((ch>char(0x5f)) && (ch<char(0x7b))) { // Hebrew characters
-          ch=ch+0x05d0-0x60 // [!] Probably needs some careful type changing
-        }
+        return ch
     }
   }
-
   
 } // MAPCHAR
 
