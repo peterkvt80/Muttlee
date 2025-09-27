@@ -8,6 +8,7 @@
 /* global nf, hour, minute, int, color, stroke, textFont, textSize, noStroke, fill, red, green, blue, stroke, char, text  */ // externals (p5js)
 
 // Timer for flashing cursor and text
+"use strict";
 let flashState = false
 let tickCounter = 0 // For timing carousels (in steps of half a second)
 
@@ -41,6 +42,12 @@ class MetaData {
 
   setRegion(region) {
     this.mapping.setRegion(region & 0x0f)
+  }
+  
+  /*** Deep copy */
+  static copyMetadata(src, dest) {
+    dest.timer = src.timer
+    Clut.copyClut(src.clut, dest.clut)
   }
 
 }
@@ -120,7 +127,7 @@ window.TTXPAGE = function () {
         // Hook up the cursor callback so we can edit the properties
         this.cursor.setCallback(this.editProperties.getCursorCallback())
         // populate with data from the current subpage // @wsfn clrt3
-        this.editProperties.doInits(this.pageNumber, this.description, this.metadata[this.subPage].clut, this.cursor,
+        this.editProperties.doInits(this.pageNumber, this.description, this.metadata[this.subPage], this.cursor,
           this.redLink, this.greenLink, this.yellowLink, this.cyanLink, this.spareLink, this.indexLink)
       }
     }
@@ -246,12 +253,12 @@ window.TTXPAGE = function () {
 
     // As rows go from 0 to 31 and pages start at 100, we can use the same parameter for both
     this.rows.push(
-      new Row(this, number, 0, this.getServiceHeader(), clut, metadata)
+      new Row(this, number, 0, this.getServiceHeader(), metadata)
     )
 
     for (let i = 1; i < 26; i++) {
       this.rows.push(
-        new Row(this, number, i, ''.padStart(CONFIG[CONST.CONFIG.NUM_COLUMNS]), clut, metadata)
+        new Row(this, number, i, ''.padStart(CONFIG[CONST.CONFIG.NUM_COLUMNS]), metadata)
       )
     }
     
@@ -755,17 +762,15 @@ function isMosaic (ch) {
  *  @param page - page number as a hex value. Used for mpp
  *  @param y - Row number 0..24 Higher row numbers are not handled here
  *  @param str - Text to initialise this row
- *  @param clut - Clut object to use with this row
  *  @param metadata - A metadata object with colour, timing, language etc
  */
-function Row (ttxpage, page, y, str, clut, metadata) {
+function Row (ttxpage, page, y, str, metadata) {
   this.ttxpage = ttxpage
 
   this.page = page
   this.row = y
   this.txt = str
   this.pagetext = 'xxx'
-  this.clut = clut // @todo This clut should be in the subpage list
   this.metadata = metadata
 
   this.setchar = function (ch, n) {
@@ -1090,9 +1095,9 @@ function Row (ttxpage, page, y, str, clut, metadata) {
 
       // Paint the background colour always
       noStroke()
-      let myColour = clut.remapColourTable(bgColor, false)
+      let myColour = this.metadata.clut.remapColourTable(bgColor, false)
       if (this.row === 0) { // 9.4.2.2 Don't remap row 0
-        myColour = clut.clut0[bgColor]
+        myColour = this.metadata.clut.clut0[bgColor]
       }
       fill(myColour) // @todo work out which clut we are using
 
@@ -1110,9 +1115,9 @@ function Row (ttxpage, page, y, str, clut, metadata) {
       this.drawchar(String.fromCharCode(0xe6df), i, this.row, dblHeight)
 
       if (printable && (flashState || !flashMode) && !concealed) {
-        let myColour = this.clut.remapColourTable(fgColor, true)
+        let myColour = this.metadata.clut.remapColourTable(fgColor, true)
         if (this.row === 0) { // Don't remap row 0
-          myColour = this.clut.clut0[fgColor]
+          myColour = this.metadata.clut.clut0[fgColor]
         }
         fill(myColour) // Normal
 
@@ -1139,9 +1144,9 @@ function Row (ttxpage, page, y, str, clut, metadata) {
           }
 
           if (contiguous) {
-            let foregroundColour = this.clut.remapColourTable(fgColor, true)
+            let foregroundColour = this.metadata.clut.remapColourTable(fgColor, true)
             if (this.row === 0) { // 9.4.2.2 Don't remap the header colours
-              foregroundColour = this.clut.clut0[fgColor]
+              foregroundColour = this.metadata.clut.clut0[fgColor]
             }
             stroke(foregroundColour)
             this.drawchar(String.fromCharCode(ic2 + 0x0e680 - 0x20), i, this.row, dblHeight)

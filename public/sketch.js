@@ -1422,7 +1422,7 @@ function processKey (keyPressed) {
       print("Clut exits\n" + myPage.metadata[myPage.subPage].clut)
       /// \TEST
       if (key === 'q') { // Restore the original CLUT
-        Clut.copyClut(myPage.editProperties.savedClut, myPage.metadata[myPage.subPage].clut)
+        MetaData.copyMetadata(myPage.editProperties.savedMetadata, myPage.metadata[myPage.subPage])
       }
       if (key === 'x') { // Transmit the changed CLUT back to the server
         // Copy the clut to the corresponding X28F1 message format
