@@ -19,6 +19,11 @@ class MAPCHAR {
     this.language = language
   }
   
+  static copyMapping(src, dest) {
+    dest.language = src.language
+    dest.region = src.region
+  }
+  
   map(ch) {
     ch = char(ch.charCodeAt(0) & 0x7f)
     if (ch.charCodeAt(0) === 0x7f) { // 7/F Bullet (rectangle block)

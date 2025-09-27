@@ -44,10 +44,13 @@ class MetaData {
     this.mapping.setRegion(region & 0x0f)
   }
   
-  /*** Deep copy */
+  /** Deep copy
+   * Everything in the constructor must be deep copied
+   */
   static copyMetadata(src, dest) {
     dest.timer = src.timer
     Clut.copyClut(src.clut, dest.clut)
+    MAPCHAR.copyMapping(src.mapping, dest.mapping)
   }
 
 }
