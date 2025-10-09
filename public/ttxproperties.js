@@ -17,7 +17,7 @@ class TTXPROPERTIES {
   // Use doInits to pass description, X28 clut and palette etc.
   constructor() {
     print("[TTXPROPERTIES] Constructor")    
-    this.totalPages = 3 // How many configuration pages
+    this.totalPages = 4 // How many configuration pages
     this.pageIndex = 0 // Which configuration page we are on
     this.description = 'description not set'
     this.rows = []
@@ -55,11 +55,12 @@ class TTXPROPERTIES {
       return self.cursorCallback
     }
     
-    /** Not just page0. This is for all the properties pages
+    /** Handle hint text for all the properties pages
      *  Given the cursor position, it scans the editfields to see what hint text is shown
+     * Might also need to handle UI widget appearance
      */
-    this.page0Handler = function(xLoc, yLoc) {
-      print("[TTXPROPERTIES::page0Handler] x,y = ("+xLoc+","+yLoc+")")
+    this.hintHandler = function(xLoc, yLoc) {
+      print("[TTXPROPERTIES::hintHandler] x,y = ("+xLoc+","+yLoc+")")
       // @todo look at the xLoc/yLoc and see if it affects any UI element
       
       // Check if a UI field hint can be added
@@ -76,7 +77,7 @@ class TTXPROPERTIES {
       } else {
         this.rows[23].setrow(String.fromCharCode(0x03) + " Hint:" + String.fromCharCode(0x07) + foundField.getHint())    // Found UI field, add the hint on row 23
       }
-    } // page0Handler
+    } // hintHandler
 
     this.pageHandler = 99 // The page handler that processes cursor changes
     
@@ -184,6 +185,8 @@ class TTXPROPERTIES {
       case 1: this.loadPage1() // Other X26 properties
         break;
       case 2: this.loadPage2() // Metadata: Fastext, Description, Page timing etc.
+        break;
+      case 3: this.loadPage3() // X28 Language selection
         break;
       default:
         print("[ttxproperties::updateIndex] Invalid index " + this.pageIndex)
@@ -371,6 +374,30 @@ class TTXPROPERTIES {
     r.setrow(replace(r.txt, button, xpos))
   }
 
+  /** Radio button
+   * The button is 4 or 5 characters long and one row high 
+   * @param colour - Button colour 0..7
+   * @param xpos - Start column of button (will be a colour graphics code)
+   * @param rowNum - Number of the first row of the button.
+   * @param value - Button caption
+   * @param selected - If true then this button is hiighlighted
+   */  
+  drawRadioButton(colour, xpos, rowNum, value, selected) {
+    // Upper row
+    let r = this.rows[rowNum]
+    let blackText = String.fromCharCode(0x00)
+    let redText = String.fromCharCode(0x01)
+    let greenText = String.fromCharCode(0x02)
+    let blackBG = String.fromCharCode(28)
+    let newBG = String.fromCharCode(29)
+    // Format is <space><black background><red text><caption (1 or 2 characters)>
+    // or when selected: <green><new background><black text><caption (1 or 2 characters)>
+    let button = selected
+      ? greenText + newBG + blackText + value
+      : ' ' + blackBG + redText + value
+    r.setrow(replace(r.txt, button, xpos))
+  }
+
   // X/28 palette editor
   loadPage0() {
     print("loading page 0")
@@ -380,7 +407,7 @@ class TTXPROPERTIES {
     this.drawBox(1,4,39,19,"Palette")
     this.drawFastext(String.fromCharCode(1)+"Next  " + String.fromCharCode(2) + "Colour remap  "
     + String.fromCharCode(3) + "Metadata  "+String.fromCharCode(6)+"Exit")
-    this.pageHandler = this.page0Handler
+    this.pageHandler = this.hintHandler
     // Editable fields
     this.editableFields = []
     // CLUT 0 (not editable)
@@ -454,7 +481,7 @@ class TTXPROPERTIES {
 
     this.drawFastext(String.fromCharCode(1)+"Next  " + String.fromCharCode(2) + "Colour remap  "
     + String.fromCharCode(3) + "Metadata  "+String.fromCharCode(6)+"Exit")
-    this.pageHandler = this.page0Handler
+    this.pageHandler = this.hintHandler
 
     // Editable fields
     this.editableFields = []
@@ -532,7 +559,7 @@ class TTXPROPERTIES {
     field = new uiField(CONST.UI_FIELD.FIELD_PAGENUMBER, 24, 8, 3, 1, clutIndex, "Cyan fastext link" ) // 
     this.editableFields.push(field) 
     
-    this.pageHandler = this.page0Handler
+    this.pageHandler = this.hintHandler
 
   }
   
@@ -626,6 +653,182 @@ class TTXPROPERTIES {
     // Right columns (I think these are based on left and not explicitly set)
   }
   
+  // Metadata editor
+  loadPage2(pageIndex) {
+    print("loading page 2")
+    
+    // Use the default CLUT for all rows
+    for (const i of this.rows) {
+      i.metadata.clut.setRemap(0)
+    }
+    
+    this.drawHeader("METADATA")
+    this.drawPageIndex(3)
+
+    this.drawBox(1,4,39,16,"Fastext links")
+    this.drawBox(1,10,39,4,"Page timing")
+    
+    // Fastext
+    this.drawButton(1, 4,5) // Red
+    this.drawButton(2,10,5) // Green 
+    this.drawButton(3,16,5) // Yellow
+    this.drawButton(6,22,5) // Cyan          
+
+    this.drawCaption( 5,  8, ('00' + this.redLink.toString(16)).slice(-3))
+    this.drawCaption(11,  8, ('00' + this.greenLink.toString(16)).slice(-3))
+    this.drawCaption(17,  8, ('00' + this.yellowLink.toString(16)).slice(-3))
+    this.drawCaption(23,  8, ('00' + this.cyanLink.toString(16)).slice(-3))
+
+    // Editable fields
+    this.editableFields = []
+
+//      constructor(uiType, xLoc, yLoc, xWidth, yHeight, clutIndex, hint, enable = true) {
+    let clutIndex = 0
+    let field = new uiField(CONST.UI_FIELD.FIELD_PAGENUMBER, 6, 8, 3, 1, clutIndex, "Red fastext link" ) // 
+    this.editableFields.push(field) 
+    field = new uiField(CONST.UI_FIELD.FIELD_PAGENUMBER, 12, 8, 3, 1, clutIndex, "Green fastext link" ) // 
+    this.editableFields.push(field) 
+    field = new uiField(CONST.UI_FIELD.FIELD_PAGENUMBER, 18, 8, 3, 1, clutIndex, "Yellow fastext link" ) // 
+    this.editableFields.push(field) 
+    field = new uiField(CONST.UI_FIELD.FIELD_PAGENUMBER, 24, 8, 3, 1, clutIndex, "Cyan fastext link" ) // 
+    this.editableFields.push(field) 
+    
+    this.pageHandler = this.hintHandler
+
+  }
+  
+  // X28 language selection
+  loadPage3(pageIndex) {
+    print("loading page 3")
+    
+    // Use the default CLUT for all rows
+    for (const i of this.rows) {
+      i.metadata.clut.setRemap(0)
+    }
+    
+    this.drawHeader("X28 Language selection")
+    this.drawPageIndex(4)
+
+    this.drawBox(1,4,39,5,"Region")
+    this.drawBox(1,8,39,10,"Language")
+    
+    // Editable fields
+    this.editableFields = []
+
+//      constructor(uiType, xLoc, yLoc, xWidth, yHeight, clutIndex, hint, enable = true) {
+    let clutIndex = 0
+    let h = 1
+    let y = 6
+    let regions = [0, 1, 2, 3, 4, 6, 8, 10]
+    for (let rb = 0;  rb < regions.length; ++rb) {
+      let x = 4 + 4 * rb
+      let w = regions[rb] < 10 ? 4 : 5 // Last region is one character wider
+      let field = new uiField(CONST.UI_FIELD.FIELD_RADIOBUTTON, x, y, w, h, clutIndex, `Press space to select region ${regions[rb]}` ) // 
+      this.editableFields.push(field) 
+      this.drawRadioButton(1, x, y, regions[rb], rb === 2 ) // Temporary, select option 2
+    }
+    
+    this.pageHandler = this.hintHandler
+    this.updateFieldsPage3()
+
+  } // loadpage3
+  
+  /** Load the page data into the UI
+  */
+  updateFieldsPage3() {
+    print("page 3 fields updater called ")
+  }
+
+  
+  /** Load the page data into the UI
+   */
+  updateFieldsPage1() {
+    // Default screen colour    
+    let txt = this.rows[6]
+    
+    // Values as text
+    // Need to choose the text colour for contrast
+    txt.setchar(this.metadata.clut.getDefaultScreenClut(), 33)
+    txt.setchar(this.metadata.clut.getDefaultScreenColourIndex(), 35)
+
+    /////////////////////////////////// Screen colour
+//    txt.setchar(String.fromCharCode(this.metadata.clut.getDefaultScreenColour()), 25) 
+    // Fiddle this row's colour palette rather than mess with control codes.
+    // We get the colour value and copy it from the page clut to CLUT 0:1
+    let c = this.metadata.clut.defaultScreenColour // 5 bit clut and colour
+    let clut = (c >> 3) & 0x03
+    let clr = c & 0x07
+    let colour = this.metadata.clut.getValue(clut, clr) // 12 bit colour
+    txt.metadata.clut.setValue(colour, 0,1) // CLUT 0:1 (red)
+    
+    txt.setchar(String.fromCharCode(1), 25) // colour index 1 (red)
+    txt.setchar(String.fromCharCode(29), 26) // new background
+    // txt.setchar(String.fromCharCode(7), 27) // foreground colour (text)
+    let screenColour = this.metadata.clut.getDefaultScreenRGB()
+    let luma = (0.299 * screenColour.levels[0]) + (0.587 * screenColour.levels[1]) + (0.114 * screenColour.levels[2]);
+    if (luma > 128) {
+      // Set the text colour dark
+      txt.setchar('\x00',27) // Black
+    } else {
+      // Set the text colour light
+      txt.setchar('\x07',27) // White
+    }
+    
+    
+    /////////////////////////////////// Default row colour
+    txt = this.rows[8]
+    c = this.metadata.clut.defaultRowColour // 5 bit clut and colour
+    clut = (c >> 3) & 0x03
+    clr = c & 0x07
+    colour = this.metadata.clut.getValue(clut, clr) // 12 bit colour
+    txt.metadata.clut.setValue(colour, 0,1) // CLUT 0:1 (Use the red slot for the colour)
+    // @todo Choose the colour to contrast with the background
+    txt.setchar(this.metadata.clut.getDefaultRowClut().toString(), 33)
+    txt.setchar(this.metadata.clut.getDefaultRowColourIndex().toString(), 35)
+    
+    // Row colour
+    // @todo Choose the colour to contrast with the background
+//    txt.setchar(String.fromCharCode(this.metadata.clut.getDefaultRowColour()), 25) 
+    txt.setchar(String.fromCharCode(1), 25) // colour index 1 (red)
+    txt.setchar(String.fromCharCode(29), 26) // new background
+    let rowColour = this.metadata.clut.getDefaultRowRGB()
+    luma = (0.299 * rowColour.levels[0]) + (0.587 * rowColour.levels[1]) + (0.114 * rowColour.levels[2]);
+    if (luma > 128) {
+      // Set the text colour dark
+      txt.setchar('\x00',27) // Black
+    } else {
+      // Set the text colour light
+      txt.setchar('\x07',27) // White
+    }
+    
+    // CLUT remap mode
+    let row = 10 // field.yLoc
+    let col = 23 // field.xLoc
+    txt = this.rows[row]
+    txt.setchar(this.metadata.clut.remap.toString(), col)
+    // Also want to update the remap description
+    this.updateField(this.remapField)
+    
+    // Black background substitution
+    row = 12
+    col = 30
+    txt = this.rows[row]
+    txt.setrow(
+      replace(txt.txt,
+        this.metadata.clut.blackBackgroundSub  ? 'Yes' : 'No ',
+        col))
+
+    // Left columns
+    row = 16
+    col = 30
+    txt = this.rows[row]
+    txt.setrow(
+      replace(txt.txt,
+        this.metadata.clut.leftColumns.toString() + ' ',
+        col))
+
+    // Right columns (I think these are based on left and not explicitly set)
+  }
   /** Draws a caption at xLoc+1, yPos
    *  xLoc contains a white alpha code
    */
@@ -672,21 +875,23 @@ class TTXPROPERTIES {
       // @todo Wrap around forward or backward tab
       // Are we in the editable zone?
       let pos = field.inField(xp, yp) // Are we in a field, and what is our position in the field?
-      LOG.fn(
-      ['ttxproperties', 'handleKeyPress'],
-      `field position = ${pos}`,
-      LOG.LOG_LEVEL_VERBOSE
-    )  
 
       if (pos >=0 ) {
+        LOG.fn(
+          ['ttxproperties', 'handleKeyPress'],
+          `field position = ${pos}`,
+          LOG.LOG_LEVEL_VERBOSE
+        )  
         key = field.validateKey(key, pos)
         // [!] Test for special TAB code *before* testing for a character
         if (key !== 0xff) { // Key is valid for this field?
            // @todo I think we don't need to test for the page number here. We can use the same code
            // @todo Any specific coding can go in updateField
-          if (this.pageIndex === 0 || true) { // Same code for all pageIndex
+          if (this.pageIndex === 0 || true) { // [!] Same code for all pageIndex
             // page0 = A 12 bit RGB colour edit, page1 = X26 settings, page2 = timings and fastext
-            this.rows[yp].setchar(key, xp)
+            if (field.uiType != CONST.UI_FIELD.FIELD_RADIOBUTTON) {
+              this.rows[yp].setchar(key, xp)
+            }
             // The field changed. What is the new value?
             field.key = key
             this.updateField(field)
@@ -858,7 +1063,6 @@ class TTXPROPERTIES {
       }
       break;
     case CONST.UI_FIELD.FIELD_PAGENUMBER: 
-      print("[TTXPROPERTIES::updateField] switch todo")
       value = Number('0x' + value) // Convert the hex page number to a numeric value
       if (this.pageIndex === 2) { // Fastext are on page 2 
         // We only implement the first four fastext links
@@ -885,6 +1089,9 @@ class TTXPROPERTIES {
         }
       }
       // @todo Copy the value back to this.redLink etc.
+      break
+    case CONST.UI_FIELD.FIELD_RADIOBUTTON:
+      print("[TTXPROPERTIES::updateField] radio button todo")
       break
     default:
       LOG.fn(

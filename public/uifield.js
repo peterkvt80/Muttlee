@@ -26,11 +26,16 @@
 #*/
 "use strict"
 
-// @TODO Add CONST.UI.FIELD.FIELD_FASTEXT_LINK
+/** Notes:
+ *  This class is only half of the UI widget implementation.
+ *  It stores data about each widget.
+ *  The value of the widget is stored in the actual properties page.
+ *  The graphical side of the widget is handled by the properties page.
+ */
 class uiField {
 
   /** 
-   * @param uiType - CONST.UI_FIELD.FIELD_HEXCOLOUR | FIELD_CHECKBOX | FIELD_NUMBER | FIELD_COMBO
+   * @param uiType - CONST.UI_FIELD.FIELD_HEXCOLOUR | FIELD_CHECKBOX | FIELD_NUMBER | FIELD_COMBO | FIELD_RADIOBUTTON
    * @param xLoc - X origin of the field
    * @param yLoc - Y origin of the field
    * @param xWidth - Width of the field
@@ -38,8 +43,9 @@ class uiField {
    * @param clutIndex - index of the CLUT this colour comes from
    * @param hint - Hint text
    * @param enable - Field can be edited if true
+   * @param value - Used only by radio buttons. The value that is returned if a radio button is selected
    */
-  constructor(uiType, xLoc, yLoc, xWidth, yHeight, clutIndex, hint, enable = true) {
+  constructor(uiType, xLoc, yLoc, xWidth, yHeight, clutIndex, hint, enable = true, value = 0) {
     this.uiType = uiType
     this.xLoc = xLoc
     this.yLoc = yLoc
@@ -48,6 +54,7 @@ class uiField {
     this.clutIndex = clutIndex
     this.hint = hint
     this.enable = enable
+    this.value = value
   }
   
   /** validateKey
@@ -97,7 +104,22 @@ class uiField {
           return key
         }
       break
-    }
+    case CONST.UI_FIELD.FIELD_RADIOBUTTON:
+      // Press space to select this field
+      if (key === ' ') {
+        return key
+      }
+      break
+    default:
+      LOG.fn(
+        ['uifield', 'validateKey'],
+        `Unhandled UI type = ${this.uiType}`,
+        LOG.LOG_LEVEL_ERROR
+      )  
+    
+      return key
+
+    }      
     // update the display
     // update the source data
     return 0xff // Valid field but invalid key
