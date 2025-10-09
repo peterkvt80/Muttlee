@@ -36,6 +36,12 @@ class TTXPROPERTIES {
     this.cyanLink = 0x8ff
     this.spareLink = 0x8ff
     this.indexLink = 0x100
+    this.regions = [0, 1, 2, 3, 4, 6, 8, 10] // Language regions
+    
+    // Page 3 variables
+    this.regionsRadioGroup
+    this.languagesRadioGroup
+
     
     let self = this // Ensure we use the correct "this" on callbacks
     this.cursorCallback // When the cursor changes
@@ -712,20 +718,31 @@ class TTXPROPERTIES {
     this.drawBox(1,4,39,5,"Region")
     this.drawBox(1,8,39,10,"Language")
     
+    this.regionsRadioGroup = new RadioGroup()
+    
     // Editable fields
     this.editableFields = []
+    
+    let region = this.metadata.mapping.region
+    let language = this.metadata.mapping.language
 
 //      constructor(uiType, xLoc, yLoc, xWidth, yHeight, clutIndex, hint, enable = true) {
     let clutIndex = 0
     let h = 1
     let y = 6
-    let regions = [0, 1, 2, 3, 4, 6, 8, 10]
-    for (let rb = 0;  rb < regions.length; ++rb) {
+    for (let rb = 0;  rb < this.regions.length; ++rb) {
       let x = 4 + 4 * rb
-      let w = regions[rb] < 10 ? 4 : 5 // Last region is one character wider
-      let field = new uiField(CONST.UI_FIELD.FIELD_RADIOBUTTON, x, y, w, h, clutIndex, `Press space to select region ${regions[rb]}` ) // 
+      let w = this.regions[rb] < 10 ? 4 : 5 // Last region is one character wider
+      let field = new uiField(CONST.UI_FIELD.FIELD_RADIOBUTTON, x, y, w, h, clutIndex, `Press space to select region ${this.regions[rb]}` )
+      
+      this.regionsRadioGroup.addRadioButton(field)
+      
+      // Initialise with the selected language region set
+      if (region === this.regions[rb]) {
+        this.regionsRadioGroup.selected = field
+      }
+      
       this.editableFields.push(field) 
-      this.drawRadioButton(1, x, y, regions[rb], rb === 2 ) // Temporary, select option 2
     }
     
     this.pageHandler = this.hintHandler
@@ -737,6 +754,12 @@ class TTXPROPERTIES {
   */
   updateFieldsPage3() {
     print("page 3 fields updater called ")
+    let y = 6
+    for (let rb = 0;  rb < this.regions.length; ++rb) {
+      let x = 4 + 4 * rb
+      let w = this.regions[rb] < 10 ? 4 : 5 // Last region is one character wider
+      this.drawRadioButton(1, x, y, this.regions[rb], this.regionsRadioGroup.selected == this.regionsRadioGroup.radioButtons[rb])
+    }
   }
 
   

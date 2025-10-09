@@ -147,5 +147,38 @@ class uiField {
     return -1
   }
   
+  isRadioButton() {
+    return this.uiType === CONST.UI_FIELD.FIELD_RADIOBUTTON
+  }
+  
   
 } // uiField
+
+// RadioGroup contains an array of RadioButton uiFields
+class RadioGroup {
+  constructor() {
+    this.radioButtons = []
+    this.selected
+  }
+  
+  /**
+   * @param button - a uiField of type FIELD_RADIOBUTTON
+   */
+  addRadioButton(button) {
+    // Check that we are pushing a uiField
+    if (!button.isRadioButton()) {
+      LOG.fn(
+        ['RadioGroup', 'addButton'],
+        `Radio button required but got = ${this.uiType}`,
+        LOG.LOG_LEVEL_ERROR
+      )  
+      return
+    }
+    this.radioButtons.push(button)
+    
+    // Initialise selected if needed
+    if (typeof this.selected === 'undefined') {
+      this.selected = button
+    }
+  }  
+} // RadioGroup
