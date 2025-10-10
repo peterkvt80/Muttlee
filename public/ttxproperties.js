@@ -39,8 +39,8 @@ class TTXPROPERTIES {
     this.regions = [0, 1, 2, 3, 4, 6, 8, 10] // Language regions
     
     // Page 3 variables
-    this.regionsRadioGroup
-    this.languagesRadioGroup
+    this.regionsRadioGroup = []
+    this.languagesRadioGroup = []
 
     
     let self = this // Ensure we use the correct "this" on callbacks
@@ -733,7 +733,7 @@ class TTXPROPERTIES {
     for (let rb = 0;  rb < this.regions.length; ++rb) {
       let x = 4 + 4 * rb
       let w = this.regions[rb] < 10 ? 4 : 5 // Last region is one character wider
-      let field = new uiField(CONST.UI_FIELD.FIELD_RADIOBUTTON, x, y, w, h, clutIndex, `Press space to select region ${this.regions[rb]}` )
+      let field = new uiField(CONST.UI_FIELD.FIELD_RADIOBUTTON, x, y, w, h, clutIndex, `Press space to select region ${this.regions[rb]}`, true, this.regions[rb] )
       
       this.regionsRadioGroup.addRadioButton(field)
       
@@ -1114,7 +1114,37 @@ class TTXPROPERTIES {
       // @todo Copy the value back to this.redLink etc.
       break
     case CONST.UI_FIELD.FIELD_RADIOBUTTON:
-      print("[TTXPROPERTIES::updateField] radio button todo")
+      print("[TTXPROPERTIES::updateField] radio button")
+      if (this.pageIndex === 3) { // Language/Region
+        print(field)
+        // The button reference is field
+        // What value is it?
+        let value = field.value
+        // Which radio group is it in?
+        if (this.regionsRadioGroup.radioButtons.includes(field)) {
+          print("[TTXPROPERTIES::updateField] This field is in the regions group")
+          
+          // Check that value is in regions[]
+          if (this.regions.includes(value)) {
+            // Update the underlying data 
+            this.metadata.mapping.region = value
+            this.regionsRadioGroup.selected = field
+            // updatePage3() TODO
+          } else {
+            LOG.fn(
+              ['ttxproperties', 'updateField'],
+              `Invalid region = ${field.value}`,
+              LOG.LOG_LEVEL_ERROR
+            )  
+          }
+            
+        }
+        if (this.languagesRadioGroup.includes(field)) {
+          print("[TTXPROPERTIES::updateField] language group handler TODO")
+        }
+        // Make the widget redraw
+        this.updateFieldsPage3()
+      }
       break
     default:
       LOG.fn(
