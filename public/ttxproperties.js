@@ -21,8 +21,8 @@ class TTXPROPERTIES {
     this.pageIndex = 0 // Which configuration page we are on
     this.description = 'description not set'
     this.rows = []
-    this.savedMetadata = new MetaData(7, new Clut()) // Later make a copy of the metadata if we need to revert it
-    this.metadata = new MetaData(7, new Clut())
+    this.savedMetadata = new MetaData(7, new X28Packet()) // Later make a copy of the metadata if we need to revert it
+    this.metadata = new MetaData(7, new X28Packet())
     
     this.cursor = cursor
     this.cursorCol = -1
@@ -92,12 +92,12 @@ class TTXPROPERTIES {
     // Just need to ensure that each metadata and clut is not a shared reference
     let pageNumber = 999
     this.rows.push(
-      new Row(this, pageNumber, 0, "          Muttlee Properties Editor     ", new MetaData(7, new Clut()))
+      new Row(this, pageNumber, 0, "          Muttlee Properties Editor     ", new MetaData(7, new X28Packet()))
     )
     this.rows[0].setpagetext(pageNumber)
     for (let i = 1; i < 26; i++) { // @wsfn clrt2
       this.rows.push(
-        new Row(this, pageNumber, i, ''.padStart(CONFIG[CONST.CONFIG.NUM_COLUMNS]), new MetaData(7, new Clut()))
+        new Row(this, pageNumber, i, ''.padStart(CONFIG[CONST.CONFIG.NUM_COLUMNS]), new MetaData(7, new X28Packet()))
       )
       this.rows[i].setrow("                                        ")
     }
@@ -138,12 +138,12 @@ class TTXPROPERTIES {
     for (let i = 1; i < 25; i++) { // @wsfn clrt4
       let row = this.rows[i]
       if (typeof row !== 'undefined') { // If the row exists
-        row.metadata.clut.resetTable()
+        row.metadata.x28Packet.resetTable()
         // [!] Should be copying the metadata instead? @todo
-        Clut.copyClut(metadata.clut, row.metadata.clut) // Copy the CLUT to the row
+        X28Packet.copyX28Packet(metadata.x28Packet, row.metadata.x28Packet) // Copy the CLUT to the row
         // Each row gets colours differently
         let remap = 2 // Default clut 0/2        
-        row.metadata.clut.setBlackBackgroundSub(false); // Don't want to substitute black in the UI
+        row.metadata.x28Packet.setBlackBackgroundSub(false); // Don't want to substitute black in the UI
 
         // For the properties page, we can use a different X28 per line.
         // Obviously this hack is not possible outside of Muttlee
@@ -156,9 +156,9 @@ class TTXPROPERTIES {
           if (i===19 || i===20) {remap = 7} // clut 2:3
         }
         */
-        row.metadata.clut.setRemap(0) // fg0, bg0) // Text and UI colours default teletext
-        row.metadata.clut.setDefaultScreenColour(0) // black
-        row.metadata.clut.setDefaultRowColour(0) // black
+        row.metadata.x28Packet.setRemap(0) // fg0, bg0) // Text and UI colours default teletext
+        row.metadata.x28Packet.setDefaultScreenColour(0) // black
+        row.metadata.x28Packet.setDefaultRowColour(0) // black
       } else {
         console.log("Crash averted on row " + i + " You are welcome")
         // @todo Make sure that this message never happens and delete this branch
@@ -287,40 +287,40 @@ class TTXPROPERTIES {
       let clutB // Lower row of palette
       switch (palette) {
       case 0: 
-        clutA = r.metadata.clut.clut0
-        clutB = r2.metadata.clut.clut0
+        clutA = r.metadata.x28Packet.clut0
+        clutB = r2.metadata.x28Packet.clut0
         break
       case 1: 
-        clutA = r.metadata.clut.clut1
-        clutB = r2.metadata.clut.clut1
+        clutA = r.metadata.x28Packet.clut1
+        clutB = r2.metadata.x28Packet.clut1
         break
       case 2: 
-        clutA = r.metadata.clut.clut2
-        clutB = r2.metadata.clut.clut2
+        clutA = r.metadata.x28Packet.clut2
+        clutB = r2.metadata.x28Packet.clut2
         break
       case 3: 
-        clutA = r.metadata.clut.clut3
-        clutB = r2.metadata.clut.clut3
+        clutA = r.metadata.x28Packet.clut3
+        clutB = r2.metadata.x28Packet.clut3
         // Also set fg colours in palette 2 for the black and white text
         // These colours are for UI rendering and do not affect the actual page
-        r.metadata.clut.setValue(color(0,0,0), 2, 0) // 2:0 is black
-        r2.metadata.clut.setValue(color(0,0,0), 2, 0) // 2:0 is black
-        r.metadata.clut.setValue(color(255,255,255), 2, 7) // 2:7 is white
-        r2.metadata.clut.setValue(color(255,255,255), 2, 7) // 2:7 is white
+        r.metadata.x28Packet.setValue(color(0,0,0), 2, 0) // 2:0 is black
+        r2.metadata.x28Packet.setValue(color(0,0,0), 2, 0) // 2:0 is black
+        r.metadata.x28Packet.setValue(color(255,255,255), 2, 7) // 2:7 is white
+        r2.metadata.x28Packet.setValue(color(255,255,255), 2, 7) // 2:7 is white
         break
       }
       if (palette===3) {
         palette = 7 // CLUT 3
       }
-      this.rows[yLoc+0].metadata.clut.setRemap(palette)
-      this.rows[yLoc+1].metadata.clut.setRemap(palette)
+      this.rows[yLoc+0].metadata.x28Packet.setRemap(palette)
+      this.rows[yLoc+1].metadata.x28Packet.setRemap(palette)
       // Draw a row of the palette
       let palstr1=''
       let palstr2=''
       for (let palcol=0; palcol<4; palcol++) {
         // What colour to make the text?        
         let c = clutA[palcol] // The colour
-        let cHex = Clut.colourToHex(c)
+        let cHex = X28Packet.colourToHex(c)
         let luma =  0.299 * c.levels[0] + 0.587 * c.levels[1] + 0.114 * c.levels[2]
         let textColour = 0x07 // white
         if (luma > 0x60) {
@@ -331,7 +331,7 @@ class TTXPROPERTIES {
           String.fromCharCode(textColour) +
           cHex + '  '
         c = clutB[palcol+4]
-        cHex = Clut.colourToHex(c)
+        cHex = X28Packet.colourToHex(c)
         luma =  0.299 * c.levels[0] + 0.587 * c.levels[1] + 0.114 * c.levels[2]
         textColour = 0x07 // white
         if (luma > 0x60) {
@@ -385,10 +385,11 @@ class TTXPROPERTIES {
    * @param colour - Button colour 0..7
    * @param xpos - Start column of button (will be a colour graphics code)
    * @param rowNum - Number of the first row of the button.
+   * @param width - Width of the button
    * @param value - Button caption
    * @param selected - If true then this button is hiighlighted
    */  
-  drawRadioButton(colour, xpos, rowNum, value, selected) {
+  drawRadioButton(colour, xpos, rowNum, width, value, selected) {
     // Upper row
     let r = this.rows[rowNum]
     let blackText = String.fromCharCode(0x00)
@@ -401,6 +402,18 @@ class TTXPROPERTIES {
     let button = selected
       ? greenText + newBG + blackText + value
       : ' ' + blackBG + redText + value
+    button = (button + ' '.repeat(width)).substring(0, width) // pad if needed
+    r.setrow(replace(r.txt, button, xpos))
+  }
+
+  /** Radio button
+   * The button is 4 or 5 characters long and one row high 
+   * @param xpos - Start column of button (will be a colour graphics code)
+   * @param rowNum - Number of the first row of the button.
+   */  
+  blankRadioButton(xpos, rowNum, width) {
+    let r = this.rows[rowNum]
+    let button =  ' '.repeat(width)
     r.setrow(replace(r.txt, button, xpos))
   }
 
@@ -462,7 +475,7 @@ class TTXPROPERTIES {
     
     // Use the default CLUT for all rows
     for (const i of this.rows) {
-      i.metadata.clut.setRemap(0)
+      i.metadata.x28Packet.setRemap(0)
     }
     
     this.drawHeader("PAGE ENHANCEMENTS-X/28/0 format 1")
@@ -531,7 +544,7 @@ class TTXPROPERTIES {
     
     // Use the default CLUT for all rows
     for (const i of this.rows) {
-      i.metadata.clut.setRemap(0)
+      i.metadata.x28Packet.setRemap(0)
     }
     
     this.drawHeader("METADATA")
@@ -577,23 +590,23 @@ class TTXPROPERTIES {
     
     // Values as text
     // Need to choose the text colour for contrast
-    txt.setchar(this.metadata.clut.getDefaultScreenClut(), 33)
-    txt.setchar(this.metadata.clut.getDefaultScreenColourIndex(), 35)
+    txt.setchar(this.metadata.x28Packet.getDefaultScreenClut(), 33)
+    txt.setchar(this.metadata.x28Packet.getDefaultScreenColourIndex(), 35)
 
     /////////////////////////////////// Screen colour
-//    txt.setchar(String.fromCharCode(this.metadata.clut.getDefaultScreenColour()), 25) 
+//    txt.setchar(String.fromCharCode(this.metadata.x28Packet.getDefaultScreenColour()), 25) 
     // Fiddle this row's colour palette rather than mess with control codes.
     // We get the colour value and copy it from the page clut to CLUT 0:1
-    let c = this.metadata.clut.defaultScreenColour // 5 bit clut and colour
+    let c = this.metadata.x28Packet.defaultScreenColour // 5 bit clut and colour
     let clut = (c >> 3) & 0x03
     let clr = c & 0x07
-    let colour = this.metadata.clut.getValue(clut, clr) // 12 bit colour
-    txt.metadata.clut.setValue(colour, 0,1) // CLUT 0:1 (red)
+    let colour = this.metadata.x28Packet.getValue(clut, clr) // 12 bit colour
+    txt.metadata.x28Packet.setValue(colour, 0,1) // CLUT 0:1 (red)
     
     txt.setchar(String.fromCharCode(1), 25) // colour index 1 (red)
     txt.setchar(String.fromCharCode(29), 26) // new background
     // txt.setchar(String.fromCharCode(7), 27) // foreground colour (text)
-    let screenColour = this.metadata.clut.getDefaultScreenRGB()
+    let screenColour = this.metadata.x28Packet.getDefaultScreenRGB()
     let luma = (0.299 * screenColour.levels[0]) + (0.587 * screenColour.levels[1]) + (0.114 * screenColour.levels[2]);
     if (luma > 128) {
       // Set the text colour dark
@@ -606,21 +619,21 @@ class TTXPROPERTIES {
     
     /////////////////////////////////// Default row colour
     txt = this.rows[8]
-    c = this.metadata.clut.defaultRowColour // 5 bit clut and colour
+    c = this.metadata.x28Packet.defaultRowColour // 5 bit clut and colour
     clut = (c >> 3) & 0x03
     clr = c & 0x07
-    colour = this.metadata.clut.getValue(clut, clr) // 12 bit colour
-    txt.metadata.clut.setValue(colour, 0,1) // CLUT 0:1 (Use the red slot for the colour)
+    colour = this.metadata.x28Packet.getValue(clut, clr) // 12 bit colour
+    txt.metadata.x28Packet.setValue(colour, 0,1) // CLUT 0:1 (Use the red slot for the colour)
     // @todo Choose the colour to contrast with the background
-    txt.setchar(this.metadata.clut.getDefaultRowClut().toString(), 33)
-    txt.setchar(this.metadata.clut.getDefaultRowColourIndex().toString(), 35)
+    txt.setchar(this.metadata.x28Packet.getDefaultRowClut().toString(), 33)
+    txt.setchar(this.metadata.x28Packet.getDefaultRowColourIndex().toString(), 35)
     
     // Row colour
     // @todo Choose the colour to contrast with the background
-//    txt.setchar(String.fromCharCode(this.metadata.clut.getDefaultRowColour()), 25) 
+//    txt.setchar(String.fromCharCode(this.metadata.x28Packet.getDefaultRowColour()), 25) 
     txt.setchar(String.fromCharCode(1), 25) // colour index 1 (red)
     txt.setchar(String.fromCharCode(29), 26) // new background
-    let rowColour = this.metadata.clut.getDefaultRowRGB()
+    let rowColour = this.metadata.x28Packet.getDefaultRowRGB()
     luma = (0.299 * rowColour.levels[0]) + (0.587 * rowColour.levels[1]) + (0.114 * rowColour.levels[2]);
     if (luma > 128) {
       // Set the text colour dark
@@ -634,7 +647,7 @@ class TTXPROPERTIES {
     let row = 10 // field.yLoc
     let col = 23 // field.xLoc
     txt = this.rows[row]
-    txt.setchar(this.metadata.clut.remap.toString(), col)
+    txt.setchar(this.metadata.x28Packet.remap.toString(), col)
     // Also want to update the remap description
     this.updateField(this.remapField)
     
@@ -644,7 +657,7 @@ class TTXPROPERTIES {
     txt = this.rows[row]
     txt.setrow(
       replace(txt.txt,
-        this.metadata.clut.blackBackgroundSub  ? 'Yes' : 'No ',
+        this.metadata.x28Packet.blackBackgroundSub  ? 'Yes' : 'No ',
         col))
 
     // Left columns
@@ -653,7 +666,7 @@ class TTXPROPERTIES {
     txt = this.rows[row]
     txt.setrow(
       replace(txt.txt,
-        this.metadata.clut.leftColumns.toString() + ' ',
+        this.metadata.x28Packet.leftColumns.toString() + ' ',
         col))
 
     // Right columns (I think these are based on left and not explicitly set)
@@ -665,7 +678,7 @@ class TTXPROPERTIES {
     
     // Use the default CLUT for all rows
     for (const i of this.rows) {
-      i.metadata.clut.setRemap(0)
+      i.metadata.x28Packet.setRemap(0)
     }
     
     this.drawHeader("METADATA")
@@ -709,22 +722,23 @@ class TTXPROPERTIES {
     
     // Use the default CLUT for all rows
     for (const i of this.rows) {
-      i.metadata.clut.setRemap(0)
+      i.metadata.x28Packet.setRemap(0)
     }
     
     this.drawHeader("X28 Language selection")
     this.drawPageIndex(4)
 
     this.drawBox(1,4,39,5,"Region")
-    this.drawBox(1,8,39,10,"Language")
+    this.drawBox(1,8,39,11,"Language")
     
     this.regionsRadioGroup = new RadioGroup()
+    this.languagesRadioGroup = new RadioGroup()
     
     // Editable fields
     this.editableFields = []
     
+    //  ****** Regions ******
     let region = this.metadata.mapping.region
-    let language = this.metadata.mapping.language
 
 //      constructor(uiType, xLoc, yLoc, xWidth, yHeight, clutIndex, hint, enable = true) {
     let clutIndex = 0
@@ -745,6 +759,31 @@ class TTXPROPERTIES {
       this.editableFields.push(field) 
     }
     
+    //  ****** Languages ******
+    // Vertical radio group
+    const language = this.metadata.mapping.language
+    const languageStrings = MAPCHAR.getLanguageStrings(region)
+    let i = 0
+    let x = 4
+    let w = 34
+    y = 10
+    for (const lang of languageStrings) {    
+      if (typeof lang !== 'undefined') {
+        let caption = i + ' - ' + lang
+        let field = new uiField(CONST.UI_FIELD.FIELD_RADIOBUTTON, x, y + i, w, h, clutIndex, `Press Space to select ${lang}`, true, i )
+        this.languagesRadioGroup.addRadioButton(field)
+        // Moved to updateFieldsPage3
+        // this.drawRadioButton(1, x, y++, w, i + ' - ' + MAPCHAR.getLanguageStrings(region)[i], false) // TODO Add code to highlight the selected value
+        this.editableFields.push(field) 
+      }
+      i++
+    }
+
+/* TODO    // Initialise with the selected language region set
+    if (region === this.regions[rb]) {
+      this.regionsRadioGroup.selected = field
+    }
+    */
     this.pageHandler = this.hintHandler
     this.updateFieldsPage3()
 
@@ -754,12 +793,37 @@ class TTXPROPERTIES {
   */
   updateFieldsPage3() {
     print("page 3 fields updater called ")
+    // ***** REGION *****
     let y = 6
     for (let rb = 0;  rb < this.regions.length; ++rb) {
       let x = 4 + 4 * rb
       let w = this.regions[rb] < 10 ? 4 : 5 // Last region is one character wider
-      this.drawRadioButton(1, x, y, this.regions[rb], this.regionsRadioGroup.selected == this.regionsRadioGroup.radioButtons[rb])
+      this.drawRadioButton(1, x, y, w, this.regions[rb], this.regionsRadioGroup.selected == this.regionsRadioGroup.radioButtons[rb])
     }
+    
+    // ***** LANGUAGE *****
+    const language = this.metadata.mapping.language
+    let region = this.regionsRadioGroup.selected.value
+    const languageStrings = MAPCHAR.getLanguageStrings(region)
+    let i = 0
+    let x = 4
+    let w = 34
+    y = 10
+    for (const lang of languageStrings) {    
+      if (typeof lang !== 'undefined') {
+        let caption = (i + ' - ' + lang + ' '.repeat(w)).substring(0,w)
+        //let field = new uiField(CONST.UI_FIELD.FIELD_RADIOBUTTON, x, y + i, w, h, clutIndex, `Press Space to select ${lang}`, true, i )
+        //this.languagesRadioGroup.addRadioButton(field)
+        this.drawRadioButton(1, x, y++, w, i + ' - ' + MAPCHAR.getLanguageStrings(region)[i], false) // TODO Add code to highlight the selected value
+        //this.editableFields.push(field) 
+      }
+      i++
+    }
+    // Blank out any unused lines
+    for (;y<10+8;++y) {
+      this.blankRadioButton(x, y, w)
+    }
+
   }
 
   
@@ -771,23 +835,23 @@ class TTXPROPERTIES {
     
     // Values as text
     // Need to choose the text colour for contrast
-    txt.setchar(this.metadata.clut.getDefaultScreenClut(), 33)
-    txt.setchar(this.metadata.clut.getDefaultScreenColourIndex(), 35)
+    txt.setchar(this.metadata.x28Packet.getDefaultScreenClut(), 33)
+    txt.setchar(this.metadata.x28Packet.getDefaultScreenColourIndex(), 35)
 
     /////////////////////////////////// Screen colour
-//    txt.setchar(String.fromCharCode(this.metadata.clut.getDefaultScreenColour()), 25) 
+//    txt.setchar(String.fromCharCode(this.metadata.x28Packet.getDefaultScreenColour()), 25) 
     // Fiddle this row's colour palette rather than mess with control codes.
     // We get the colour value and copy it from the page clut to CLUT 0:1
-    let c = this.metadata.clut.defaultScreenColour // 5 bit clut and colour
+    let c = this.metadata.x28Packet.defaultScreenColour // 5 bit clut and colour
     let clut = (c >> 3) & 0x03
     let clr = c & 0x07
-    let colour = this.metadata.clut.getValue(clut, clr) // 12 bit colour
-    txt.metadata.clut.setValue(colour, 0,1) // CLUT 0:1 (red)
+    let colour = this.metadata.x28Packet.getValue(clut, clr) // 12 bit colour
+    txt.metadata.x28Packet.setValue(colour, 0,1) // CLUT 0:1 (red)
     
     txt.setchar(String.fromCharCode(1), 25) // colour index 1 (red)
     txt.setchar(String.fromCharCode(29), 26) // new background
     // txt.setchar(String.fromCharCode(7), 27) // foreground colour (text)
-    let screenColour = this.metadata.clut.getDefaultScreenRGB()
+    let screenColour = this.metadata.x28Packet.getDefaultScreenRGB()
     let luma = (0.299 * screenColour.levels[0]) + (0.587 * screenColour.levels[1]) + (0.114 * screenColour.levels[2]);
     if (luma > 128) {
       // Set the text colour dark
@@ -800,21 +864,21 @@ class TTXPROPERTIES {
     
     /////////////////////////////////// Default row colour
     txt = this.rows[8]
-    c = this.metadata.clut.defaultRowColour // 5 bit clut and colour
+    c = this.metadata.x28Packet.defaultRowColour // 5 bit clut and colour
     clut = (c >> 3) & 0x03
     clr = c & 0x07
-    colour = this.metadata.clut.getValue(clut, clr) // 12 bit colour
-    txt.metadata.clut.setValue(colour, 0,1) // CLUT 0:1 (Use the red slot for the colour)
+    colour = this.metadata.x28Packet.getValue(clut, clr) // 12 bit colour
+    txt.metadata.x28Packet.setValue(colour, 0,1) // CLUT 0:1 (Use the red slot for the colour)
     // @todo Choose the colour to contrast with the background
-    txt.setchar(this.metadata.clut.getDefaultRowClut().toString(), 33)
-    txt.setchar(this.metadata.clut.getDefaultRowColourIndex().toString(), 35)
+    txt.setchar(this.metadata.x28Packet.getDefaultRowClut().toString(), 33)
+    txt.setchar(this.metadata.x28Packet.getDefaultRowColourIndex().toString(), 35)
     
     // Row colour
     // @todo Choose the colour to contrast with the background
-//    txt.setchar(String.fromCharCode(this.metadata.clut.getDefaultRowColour()), 25) 
+//    txt.setchar(String.fromCharCode(this.metadata.x28Packet.getDefaultRowColour()), 25) 
     txt.setchar(String.fromCharCode(1), 25) // colour index 1 (red)
     txt.setchar(String.fromCharCode(29), 26) // new background
-    let rowColour = this.metadata.clut.getDefaultRowRGB()
+    let rowColour = this.metadata.x28Packet.getDefaultRowRGB()
     luma = (0.299 * rowColour.levels[0]) + (0.587 * rowColour.levels[1]) + (0.114 * rowColour.levels[2]);
     if (luma > 128) {
       // Set the text colour dark
@@ -828,7 +892,7 @@ class TTXPROPERTIES {
     let row = 10 // field.yLoc
     let col = 23 // field.xLoc
     txt = this.rows[row]
-    txt.setchar(this.metadata.clut.remap.toString(), col)
+    txt.setchar(this.metadata.x28Packet.remap.toString(), col)
     // Also want to update the remap description
     this.updateField(this.remapField)
     
@@ -838,7 +902,7 @@ class TTXPROPERTIES {
     txt = this.rows[row]
     txt.setrow(
       replace(txt.txt,
-        this.metadata.clut.blackBackgroundSub  ? 'Yes' : 'No ',
+        this.metadata.x28Packet.blackBackgroundSub  ? 'Yes' : 'No ',
         col))
 
     // Left columns
@@ -847,7 +911,7 @@ class TTXPROPERTIES {
     txt = this.rows[row]
     txt.setrow(
       replace(txt.txt,
-        this.metadata.clut.leftColumns.toString() + ' ',
+        this.metadata.x28Packet.leftColumns.toString() + ' ',
         col))
 
     // Right columns (I think these are based on left and not explicitly set)
@@ -958,7 +1022,7 @@ class TTXPROPERTIES {
       if (this.pageIndex === 0)
       {
         // The new colour
-        let colour = Clut.colour12to24(value)
+        let colour = X28Packet.colour12to24(value)
         // Which CLUT?
         let clutIndex = field.clutIndex
         // Which colour in the CLUT
@@ -984,10 +1048,10 @@ class TTXPROPERTIES {
           colourIndex+=4
         }
         // Update the current row so that we can see the change
-        row.metadata.clut.setValue(colour, clutIndex, colourIndex)
+        row.metadata.x28Packet.setValue(colour, clutIndex, colourIndex)
         
         // Update the master clut so that the change will be saved
-        this.metadata.clut.setValue(colour, clutIndex, colourIndex)
+        this.metadata.x28Packet.setValue(colour, clutIndex, colourIndex)
 
         this.drawPalettes() // Only really need to call this to set the font colour        
       }
@@ -1001,13 +1065,13 @@ class TTXPROPERTIES {
         // blackbackgroundSub
         if (y===12) {
           if (key==='y') {
-            this.metadata.clut.setBlackBackgroundSub(true)
+            this.metadata.x28Packet.setBlackBackgroundSub(true)
           }
           if (key==='n') {
-            this.metadata.clut.setBlackBackgroundSub(0)
+            this.metadata.x28Packet.setBlackBackgroundSub(0)
           }
           if (key===' ') {
-            this.metadata.clut.setBlackBackgroundSub(this.metadata.clut.blackBackgroundSub===0?1:0)
+            this.metadata.x28Packet.setBlackBackgroundSub(this.metadata.x28Packet.blackBackgroundSub===0?1:0)
           }
         }
         
@@ -1025,14 +1089,14 @@ class TTXPROPERTIES {
         // Default screen clut and colour
         if (y===6) {
           if (x===33) { // Screen Clut
-            this.metadata.clut.setDefaultScreenClut(value)
+            this.metadata.x28Packet.setDefaultScreenClut(value)
           }
           if (x===35) { // Screen Colour Index
-            this.metadata.clut.setDefaultScreenColourIndex(value)
+            this.metadata.x28Packet.setDefaultScreenColourIndex(value)
           }
           // @todo At this point we want to find what the background colour is
           // and make the foreground text black or white to make it readable
-          let screenColour = this.metadata.clut.getDefaultScreenRGB()
+          let screenColour = this.metadata.x28Packet.getDefaultScreenRGB()
           let luma = (0.299 * screenColour.levels[0]) + (0.587 * screenColour.levels[1]) + (0.114 * screenColour.levels[2]);
           print("default screen luma = " + luma)
           if (luma > 128) {
@@ -1047,14 +1111,14 @@ class TTXPROPERTIES {
         // Default row clut and colour
         if (y===8) {
           if (x===33) { // Row Clut
-            this.metadata.clut.setDefaultRowClut(value)
+            this.metadata.x28Packet.setDefaultRowClut(value)
           }
           if (x===35) { // Row Colour Index
-            this.metadata.clut.setDefaultRowColourIndex(value)
+            this.metadata.x28Packet.setDefaultRowColourIndex(value)
           }
           // @todo At this point we want to find what the background colour is
           // and make the foreground text black or white to make it readable
-          let rowColour = this.metadata.clut.getDefaultRowRGB()
+          let rowColour = this.metadata.x28Packet.getDefaultRowRGB()
           let luma = (0.299 * rowColour.levels[0]) + (0.587 * rowColour.levels[1]) + (0.114 * rowColour.levels[2]);
           print("default row colour = " + rowColour + " luma = " + luma)
           if (luma > 128) {
@@ -1070,7 +1134,7 @@ class TTXPROPERTIES {
         if (y===10) {
           print ("CLUT remap new number = " + value) 
           // Update the data
-          this.metadata.clut.setRemap(value)
+          this.metadata.x28Packet.setRemap(value)
           // update the display
           switch (value) {
           case 0:row.setrow(replace(rowString,"Fg 0, Bg 0", 27));break;
@@ -1139,7 +1203,7 @@ class TTXPROPERTIES {
           }
             
         }
-        if (this.languagesRadioGroup.includes(field)) {
+        if (this.languagesRadioGroup.radioButtons.includes(field)) {
           print("[TTXPROPERTIES::updateField] language group handler TODO")
         }
         // Make the widget redraw

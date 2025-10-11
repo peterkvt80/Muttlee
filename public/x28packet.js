@@ -4,7 +4,7 @@
 # clut.js Teletext colour lookup table
 # Maintains colour lookups and all data in X28/F1 packet
 #
-# Copyright (c) 2024 Peter Kwan
+# Copyright (c) 2024 - 2035 Peter Kwan
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,8 @@
 # SOFTWARE.
 #
 
-# This holds the colour lookup tables read in by packet 28 etc.
-# I think we have four CLUTs 0 to 3. Here is what the standard says:
+# This holds Packet 28 information, mainly the colour lookup tables and languages
+# There are four CLUTs 0 to 3. Here is what the standard says:
 ## 8 background full intensity colours:
 ## Magenta, Cyan, White. Black, Red, Green, Yellow, Blue,
 ## 7 foreground full intensity colours:
@@ -66,13 +66,14 @@
 ##
 */
 'use strict';
-class Clut {
+class X28Packet {
   constructor() {
     console.log ('Clut loaded')
     this.dc = 0 // Should always be 0 for this packet
     this.pageFunction = 0
     this.pageCoding = 0
     this.defaultG0G2CharacterSet
+    this.secondG0G2CharacterSet
     this.clut0 = new Array(8) // default full intensity colours
     this.clut1 = new Array(8) // default half intensity colours
     this.clut2 = new Array(8)
@@ -146,6 +147,28 @@ class Clut {
   setDefaultG0G2CharacterSet(value) {
     this.defaultG0G2CharacterSet = value
   }
+  
+  // Replace the language part of the character specification
+  setLanguage(lang) {
+    // this.mapping.setLanguage(lang & 0x07) // TODO Mapping has to be set somewhere
+    // [!] TODO Check that this region supports this language
+    this.defaultG0G2CharacterSet = this.defaultG0G2CharacterSet & 0x38 + lang & 0x07
+  }
+
+  // Replace the region part of the character set specification
+  setRegion(region) {
+    //this.mapping.setRegion(region & 0x0f) // TODO Mapping has to be set somewhere
+    // [!] TODO Check that this language exists in this region
+    this.defaultG0G2CharacterSet = (this.defaultG0G2CharacterSet & 0x07) | (region & 0x0f << 3)
+  }
+  
+  setSecondLanguage(lang) {
+    this.mapping.setLanguage(lang & 0x07)
+  }
+
+  setSecondRegion(region) {
+    this.mapping.setRegion(region & 0x0f)
+  }
 
   setSecondG0G2CharacterSet(value) {
     this.secondG0G2CharacterSet = value
@@ -183,6 +206,22 @@ class Clut {
 
   setBlackBackgroundSub(bgFlag) {
     this.blackBackgroundSub = bgFlag!=0
+  }
+  
+  region() {
+    return (this.defaultG0G2CharacterSet >> 3) & 0x0f
+  }
+
+  language() {
+  // TODO Do we need to reverse the bits?
+  /*
+        charSet &= 0x07 // language is reversed
+      charSet =
+        ((charSet & 0x01) << 2) |
+        (charSet & 0x02) |
+        (charSet >> 2);
+   */
+    return this.defaultG0G2CharacterSet & 0x07
   }
 
   /** Used by X28/0 to swap entire cluts
@@ -372,14 +411,14 @@ class Clut {
    *  @return Three digit hex colour
    */
   static colourToHex(clr) {
-    let clr12 = Clut.colour24to12(clr)
+    let clr12 = X28Packet.colour24to12(clr)
     return ('00' + clr12.toString(16)).slice(-3)   // three digit hex colour
   }
 
   /** 
    * Deep copy clut.
    */
-  static copyClut(src, dest) {
+  static copyX28Packet(src, dest) {
     for (let i=0; i<8; i++) {
       if (typeof dest==='undefined') {
         console.log('PUT A BREAKPOINT HERE AND FIND OUT WHAT WENT WRONG - 1')
@@ -408,6 +447,8 @@ class Clut {
     dest.enableLeftPanel = src.enableLeftPanel
     dest.enableRightPanel = src.enableRightPanel
     dest.leftColumns = src.leftColumns
+    
+    // @TODO Add GoG2 character sets
   }
   
   /** debug dump the clut contents
@@ -445,4 +486,4 @@ class Clut {
     return this.getValue(this.getDefaultRowClut(), this.getDefaultRowColourIndex())
   }
 
-}
+} // X28Packet

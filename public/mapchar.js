@@ -629,5 +629,31 @@ class MAPCHAR {
     }
   }
   
+  /**
+   * @param region - An X28 region number
+   * @eturn Array of language names 
+   */
+  static getLanguageStrings(region) {
+    switch (region) {
+      case 0: // West Europe
+        return ['English', 'French', 'Swedish', 'Czech/Slovak', 'German', 'Spanish/Portuguese', 'Italian', undefined]
+      case 1: // West Europe plus Polish
+        return ['Polish', 'French', 'Swedish', 'Czech/Slovak', 'German', undefined, 'Italian', undefined]
+      case 2: // West Europe plus Turkish
+        return ['English', 'French', 'Swedish', 'Turkish', 'German', 'Spanish/Portuguese', 'Italian', undefined]
+      case 3: // Serbian/Croatian/Slovenian/Rumanian
+        return [undefined, undefined, undefined, undefined, undefined, 'Serbian', undefined, 'Rumanian']
+      case 4: // Russian/Bulgarian
+        return ['Serbian', 'Russian/Bulgarian', 'Estonian', 'Czech/Slovak', 'German', 'Ukranian', 'Lettish/Lithuanian', undefined]
+      case 6: // Turkish/Greek
+        return [undefined, undefined, undefined, 'Turkish', undefined, undefined, undefined, 'Greek']
+      case 8: // Arabic
+        return ['English', 'French', undefined, undefined, undefined, undefined, undefined, 'Arabic']
+      case 10: // Hebrew
+        return [undefined, undefined, undefined, undefined, undefined, 'Hebrew', undefined, 'Arabic']
+      }
+  } // getLanguageStrings
+  
+  
 } // MAPCHAR
 

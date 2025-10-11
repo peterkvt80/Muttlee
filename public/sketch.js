@@ -979,7 +979,7 @@ function setRow (r) {
   } else if (r.y === 28) {
     console.log(r.X28F1) // here is the data
     if (myPage.subPage < myPage.metadata.length ) { // [!] Problem! The PN or SC number is greater than the actual subpages that we have
-      let clut = myPage.metadata[myPage.subPage].clut
+      let x28 = myPage.metadata[myPage.subPage].x28Packet
       for (let i = 0; i < 16; i++) {
         let val = r.X28F1.colourMap[i] // The 12 bit colour value
         // convert to a p5.Color object
@@ -987,30 +987,30 @@ function setRow (r) {
         let colourValue = color(hash)
         let clutIndex = 2 + Math.trunc(i / 8) // Either CLUT 2 or 3 are updatable
         let colourIndex = i % 8
-        clut.setValue(colourValue, clutIndex, colourIndex)
+        x28.setValue(colourValue, clutIndex, colourIndex)
       }
-      clut.setDC(r.X28F1.dc)
-      clut.setPageFunction(r.X28F1.pageFunction)
-      clut.setPageCoding(r.X28F1.pageCoding)
-      clut.setDefaultG0G2CharacterSet(r.X28F1.defaultG0G2CharacterSet)
+      x28.setDC(r.X28F1.dc)
+      x28.setPageFunction(r.X28F1.pageFunction)
+      x28.setPageCoding(r.X28F1.pageCoding)
+      x28.setDefaultG0G2CharacterSet(r.X28F1.defaultG0G2CharacterSet)
+      x28.setSecondG0G2CharacterSet(r.X28F1.secondG0G2CharacterSet)
       // The character set overrides the defaults
       let charSet = r.X28F1.defaultG0G2CharacterSet & 0x7f // Mask extra bits
-      myPage.metadata[myPage.subPage].setRegion(charSet >> 3) // Region is not reversed
+      myPage.metadata[myPage.subPage].mapping.setRegion(charSet >> 3) // Region is not reversed
       charSet &= 0x07 // language is reversed
       charSet =
         ((charSet & 0x01) << 2) |
         (charSet & 0x02) |
         (charSet >> 2);
       myPage.metadata[myPage.subPage].setLanguage(charSet)
-      clut.setSecondG0G2CharacterSet(r.X28F1.secondG0G2CharacterSet)
-      clut.setDefaultScreenColour(r.X28F1.defaultScreenColour)
-      clut.setDefaultRowColour(r.X28F1.defaultRowColour)
-      clut.setRemap(r.X28F1.colourTableRemapping)
-      clut.setBlackBackgroundSub(r.X28F1.backBackgroundSubRow)
-      clut.setEnableLeftPanel(r.X28F1.enableLeftPanel)
-      clut.setEnableRightPanel(r.X28F1.enableRightPanel)
-      clut.setSidePanelStatusFlag(r.X28F1.sidePanelStatusFlag)
-      clut.setLeftColumns(r.X28F1.leftColumns)
+      x28.setDefaultScreenColour(r.X28F1.defaultScreenColour)
+      x28.setDefaultRowColour(r.X28F1.defaultRowColour)
+      x28.setRemap(r.X28F1.colourTableRemapping)
+      x28.setBlackBackgroundSub(r.X28F1.backBackgroundSubRow)
+      x28.setEnableLeftPanel(r.X28F1.enableLeftPanel)
+      x28.setEnableRightPanel(r.X28F1.enableRightPanel)
+      x28.setSidePanelStatusFlag(r.X28F1.sidePanelStatusFlag)
+      x28.setLeftColumns(r.X28F1.leftColumns)
     } else {
       LOG.fn(
         ['sketch', 'setRow'],
@@ -1427,30 +1427,30 @@ function processKey (keyPressed) {
       if (key === 'x') { // Transmit the changed CLUT back to the server
         // Copy the clut to the corresponding X28F1 message format
         // Make a row 28 object
-        let clut = myPage.metadata[myPage.subPage].clut
+        let x28 = myPage.metadata[myPage.subPage].x28Packet
         print(clut) // @wsfn
         let X28F1 = {
-          dc : clut.dc,
-          pageFunction : clut.pageFunction,
-          pageCoding : clut.pageCoding,
-          defaultG0G2CharacterSet : clut.defaultG0G2CharacterSet,
-          secondG0G2CharacterSet : clut.secondG0G2CharacterSet,
+          dc : x28.dc,
+          pageFunction : x28.pageFunction,
+          pageCoding : x28.pageCoding,
+          defaultG0G2CharacterSet : x28.defaultG0G2CharacterSet,
+          secondG0G2CharacterSet : x28.secondG0G2CharacterSet,
           colourMap : [],
-          defaultScreenColour : clut.defaultScreenColour, // 5 bits
-          defaultRowColour : clut.defaultRowColour, // 5 bits
-          colourTableRemapping : clut.remap, // 3 bits
-          blackBackgroundSubRow : clut.blackBackgroundSub, // 1 bit
-          enableLeftPanel : clut.enableLeftPanel, // 1 bit
-          enableRightPanel : clut.enableRightPanel, // 1 bit
-          sidePanelStatusFlag : clut.sidePanelStatusFlag, // 1 bit
-          leftColumns : clut.leftColumns  // 4 bits
+          defaultScreenColour : x28.defaultScreenColour, // 5 bits
+          defaultRowColour : x28.defaultRowColour, // 5 bits
+          colourTableRemapping : x28.remap, // 3 bits
+          blackBackgroundSubRow : x28.blackBackgroundSub, // 1 bit
+          enableLeftPanel : x28.enableLeftPanel, // 1 bit
+          enableRightPanel : x28.enableRightPanel, // 1 bit
+          sidePanelStatusFlag : x28.sidePanelStatusFlag, // 1 bit
+          leftColumns : x28.leftColumns  // 4 bits
         }
         // Packet X28 only affects CLUT 2 and 3
         for (let i=0; i<16; ++i) {
           let clutIndex = Math.floor(i/8) + 2
           let colourIndex = i % 8
-          let colour = clut.getValue(clutIndex, colourIndex)
-          X28F1.colourMap.push(Clut.colour24to12(colour))
+          let colour = x28.getValue(clutIndex, colourIndex)
+          X28F1.colourMap.push(X28Packet.colour24to12(colour))
         }
         // Send X28F1 to the server        
         print(X28F1)

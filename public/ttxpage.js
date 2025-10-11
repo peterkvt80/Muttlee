@@ -24,24 +24,21 @@ function toggle () {
 /// /////////////////////////////////////////////////////////////////////////////////////////////////////
 // Store subpage data other than the displayable rows
 class MetaData {
-  constructor(displayTiming, clut) {
+  constructor(displayTiming, x28Packet) {
     this.timer = displayTiming
-    this.clut = clut // x28
+    this.x28Packet = x28Packet
     /// @todo Add packets 26, 28, 29
 
-    this.mapping = new MAPCHAR(0, 0) // Character mappings for region and language
+    this.mapping = new MAPCHAR(x28Packet.region(), x28Packet.language()) // Character mappings for region and language
   }
   
   setTimer(t) {
     this.timer = t
   }
-
+  
+  // This language value is from the X0 header, and is superceded by X28
   setLanguage(lang) {
-    this.mapping.setLanguage(lang & 0x07)
-  }
-
-  setRegion(region) {
-    this.mapping.setRegion(region & 0x0f)
+    this.mapping.setLanguage(lang)    
   }
   
   /** Deep copy
@@ -49,8 +46,8 @@ class MetaData {
    */
   static copyMetadata(src, dest) {
     dest.timer = src.timer
-    Clut.copyClut(src.clut, dest.clut)
-    MAPCHAR.copyMapping(src.mapping, dest.mapping)
+    X28Packet.copyX28Packet(src.x28Packet, dest.x28Packet)
+    MAPCHAR.copyMapping(src.mapping, dest.mapping) // @TODO These mappings duplicate X28Packet. Have to simplify
   }
 
 }
@@ -67,7 +64,6 @@ window.TTXPAGE = function () {
   function dummy (myX, myY) { print('[TTXPAGE]Cursor callback test ' + myX + ' ' + myY) }
   this.cursor = new TTXCURSOR()
   this.cursor.setCallback(dummy) // Temporary test
-  // this.clut = new Clut() // moved to myPage.metaData[subpage].clut
   this.service = undefined
   this.serviceData = {}
   this.locked = false
@@ -84,7 +80,6 @@ window.TTXPAGE = function () {
   this.showGrid = false
   this.subPageZeroBase = false
   this.editProperties = new TTXPROPERTIES() // Just in case we are going to edit the properties later
-  // this.mapChar = new MAPCHAR() // Wrong. It is per subpage, not per page
 
 
   // this.timer=7 // This is global. Replaced by a per page timer
@@ -250,7 +245,7 @@ window.TTXPAGE = function () {
     }
     this.rows = []
 
-    const clut = new Clut()
+    const clut = new X28Packet()
     let metadata = new MetaData(7, clut)
     this.metadata.push(metadata)
 
@@ -1098,9 +1093,9 @@ function Row (ttxpage, page, y, str, metadata) {
 
       // Paint the background colour always
       noStroke()
-      let myColour = this.metadata.clut.remapColourTable(bgColor, false)
+      let myColour = this.metadata.x28Packet.remapColourTable(bgColor, false)
       if (this.row === 0) { // 9.4.2.2 Don't remap row 0
-        myColour = this.metadata.clut.clut0[bgColor]
+        myColour = this.metadata.x28Packet.clut0[bgColor]
       }
       fill(myColour) // @todo work out which clut we are using
 
@@ -1118,9 +1113,9 @@ function Row (ttxpage, page, y, str, metadata) {
       this.drawchar(String.fromCharCode(0xe6df), i, this.row, dblHeight)
 
       if (printable && (flashState || !flashMode) && !concealed) {
-        let myColour = this.metadata.clut.remapColourTable(fgColor, true)
+        let myColour = this.metadata.x28Packet.remapColourTable(fgColor, true)
         if (this.row === 0) { // Don't remap row 0
-          myColour = this.metadata.clut.clut0[fgColor]
+          myColour = this.metadata.x28Packet.clut0[fgColor]
         }
         fill(myColour) // Normal
 
@@ -1147,9 +1142,9 @@ function Row (ttxpage, page, y, str, metadata) {
           }
 
           if (contiguous) {
-            let foregroundColour = this.metadata.clut.remapColourTable(fgColor, true)
+            let foregroundColour = this.metadata.x28Packet.remapColourTable(fgColor, true)
             if (this.row === 0) { // 9.4.2.2 Don't remap the header colours
-              foregroundColour = this.metadata.clut.clut0[fgColor]
+              foregroundColour = this.metadata.x28Packet.clut0[fgColor]
             }
             stroke(foregroundColour)
             this.drawchar(String.fromCharCode(ic2 + 0x0e680 - 0x20), i, this.row, dblHeight)
