@@ -36,9 +36,9 @@ class MetaData {
     this.timer = t
   }
   
-  // This language value is from the X0 header, and is superceded by X28
   setLanguage(lang) {
-    this.mapping.setLanguage(lang)    
+    this.mapping.setLanguage(lang) // Compatibility with non X28 decoders  
+    this.x28Packet.setLanguage(lang) // X28 G0G2 default language
   }
   
   /** Deep copy

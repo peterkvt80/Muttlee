@@ -770,7 +770,7 @@ class TTXPROPERTIES {
     for (const lang of languageStrings) {    
       if (typeof lang !== 'undefined') {
         let caption = i + ' - ' + lang
-        let field = new uiField(CONST.UI_FIELD.FIELD_RADIOBUTTON, x, y + i, w, h, clutIndex, `Press Space to select ${lang}`, true, i )
+        let field = new uiField(CONST.UI_FIELD.FIELD_RADIOBUTTON, x, y++, w, h, clutIndex, `Press Space to select ${lang}`, true, i )
         this.languagesRadioGroup.addRadioButton(field)
         // Moved to updateFieldsPage3
         // this.drawRadioButton(1, x, y++, w, i + ' - ' + MAPCHAR.getLanguageStrings(region)[i], false) // TODO Add code to highlight the selected value
@@ -793,12 +793,13 @@ class TTXPROPERTIES {
   */
   updateFieldsPage3() {
     print("page 3 fields updater called ")
+    
     // ***** REGION *****
     let y = 6
     for (let rb = 0;  rb < this.regions.length; ++rb) {
       let x = 4 + 4 * rb
       let w = this.regions[rb] < 10 ? 4 : 5 // Last region is one character wider
-      this.drawRadioButton(1, x, y, w, this.regions[rb], this.regionsRadioGroup.selected == this.regionsRadioGroup.radioButtons[rb])
+      this.drawRadioButton(1, x, y, w, this.regions[rb], this.regionsRadioGroup.selected === this.regionsRadioGroup.radioButtons[rb])
     }
     
     // ***** LANGUAGE *****
@@ -812,10 +813,8 @@ class TTXPROPERTIES {
     for (const lang of languageStrings) {    
       if (typeof lang !== 'undefined') {
         let caption = (i + ' - ' + lang + ' '.repeat(w)).substring(0,w)
-        //let field = new uiField(CONST.UI_FIELD.FIELD_RADIOBUTTON, x, y + i, w, h, clutIndex, `Press Space to select ${lang}`, true, i )
-        //this.languagesRadioGroup.addRadioButton(field)
-        this.drawRadioButton(1, x, y++, w, i + ' - ' + MAPCHAR.getLanguageStrings(region)[i], false) // TODO Add code to highlight the selected value
-        //this.editableFields.push(field) 
+        let selected = this.languagesRadioGroup.selected.value === i
+        this.drawRadioButton(1, x, y++, w, i + ' - ' + MAPCHAR.getLanguageStrings(region)[i], selected)
       }
       i++
     }
@@ -1204,7 +1203,10 @@ class TTXPROPERTIES {
             
         }
         if (this.languagesRadioGroup.radioButtons.includes(field)) {
-          print("[TTXPROPERTIES::updateField] language group handler TODO")
+          print("[TTXPROPERTIES::updateField] language group handler")          
+          print(`language selected = ${value}`)
+          this.languagesRadioGroup.selected = field
+          this.metadata.setLanguage(value)
         }
         // Make the widget redraw
         this.updateFieldsPage3()
