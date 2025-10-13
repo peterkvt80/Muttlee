@@ -152,7 +152,7 @@ class X28Packet {
   setLanguage(lang) {
     // this.mapping.setLanguage(lang & 0x07) // TODO Mapping has to be set somewhere
     // [!] TODO Check that this region supports this language
-    this.defaultG0G2CharacterSet = this.defaultG0G2CharacterSet & 0x38 + lang & 0x07
+    this.defaultG0G2CharacterSet = this.defaultG0G2CharacterSet & 0x38 | lang & 0x07
   }
 
   // Replace the region part of the character set specification

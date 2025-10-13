@@ -304,6 +304,7 @@ global.Page = function () {
       this.ttiLines[rowIndex] = "OL,28,1000000000000000000000000000000000000000" // Placeholder
       // TODO: At this point convert the message to x28f1 TTI
       this.ttiLines[rowIndex] = 'OL,28,' + this.EncodeOL28(key.x28f1)
+      // @todo When we get x28f1 we should extract the language bits from defaultG0G2 and put them in the PS flags for level 1 compatibility
       console.log(this.ttiLines[rowIndex])    }     
     else
     {
