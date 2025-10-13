@@ -1419,16 +1419,17 @@ function processKey (keyPressed) {
       myPage.setEditMode(editMode)
       // Return the modified clut to the server
       /// TEST - Delete this section
-      print("Clut exits\n" + myPage.metadata[myPage.subPage].clut)
+      print("X28 Properties exits\n" + myPage.editProperties.metadata.x28Packet)
+      // print("X28 Properties exits\n" + myPage.metadata[myPage.subPage].x28Packet)
       /// \TEST
-      if (key === 'q') { // Restore the original CLUT
+      if (key === 'q') { // Restore the original X28 settings
         MetaData.copyMetadata(myPage.editProperties.savedMetadata, myPage.metadata[myPage.subPage])
+        // @TODO Also restore the fastext buttons
       }
       if (key === 'x') { // Transmit the changed CLUT back to the server
         // Copy the clut to the corresponding X28F1 message format
         // Make a row 28 object
         let x28 = myPage.metadata[myPage.subPage].x28Packet
-        print(clut) // @wsfn
         let X28F1 = {
           dc : x28.dc,
           pageFunction : x28.pageFunction,

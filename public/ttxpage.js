@@ -41,6 +41,11 @@ class MetaData {
     this.x28Packet.setLanguage(lang) // X28 G0G2 default language
   }
   
+  setRegion(region) {
+    this.mapping.setRegion(region)
+    this.x28Packet.setRegion(region) // X28 G0G2 default language
+  }
+  
   /** Deep copy
    * Everything in the constructor must be deep copied
    */

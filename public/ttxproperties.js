@@ -22,7 +22,7 @@ class TTXPROPERTIES {
     this.description = 'description not set'
     this.rows = []
     this.savedMetadata = new MetaData(7, new X28Packet()) // Later make a copy of the metadata if we need to revert it
-    this.metadata = new MetaData(7, new X28Packet())
+    this.metadata //  = new MetaData(7, new X28Packet())
     
     this.cursor = cursor
     this.cursorCol = -1
@@ -128,7 +128,7 @@ class TTXPROPERTIES {
     this.rows[0].pagetext = pageNumber.toString(16)
     this.rows[0].page = pageNumber
     this.description = description
-    MetaData.copyMetadata(metadata, this.metadata) // [!] Not sure we need this one
+    this.metadata = metadata // Copy by ref
     MetaData.copyMetadata(metadata, this.savedMetadata) // Copy the working metadata before we modify it
     this.cursor = cursor
     // @todo. Copy the clut to each of the rows.
@@ -759,25 +759,7 @@ class TTXPROPERTIES {
       this.editableFields.push(field) 
     }
     
-    //  ****** Languages ******
-    // Vertical radio group
-    const language = this.metadata.mapping.language
-    const languageStrings = MAPCHAR.getLanguageStrings(region)
-    let i = 0
-    let x = 4
-    let w = 34
-    y = 10
-    for (const lang of languageStrings) {    
-      if (typeof lang !== 'undefined') {
-        let caption = i + ' - ' + lang
-        let field = new uiField(CONST.UI_FIELD.FIELD_RADIOBUTTON, x, y++, w, h, clutIndex, `Press Space to select ${lang}`, true, i )
-        this.languagesRadioGroup.addRadioButton(field)
-        // Moved to updateFieldsPage3
-        // this.drawRadioButton(1, x, y++, w, i + ' - ' + MAPCHAR.getLanguageStrings(region)[i], false) // TODO Add code to highlight the selected value
-        this.editableFields.push(field) 
-      }
-      i++
-    }
+    this.setupLanguageRadioButtons(region)
 
 /* TODO    // Initialise with the selected language region set
     if (region === this.regions[rb]) {
@@ -824,6 +806,33 @@ class TTXPROPERTIES {
     }
 
   }
+  
+  /** Setup Language Radio Buttons according to the region
+   * @param region - Region for the language buttons
+   */
+  setupLanguageRadioButtons(region) {
+    this.editableFields.length = 8
+    //  ****** Languages ******
+    // Vertical radio group
+    const language = this.metadata.mapping.language
+    const languageStrings = MAPCHAR.getLanguageStrings(region)
+    let i = 0
+    let x = 4
+    let w = 34
+    let y = 10
+    let clutIndex = 0
+    let h = 1
+    for (const lang of languageStrings) {    
+      if (typeof lang !== 'undefined') {
+        let caption = i + ' - ' + lang
+        let field = new uiField(CONST.UI_FIELD.FIELD_RADIOBUTTON, x, y++, w, h, clutIndex, `Press Space to select ${lang}`, true, i )
+        this.languagesRadioGroup.addRadioButton(field)
+        this.editableFields.push(field) 
+      }
+      i++
+    }
+     
+   }
 
   
   /** Load the page data into the UI
@@ -1190,9 +1199,11 @@ class TTXPROPERTIES {
           // Check that value is in regions[]
           if (this.regions.includes(value)) {
             // Update the underlying data 
-            this.metadata.mapping.region = value
+            this.metadata.setRegion(value)
             this.regionsRadioGroup.selected = field
-            // updatePage3() TODO
+            // If the region changed, the language set also changes
+            this.setupLanguageRadioButtons(value)
+            
           } else {
             LOG.fn(
               ['ttxproperties', 'updateField'],

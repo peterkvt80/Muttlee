@@ -10,12 +10,16 @@ class MAPCHAR {
   }
   
   setRegion(region) {
-    if (region > 28 || region < 0) {region = 0}
+    if (region > 28 || region < 0) {
+      region = 0
+    }
     this.region = region
   }
   
   setLanguage(language) {
-    if (language > 7 || language < 0) {language = 0}
+    if (language > 7 || language < 0) {
+      language = 0
+    }
     this.language = language
   }
   

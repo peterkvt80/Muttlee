@@ -157,9 +157,12 @@ class X28Packet {
 
   // Replace the region part of the character set specification
   setRegion(region) {
+    let reg = (region & 0x0f) << 3
+    let lang = this.defaultG0G2CharacterSet & 0x07
+    
     //this.mapping.setRegion(region & 0x0f) // TODO Mapping has to be set somewhere
     // [!] TODO Check that this language exists in this region
-    this.defaultG0G2CharacterSet = (this.defaultG0G2CharacterSet & 0x07) | (region & 0x0f << 3)
+    this.defaultG0G2CharacterSet = (reg | lang)
   }
   
   setSecondLanguage(lang) {
@@ -419,6 +422,8 @@ class X28Packet {
    * Deep copy clut.
    */
   static copyX28Packet(src, dest) {
+    dest.defaultG0G2CharacterSet = src.defaultG0G2CharacterSet
+    dest.secondG0G2CharacterSet = src.secondG0G2CharacterSet
     for (let i=0; i<8; i++) {
       if (typeof dest==='undefined') {
         console.log('PUT A BREAKPOINT HERE AND FIND OUT WHAT WENT WRONG - 1')
@@ -446,9 +451,9 @@ class X28Packet {
     dest.blackBackgroundSub = src.blackBackgroundSub
     dest.enableLeftPanel = src.enableLeftPanel
     dest.enableRightPanel = src.enableRightPanel
+    dest.sidePanelStatusFlag = src.sidePanelStatusFlag 
     dest.leftColumns = src.leftColumns
-    
-    // @TODO Add GoG2 character sets
+    dest.rightColumns = src.rightColumns    
   }
   
   /** debug dump the clut contents
