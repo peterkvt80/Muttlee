@@ -658,6 +658,52 @@ class MAPCHAR {
       }
   } // getLanguageStrings
   
+  /**
+   * @param region - An X28 region number
+   * @param lang - An X28 language number
+   * @eturn Array of language names 
+   */
+  static getLanguagePhrase(region, lang) {
+    const phrases = [
+    'My hovercraft is full of eels',                      // 0 English - My hovercraft is full of eels
+    "Mon aéroglisseur est plein d'anguilles",             // 1 French - Mon aéroglisseur est plein d'anguilles
+    'Min svävare är full med ål',                         // 2 Swedish - Min svävare är full med ål
+    'Moje vznášedlo je plné úhořů',                       // 3 Czech - Moje vznášedlo je plné úhořů
+    'Mein Luftkissenfahrzeug ist voller Aale',            // 4 German - Mein Luftkissenfahrzeug ist voller Aale
+    'Mi aerodeslizador está lleno de anguilas',           // 5 Spanish - Mi aerodeslizador está lleno de anguilas
+    'Il mio hovercraft è pieno di anguille',              // 6 Italian - 	Il mio hovercraft è pieno di anguille
+    'Mój poduszkowiec jest pełen węgorzy',                // 7 Polish - Mój poduszkowiec jest pełen węgorzy
+    'Hoverkraftım yılan balığı dolu',                     // 8 Turkish - Hoverkraftım yılan balığı dolu
+    'Мој ховеркрафт је пун јегуља',                       // 9 Serbian
+    'Aeroglisorul meu e plin de țipari',                  // 10 Rumanian - Aeroglisorul meu e plin de țipari    
+    'Моё судно на воздушной подушке полно угрей',         // 11 Russian - Моё судно на воздушной подушке полно угрей
+    'Mu hõljuk on angerjaid täis',                        // 12 Estonian - Mu hõljuk on angerjaid täis
+    '	Моє судно на повітряній подушці наповнене вуграми', // 13	Ukranian - Моє судно на повітряній подушці наповнене вуграми
+    'Mano laivas su oro pagalve pilnas ungurių',          // 14 Lithuanian - Mano laivas su oro pagalve pilnas ungurių
+    'Το αερόστρωμνό μου είναι γεμάτο χέλια',              // 15 Greek - 	Το αερόστρωμνό μου είναι γεμάτο χέλια
+    'حَوّامتي مُمْتِلئة بِأَنْقَلَيْسون',                            // 16 Arabic - حَوّامتي مُمْتِلئة بِأَنْقَلَيْسون
+    'הרחפת שלי מלאה בצלופחים',                             // 17 Hebrew - הרחפת שלי מלאה בצלופחים
+    'undefined language'                                  // 18 Undefined
+    ]
+    switch (region) {
+      case 0: // West Europe
+        return [0, 1, 2, 3, 4, 5, 6][lang] // ['English', 'French', 'Swedish', 'Czech/Slovak', 'German', 'Spanish/Portuguese', 'Italian', undefined]
+      case 1: // West Europe plus Polish
+        return [7, 1, 2, 3, 4, 18, 6, 18][lang] // ['Polish', 'French', 'Swedish', 'Czech/Slovak', 'German', undefined, 'Italian', undefined]
+      case 2: // West Europe plus Turkish
+        return [0, 1, 2, 8, 4, 5, 6, 18][lang] // ['English', 'French', 'Swedish', 'Turkish', 'German', 'Spanish/Portuguese', 'Italian', undefined]
+      case 3: // Serbian/Croatian/Slovenian/Rumanian
+        return [18, 18, 18, 18, 18, 9, 18, 10][lang] // [undefined, undefined, undefined, undefined, undefined, 'Serbian', undefined, 'Rumanian']
+      case 4: // Russian/Bulgarian
+        return [9, 11, 12, 3, 4, 13, 14, 18][lang] // ['Serbian', 'Russian/Bulgarian', 'Estonian', 'Czech/Slovak', 'German', 'Ukranian', 'Lettish/Lithuanian', undefined]
+      case 6: // Turkish/Greek
+        return [18, 18, 18, 8, 18, 18, 18, 15][lang] // [undefined, undefined, undefined, 'Turkish', undefined, undefined, undefined, 'Greek']
+      case 8: // Arabic
+        return [0, 1, 18, 18, 18, 18, 18, 16][lang] // ['English', 'French', undefined, undefined, undefined, undefined, undefined, 'Arabic']
+      case 10: // Hebrew
+        return [18, 18, 18, 18, 18, 17, 18, 16][lang] // [undefined, undefined, undefined, undefined, undefined, 'Hebrew', undefined, 'Arabic']
+      }
+  } // getLanguagePhrase
   
 } // MAPCHAR
 
