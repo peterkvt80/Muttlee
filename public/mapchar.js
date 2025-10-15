@@ -659,11 +659,9 @@ class MAPCHAR {
   } // getLanguageStrings
   
   /**
-   * @param region - An X28 region number
-   * @param lang - An X28 language number
-   * @eturn Array of language names 
+   * @eturn A phrase in the currently selected language
    */
-  static getLanguagePhrase(region, lang) {
+  getLanguagePhrase() {
     const phrases = [
     'My hovercraft is full of eels',                      // 0 English - My hovercraft is full of eels
     "Mon aéroglisseur est plein d'anguilles",             // 1 French - Mon aéroglisseur est plein d'anguilles
@@ -685,24 +683,37 @@ class MAPCHAR {
     'הרחפת שלי מלאה בצלופחים',                             // 17 Hebrew - הרחפת שלי מלאה בצלופחים
     'undefined language'                                  // 18 Undefined
     ]
-    switch (region) {
+    let n = 0
+    switch (this.region) {
       case 0: // West Europe
-        return [0, 1, 2, 3, 4, 5, 6][lang] // ['English', 'French', 'Swedish', 'Czech/Slovak', 'German', 'Spanish/Portuguese', 'Italian', undefined]
+        n = [0, 1, 2, 3, 4, 5, 6][this.language] // ['English', 'French', 'Swedish', 'Czech/Slovak', 'German', 'Spanish/Portuguese', 'Italian', undefined]
+        break
       case 1: // West Europe plus Polish
-        return [7, 1, 2, 3, 4, 18, 6, 18][lang] // ['Polish', 'French', 'Swedish', 'Czech/Slovak', 'German', undefined, 'Italian', undefined]
+        n = [7, 1, 2, 3, 4, 18, 6, 18][this.language] // ['Polish', 'French', 'Swedish', 'Czech/Slovak', 'German', undefined, 'Italian', undefined]
+        break
       case 2: // West Europe plus Turkish
-        return [0, 1, 2, 8, 4, 5, 6, 18][lang] // ['English', 'French', 'Swedish', 'Turkish', 'German', 'Spanish/Portuguese', 'Italian', undefined]
+        n = [0, 1, 2, 8, 4, 5, 6, 18][this.language] // ['English', 'French', 'Swedish', 'Turkish', 'German', 'Spanish/Portuguese', 'Italian', undefined]
+        break
       case 3: // Serbian/Croatian/Slovenian/Rumanian
-        return [18, 18, 18, 18, 18, 9, 18, 10][lang] // [undefined, undefined, undefined, undefined, undefined, 'Serbian', undefined, 'Rumanian']
+        n = [18, 18, 18, 18, 18, 9, 18, 10][this.language] // [undefined, undefined, undefined, undefined, undefined, 'Serbian', undefined, 'Rumanian']
+        break
       case 4: // Russian/Bulgarian
-        return [9, 11, 12, 3, 4, 13, 14, 18][lang] // ['Serbian', 'Russian/Bulgarian', 'Estonian', 'Czech/Slovak', 'German', 'Ukranian', 'Lettish/Lithuanian', undefined]
+        n = [9, 11, 12, 3, 4, 13, 14, 18][this.language] // ['Serbian', 'Russian/Bulgarian', 'Estonian', 'Czech/Slovak', 'German', 'Ukranian', 'Lettish/Lithuanian', undefined]
+        break
       case 6: // Turkish/Greek
-        return [18, 18, 18, 8, 18, 18, 18, 15][lang] // [undefined, undefined, undefined, 'Turkish', undefined, undefined, undefined, 'Greek']
+        n = [18, 18, 18, 8, 18, 18, 18, 15][this.language] // [undefined, undefined, undefined, 'Turkish', undefined, undefined, undefined, 'Greek']
+        break
       case 8: // Arabic
-        return [0, 1, 18, 18, 18, 18, 18, 16][lang] // ['English', 'French', undefined, undefined, undefined, undefined, undefined, 'Arabic']
+        n = [0, 1, 18, 18, 18, 18, 18, 16][this.language] // ['English', 'French', undefined, undefined, undefined, undefined, undefined, 'Arabic']
+        break
       case 10: // Hebrew
-        return [18, 18, 18, 18, 18, 17, 18, 16][lang] // [undefined, undefined, undefined, undefined, undefined, 'Hebrew', undefined, 'Arabic']
-      }
+        n = [18, 18, 18, 18, 18, 17, 18, 16][this.language] // [undefined, undefined, undefined, undefined, undefined, 'Hebrew', undefined, 'Arabic']
+        break
+      default:
+        n = 0
+    }
+    return phrases[n]
+      
   } // getLanguagePhrase
   
 } // MAPCHAR

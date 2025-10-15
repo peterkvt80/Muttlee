@@ -1218,6 +1218,9 @@ class TTXPROPERTIES {
           print(`language selected = ${value}`)
           this.languagesRadioGroup.selected = field
           this.metadata.setLanguage(value)
+          // What is the sample phrase for this language?
+          let phrase = this.metadata.mapping.getLanguagePhrase()
+          print("phrase = " + phrase)
         }
         // Make the widget redraw
         this.updateFieldsPage3()
