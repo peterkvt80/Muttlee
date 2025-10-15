@@ -1221,6 +1221,28 @@ class TTXPROPERTIES {
           // What is the sample phrase for this language?
           let phrase = this.metadata.mapping.getLanguagePhrase()
           print("phrase = " + phrase)
+          // Write the phrase on the page
+          let row = 20
+          let col = 1
+          let txt = this.rows[row]
+          // Split the sentence into two rows
+          let lines = this.splitPhrase(phrase)
+          txt.setrow(
+            replace(txt.txt,
+              String.fromCharCode(7) + lines[0],
+              col))
+          txt.metadata.setLanguage(value)
+          txt.metadata.setRegion(this.metadata.mapping.region)
+          txt = this.rows[row + 1]    
+          txt.setrow(
+            replace(txt.txt,
+              String.fromCharCode(7) + lines[1],
+              col))
+          txt.metadata.setLanguage(value)
+          txt.metadata.setRegion(this.metadata.mapping.region)
+           
+
+          
         }
         // Make the widget redraw
         this.updateFieldsPage3()
@@ -1234,6 +1256,16 @@ class TTXPROPERTIES {
       )  
     }
     // update the display
+  } // updateField
+  
+  // Insert a line break into a phrase if needed
+  splitPhrase(phrase) {
+    // Each line is up to 38 characters
+    // Pad if too short
+    if (phrase.length < 38) {
+      phrase = phrase + ' '.repeat(38 - phrase.length)
+    }
+    return [phrase, 'second line']
   }
   
 }

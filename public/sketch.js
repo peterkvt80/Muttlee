@@ -76,6 +76,7 @@ let blockStart // block select
  * \return The mapped key
  */
 function mapKey (key) {
+return key // [!] These mappings conflict with mapchar
   // These are english mappings
   // Don't need to do $, @, ^, | because they are the same
   // Don't need to do  [, ], \, ¬  because they can't be mapped

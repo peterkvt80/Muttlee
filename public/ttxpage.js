@@ -812,7 +812,7 @@ function Row (ttxpage, page, y, str, metadata) {
 
     // Special treatment for row 0
     if (this.row === 0) {
-      if ((cpos < 0) && (editMode === CONST.EDITMODE_NORMAL)) {
+      if ((cpos < 8) && (editMode === CONST.EDITMODE_NORMAL)) {
         // force render service header (overriding page header)?
         if (this.ttxpage.serviceData.forceServiceHeader) {
           txt = this.ttxpage.getServiceHeader()
@@ -1262,10 +1262,29 @@ function setCharAt (str, index, chr) {
 
 /// @brief replace the characters in str at index with those in str2
 function replace (str, str2, index) {
+  // Chop the old string and add the inserted string
+  let newStr = (str.substring(0, index) + str2)
+  // Is the resulting string longer?
+  if (newStr.length > str.length) {
+    newStr.substring(0, str.length)  // Chop and return an identical length string
+  }
+  
+  // Truncate the new string if it doesn't fit
   const len = str2.length
-  if (index + len > str.length) {
-    return str
+  if (index + str2.length > str.length) {
+    newStr.substring(0, str.length - index)
+    return newStr
   }
 
-  return str.substr(0, index) + str2 + str.substr(index + len)
+  newStr = newStr + str.substring(index + len)
+  
+  // This should normally be 40 characters
+  if (newStr.length != 40) {
+    LOG.fn(
+      ['ttxpage', 'replace'],
+      `Expected row length 40. Got ${newStr.length}, str = ${newStr}`,
+      LOG.LOG_LEVEL_ERROR
+    )  
+  }
+  return newStr
 }

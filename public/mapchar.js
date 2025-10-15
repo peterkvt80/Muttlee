@@ -5,11 +5,19 @@
 class MAPCHAR {  
 
   constructor(region, language) {
-    this.region = region // West Europe
-    this.language = language // English
+    this.setRegion(region)
+    this.setLanguage(language)
   }
   
   setRegion(region) {
+    if (typeof region ==='undefined') {
+      LOG.fn(
+        ['MAPCHAR', 'setRegion'],
+        `Bad region value`,
+        LOG.LOG_LEVEL_ERROR
+      )
+      region = 0
+    }
     if (region > 28 || region < 0) {
       region = 0
     }
@@ -105,7 +113,7 @@ class MAPCHAR {
         break
         
       default:
-        print("[MAPCHAR] ERROR: Undefined region")
+        print(`[MAPCHAR] ERROR: Undefined region = ${this.region}`)
     }
     return ch
   } //map
@@ -140,7 +148,7 @@ class MAPCHAR {
       // Nat. opt. 2
       case ']' :  return char(0x00f9) // 5/D u grave
       case '^' :  return char(0x00ee) // 5/E i circumflex
-      case '_' :  return char('#')    // 5/F #
+      case '_' :  return char(0x0023) // 5/F #
       case '`' :  return char(0x00e8) // 6/0 e grave
       case '{' :  return char(0x00e2) // 7/B a circumflex
       case '|' :  return char(0x00f4) // 7/C o circumflex
@@ -154,7 +162,7 @@ class MAPCHAR {
   MapSwedish(ch) { // 0:2
     switch (ch) {
       // Nat. opt. 1
-      case '#' :  return char('#') // 2/3 hash
+      case '£' :  return char('#') // 2/3 hash
       case '$' :  return char(0x00a4) // 2/4 currency bug
       case '@' :  return char(0x00c9) // 4/0 E acute
       case '[' :  return char(0x00c4) // 5/B A umlaut
@@ -177,7 +185,7 @@ class MAPCHAR {
   MapCzechSlovak(ch) { // 0:3
     switch (ch) {
       // Nat. opt. 1
-      case '#' :  return char('#')    // 2/3 hash
+      case '£' :  return char('#')    // # // 2/3 hash
       case '$' :  return char(0x016f) // 2/4 u ring
       case '@' :  return char(0x010d) // 4/0 c caron
       case '[' :  return char(0x0165) // 5/B t caron
@@ -185,7 +193,7 @@ class MAPCHAR {
       // Nat. opt. 2
       case ']' :  return char(0x00fd) // 5/D y acute
       case '^' :  return char(0x00ed) // 5/E i acute
-      case '_' :  return char(0x0159) // 5/F r caron
+      case '_' :  return char(0x0159) // ř // 5/F r caron
       case '`' :  return char(0x00e9) // 6/0 e acute
       case '{' :  return char(0x00e1) // 7/B a acute
       case '|' :  return char(0x011b) // 7/C e caron
@@ -200,14 +208,14 @@ class MAPCHAR {
   MapGerman(ch) { // 0:4
     switch (ch) {
       // Nat. opt. 1
-      case '#' :  return char('#')    // 2/3 # is not mapped
+      case '£' :  return char('#')    // 2/3 Hash
       case '$' :  return char(0x0024) // 2/4 Dollar sign not mapped
       case '@' :  return char(0x00a7) // 4/0 Section sign
       case '[' :  return char(0x00c4) // 5/B A umlaut
       case '\\':  return char(0x00d6) // 5/C O umlaut
       // Nat. opt. 2
       case ']' :  return char(0x00dc) // 5/D U umlaut
-      case '^' :  return char('^')    // 5/E Caret (not mapped)
+      case '^' :  return char(0x005e) // 5/E Caret
       case '_' :  return char(0x005f) // 5/F Underscore (not mapped)
       case '`' :  return char(0x00b0) // 6/0 Masculine ordinal indicator
       case '{' :  return char(0x00e4) // 7/B a umlaut
@@ -223,7 +231,7 @@ class MAPCHAR {
     switch (ch) {
       // Nat. opt. 1
       case '#' :  return char(0x00e7) // 2/3 c cedilla
-      case '$' :  return char('$')    // 2/4 Dollar sign not mapped
+      case '£' :  return char('$')    // 2/4 Dollar
       case '@' :  return char(0x00a1) // 4/0 inverted exclamation mark
       case '[' :  return char(0x00e1) // 5/B a acute
       case '\\':  return char(0x00e9) // 5/C e acute
@@ -245,14 +253,14 @@ class MAPCHAR {
     switch (ch) {
       // Nat. opt. 1
       case '#' :  return char(0x00a3) // 2/3 Pound
-      case '$' :  return char('$')    // 2/4 Dollar sign not mapped
+      case '£' :  return char('$')    // 2/4 Dollar
       case '@' :  return char(0x00e9) // 4/0 e acute
       case '[' :  return char(0x00b0) // 5/B ring
       case '\\':  return char(0x00e7) // 5/C c cedilla
       // Nat. opt. 2
       case ']' :  return char(0x2192) // 5/D right arrow
       case '^' :  return char(0x2191) // 5/E up arrow
-      case '_' :  return char('#')    // 5/F hash
+      case '_' :  return char(0x0023) // 5/F #
       case '`' :  return char(0x00f9) // 6/0 u grave
       case '{' :  return char(0x00e0) // 7/B a grave
       case '|' :  return char(0x00f2) // 7/C o grave
@@ -664,9 +672,9 @@ class MAPCHAR {
   getLanguagePhrase() {
     const phrases = [
     'My hovercraft is full of eels',                      // 0 English - My hovercraft is full of eels
-    "Mon aéroglisseur est plein d'anguilles",             // 1 French - Mon aéroglisseur est plein d'anguilles
-    'Min svävare är full med ål',                         // 2 Swedish - Min svävare är full med ål
-    'Moje vznášedlo je plné úhořů',                       // 3 Czech - Moje vznášedlo je plné úhořů
+    "Mon a£roglisseur est plein d'anguilles",             // 1 French - Mon aéroglisseur est plein d'anguilles
+    'Min sv{vare {r full med }l',                         // 2 Swedish - Min svävare är full med ål
+    'Moje vzn{~edlo je pln{ }ho_$',                       // 3 Czech - Moje vznášedlo je plné úhořů
     'Mein Luftkissenfahrzeug ist voller Aale',            // 4 German - Mein Luftkissenfahrzeug ist voller Aale
     'Mi aerodeslizador está lleno de anguilas',           // 5 Spanish - Mi aerodeslizador está lleno de anguilas
     'Il mio hovercraft è pieno di anguille',              // 6 Italian - 	Il mio hovercraft è pieno di anguille
