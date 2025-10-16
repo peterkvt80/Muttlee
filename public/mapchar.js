@@ -676,10 +676,10 @@ class MAPCHAR {
     'Min sv{vare {r full med }l',                         // 2 Swedish - Min svävare är full med ål
     'Moje vzn{~edlo je pln{ }ho_$',                       // 3 Czech - Moje vznášedlo je plné úhořů
     'Mein Luftkissenfahrzeug ist voller Aale',            // 4 German - Mein Luftkissenfahrzeug ist voller Aale
-    'Mi aerodeslizador está lleno de anguilas',           // 5 Spanish - Mi aerodeslizador está lleno de anguilas
-    'Il mio hovercraft è pieno di anguille',              // 6 Italian - 	Il mio hovercraft è pieno di anguille
-    'Mój poduszkowiec jest pełen węgorzy',                // 7 Polish - Mój poduszkowiec jest pełen węgorzy
-    'Hoverkraftım yılan balığı dolu',                     // 8 Turkish - Hoverkraftım yılan balığı dolu
+    'Mi aerodeslizador est[ lleno de anguilas',           // 5 Spanish - Mi aerodeslizador está lleno de anguilas
+    'Il mio hovercraft } pieno di anguille',              // 6 Italian - 	Il mio hovercraft è pieno di anguille
+    'M_j poduszkowiec jest pełen w`gorzy',                // 7 Polish - Mój poduszkowiec jest pełen węgorzy
+    'Hoverkraft`m y`lan bal`$` dolu',                     // 8 Turkish - Hoverkraftım yılan balığı dolu
     'Мој ховеркрафт је пун јегуља',                       // 9 Serbian
     'Aeroglisorul meu e plin de țipari',                  // 10 Rumanian - Aeroglisorul meu e plin de țipari    
     'Моё судно на воздушной подушке полно угрей',         // 11 Russian - Моё судно на воздушной подушке полно угрей

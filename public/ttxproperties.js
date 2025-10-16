@@ -1258,14 +1258,29 @@ class TTXPROPERTIES {
     // update the display
   } // updateField
   
-  // Insert a line break into a phrase if needed
+  // Break a phrase in two if needed
   splitPhrase(phrase) {
-    // Each line is up to 38 characters
-    // Pad if too short
-    if (phrase.length < 38) {
-      phrase = phrase + ' '.repeat(38 - phrase.length)
+    let words = split(phrase, ' ')
+    let lineMax = 38 // Each line is up to 38 characters
+    let firstLine = ''
+    let secondLine = ''
+    for (const word of words) {
+      if (firstLine.length + word.length > lineMax) {
+        secondLine += (word + ' ')
+        continue
+      }
+      firstLine += (word + ' ')
     }
-    return [phrase, 'second line']
+    // Pad if too short
+    if (firstLine.length < 38) {
+      firstLine = firstLine + ' '.repeat(38 - firstLine.length)
+    }
+    
+    // Pad if too short
+    if (secondLine.length < 38) {
+      secondLine = secondLine + ' '.repeat(38 - secondLine.length)
+    }
+    return [firstLine, secondLine]
   }
   
 }
