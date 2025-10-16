@@ -680,10 +680,10 @@ class MAPCHAR {
     'Il mio hovercraft } pieno di anguille',              // 6 Italian - 	Il mio hovercraft è pieno di anguille
     'M_j poduszkowiec jest pełen w`gorzy',                // 7 Polish - Mój poduszkowiec jest pełen węgorzy
     'Hoverkraft`m y`lan bal`$` dolu',                     // 8 Turkish - Hoverkraftım yılan balığı dolu
-    'Мој ховеркрафт је пун јегуља',                       // 9 Serbian
-    'Aeroglisorul meu e plin de țipari',                  // 10 Rumanian - Aeroglisorul meu e plin de țipari    
-    'Моё судно на воздушной подушке полно угрей',         // 11 Russian - Моё судно на воздушной подушке полно угрей
-    'Mu hõljuk on angerjaid täis',                        // 12 Estonian - Mu hõljuk on angerjaid täis
+    'Moj hoverkraft je pun jegulja',                       // 9 Serbian - Moj hoverkraft je pun jegulja
+    'Aeroglisorul meu e plin de `ipari',                  // 10 Rumanian - Aeroglisorul meu e plin de țipari    
+    'Moe sudno na wozdu{noj podu{ke polno ugrej',         // 11 Russian - Моё судно на воздушной подушке полно угрей
+    'Mu h$ljuk on angerjaid t{is',                        // 12 Estonian - Mu hõljuk on angerjaid täis
     '	Моє судно на повітряній подушці наповнене вуграми', // 13	Ukranian - Моє судно на повітряній подушці наповнене вуграми
     'Mano laivas su oro pagalve pilnas ungurių',          // 14 Lithuanian - Mano laivas su oro pagalve pilnas ungurių
     'Το αερόστρωμνό μου είναι γεμάτο χέλια',              // 15 Greek - 	Το αερόστρωμνό μου είναι γεμάτο χέλια
