@@ -550,33 +550,20 @@ class MAPCHAR {
   } // MapLettish
 
   MapGreek(ch) { // 6:7
-    if ((ch>='@') && (ch<='~')) {
-      let p1 = ch.charCodeAt(0)
-      let p2 = 0x390
-      let p3 = '@'.charCodeAt(0)
-      let p4 = p1 + p2 - p3
-      let ch2 = char(p4)
-      return ch2
-    }
     switch (ch) {
       case 'R' :  return char(0x0374) // Top right dot thingy
       case '<' :  return char(0x00ab) // left chevron
       case '>' :  return char(0x00bb) // right chevron
-      // Nat. opt. 1
-
-      // case '@' :  return char(0x00e9) // 4/0 e acute
-      case '[' :  return char(0x00b0) // 5/B ring
-      case '\\':  return char(0x00e7) // 5/C c cedilla
-      // Nat. opt. 2
-      case ']' :  return char(0x2192) // 5/D right arrow
-      case '^' :  return char(0x2191) // 5/E up arrow
-      case '_' :  return char('#')    // 5/F hash
-      case '`' :  return char(0x00f9) // 6/0 u grave
-      case '{' :  return char(0x00e0) // 7/B a grave
-      case '|' :  return char(0x00f2) // 7/C o grave
-      case '}' :  return char(0x00e8) // 7/D e grave
-      // case '~' :  return char(0x03af) // 7/E ί i grave
       default:
+        // Most mappings are direct
+        if ((ch>='@') && (ch<='~')) {
+          let p1 = ch.charCodeAt(0)
+          let p2 = 0x390
+          let p3 = '@'.charCodeAt(0)
+          let p4 = p1 + p2 - p3
+          let ch2 = char(p4)
+          return ch2
+        }
         return ch
     }
   } // MapGreek
@@ -680,15 +667,15 @@ class MAPCHAR {
     'Il mio hovercraft } pieno di anguille',              // 6 Italian - 	Il mio hovercraft è pieno di anguille
     'M_j poduszkowiec jest pełen w`gorzy',                // 7 Polish - Mój poduszkowiec jest pełen węgorzy
     'Hoverkraft`m y`lan bal`$` dolu',                     // 8 Turkish - Hoverkraftım yılan balığı dolu
-    'Moj hoverkraft je pun jegulja',                       // 9 Serbian - Moj hoverkraft je pun jegulja
+    'Moj hoverkraft je pun jegulja',                      // 9 Serbian - Moj hoverkraft je pun jegulja
     'Aeroglisorul meu e plin de `ipari',                  // 10 Rumanian - Aeroglisorul meu e plin de țipari    
     'Moe sudno na wozdu{noj podu{ke polno ugrej',         // 11 Russian - Моё судно на воздушной подушке полно угрей
     'Mu h$ljuk on angerjaid t{is',                        // 12 Estonian - Mu hõljuk on angerjaid täis
-    '	Моє судно на повітряній подушці наповнене вуграми', // 13	Ukranian - Моє судно на повітряній подушці наповнене вуграми
-    'Mano laivas su oro pagalve pilnas ungurių',          // 14 Lithuanian - Mano laivas su oro pagalve pilnas ungurių
-    'Το αερόστρωμνό μου είναι γεμάτο χέλια',              // 15 Greek - 	Το αερόστρωμνό μου είναι γεμάτο χέλια
-    'حَوّامتي مُمْتِلئة بِأَنْقَلَيْسون',                            // 16 Arabic - حَوّامتي مُمْتِلئة بِأَنْقَلَيْسون
-    'הרחפת שלי מלאה בצלופחים',                             // 17 Hebrew - הרחפת שלי מלאה בצלופחים
+    'Moe sudno na powytrqnyj podu{cy napownene wugrami',  // 13	Ukranian - Моє судно на повітряній подушці наповнене вуграми
+    'Mano laivas su oro pagalve pilnas unguri|',          // 14 Lithuanian - Mano laivas su oro pagalve pilnas ungurių
+    'To aeq|stqylm| lou e_mai cel\\to w]kia',             // 15 Greek - 	Το αερόστρωμνό μου είναι γεμάτο χέλια
+    ']َوّامتي مُمْتِلئة بِأَنْقَلَيْسون',                            // 16 Arabic - حَوّامتي مُمْتِلئة بِأَنْقَلَيْسون  @todo! Can't work out the mapping
+    'migtolva d`wn ily ztgxd',                            // 17 Hebrew - הרחפת שלי מלאה בצלופחים
     'undefined language'                                  // 18 Undefined
     ]
     let n = 0
