@@ -17,7 +17,7 @@ class TTXPROPERTIES {
   // Use doInits to pass description, X28 clut and palette etc.
   constructor() {
     print("[TTXPROPERTIES] Constructor")    
-    this.totalPages = 4 // How many configuration pages
+    this.totalPages = 5 // How many configuration pages
     this.pageIndex = 0 // Which configuration page we are on
     this.description = 'description not set'
     this.rows = []
@@ -192,7 +192,9 @@ class TTXPROPERTIES {
         break;
       case 2: this.loadPage2() // Metadata: Fastext, Description, Page timing etc.
         break;
-      case 3: this.loadPage3() // X28 Language selection
+      case 3: this.loadPage3() // X28 Language selection G0G2 default
+        break;
+      case 4: this.loadPage3() // X28 Language selection G0G2 secondary
         break;
       default:
         print("[ttxproperties::updateIndex] Invalid index " + this.pageIndex)
@@ -716,17 +718,18 @@ class TTXPROPERTIES {
 
   }
   
-  // X28 language selection
-  loadPage3(pageIndex) {
-    print("loading page 3")
+  // X28 language selection, default and secondary G0G2
+  loadPage3() {
+    let secondary = this.pageIndex === 4
+    print(`loading page ${this.pageIndex}`)
     
     // Use the default CLUT for all rows
     for (const i of this.rows) {
       i.metadata.x28Packet.setRemap(0)
     }
     
-    this.drawHeader("X28 Language selection")
-    this.drawPageIndex(4)
+    this.drawHeader(secondary ? "X28 Language secondary set" : "X28 Language primary set")
+    this.drawPageIndex(this.pageIndex + 1)
 
     this.drawBox(1,4,39,5,"Region")
     this.drawBox(1,8,39,11,"Language")
@@ -761,11 +764,6 @@ class TTXPROPERTIES {
     
     this.setupLanguageRadioButtons(region)
 
-/* TODO    // Initialise with the selected language region set
-    if (region === this.regions[rb]) {
-      this.regionsRadioGroup.selected = field
-    }
-    */
     this.pageHandler = this.hintHandler
     this.updateFieldsPage3()
 
@@ -773,7 +771,7 @@ class TTXPROPERTIES {
   
   /** Load the page data into the UI
   */
-  updateFieldsPage3() {
+  updateFieldsPage3() { // @todo Add a parameter to select between primary and secondary G0G2
     print("page 3 fields updater called ")
     
     // ***** REGION *****
