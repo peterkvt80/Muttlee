@@ -1,15 +1,24 @@
-'use strict'
+'use strict';
 // Mappings in 15.6 Alphanumeric Character Sets of ETSI EN 300 706
 // These mappings are for the teletext2 font
 
 class MAPCHAR {  
 
-  constructor(region, language) {
-    this.setRegion(region)
-    this.setLanguage(language)
+  constructor(region, language, region2 = 0, language2 = 0) {
+    this.region = []
+    this.language = []
+    this.setRegion(region, 0) // Primary
+    this.setLanguage(language, 0)
+    this.setRegion(region2, 1) // Second
+    this.setLanguage(language2, 1)
+    this.second = 0 // Index to switch the mapping character sets 
   }
   
-  setRegion(region) {
+  /** Set the X28 region
+   * @param region - one of 0, 1,2,3,4 6,8,10
+   * @param index - Defaults to default character set. If 1 it sets the secondary character set
+   */
+  setRegion(region, index) {
     if (typeof region ==='undefined') {
       LOG.fn(
         ['MAPCHAR', 'setRegion'],
@@ -21,30 +30,42 @@ class MAPCHAR {
     if (region > 28 || region < 0) {
       region = 0
     }
-    this.region = region
+    this.region[index] = region
   }
   
-  setLanguage(language) {
+  setLanguage(language, index) {
     if (language > 7 || language < 0) {
       language = 0
     }
-    this.language = language
+    this.language[index] = language
   }
   
   static copyMapping(src, dest) {
-    dest.language = src.language
-    dest.region = src.region
+    for (let i=0; i<2; ++i) {
+      dest.language[i] = src.language[i]
+      dest.region[i] = src.region[i]
+    }
   }
   
+  /**
+   * @param value - True or 1 = use second G0G2, False or 0 = use primary G0G2
+   */
+  setSecond(value) {  
+    this.second = value!==0?1:0 // @Todo. Stick this in where we need a different mapping
+  }
+  
+  /**
+   */
   map(ch) {
     ch = char(ch.charCodeAt(0) & 0x7f)
     if (ch.charCodeAt(0) === 0x7f) { // 7/F Bullet (rectangle block)
       return char(0xe65f)
     }
-
-    switch (this.region) {
+    let lang = this.language[this.second]
+    let region = this.region[this.second]
+    switch (region) {
       case 0 : // West Europe
-        switch (this.language) {
+        switch (lang) {
           case 0: return this.MapEnglish(ch)
           case 1: return this.MapFrench(ch)
           case 2: return this.MapSwedish(ch)
@@ -55,7 +76,7 @@ class MAPCHAR {
         }
         break
       case 1: // West Europe plus Polish
-        switch (this.language) {
+        switch (lang) {
           case 0: return this.MapPolish(ch)
           case 1: return this.MapFrench(ch)
           case 2: return this.MapSwedish(ch)
@@ -65,7 +86,7 @@ class MAPCHAR {
         }
         break
       case 2: // West Europe plus Turkish
-        switch (this.language) {
+        switch (lang) {
           case 0: return this.MapEnglish(ch)
           case 1: return this.MapFrench(ch)
           case 2: return this.MapSwedish(ch)
@@ -76,13 +97,13 @@ class MAPCHAR {
         }
         break
       case 3: // Serbian/Croatian/Slovenian/Rumanian
-        switch (this.language) {
+        switch (lang) {
           case 5: return this.MapSerbian(ch)
           case 7: return this.MapRumanian(ch)
         }
         break
       case 4: // Russian/Bulgarian
-        switch (this.language) {
+        switch (lang) {
           case 0: return this.MapSerbian(ch)
           case 1: return this.MapRussianBulgarian(ch)
           case 2: return this.MapEstonian(ch)
@@ -93,27 +114,27 @@ class MAPCHAR {
         }
         break
       case 6: // Turkish/Greek
-        switch (this.language) {
+        switch (lang) {
           case 3: return this.MapTurkish(ch)
           case 7: return this.MapGreek(ch)
         }
         break
       case 8: // Arabic
-        switch (this.language) {
+        switch (lang) {
           case 0: return this.MapEnglish(ch)
           case 1: return this.MapFrench(ch)
           case 7: return this.MapArabic(ch)
         }
         break
       case 10: // Hebrew
-        switch (this.language) {
+        switch (lang) {
           case 5: return this.MapHebrew(ch)
           case 7: return this.MapArabic(ch)
         }
         break
         
       default:
-        print(`[MAPCHAR] ERROR: Undefined region = ${this.region}`)
+        print(`[MAPCHAR] ERROR: Undefined region = ${this.region[this.second]}`)
     }
     return ch
   } //map
@@ -654,9 +675,10 @@ class MAPCHAR {
   } // getLanguageStrings
   
   /**
+   * @param index - 0 = primary, 1 = second
    * @eturn A phrase in the currently selected language
    */
-  getLanguagePhrase() {
+  getLanguagePhrase(index) {
     const phrases = [
     'My hovercraft is full of eels',                      // 0 English - My hovercraft is full of eels
     "Mon a£roglisseur est plein d'anguilles",             // 1 French - Mon aéroglisseur est plein d'anguilles
@@ -679,30 +701,30 @@ class MAPCHAR {
     'undefined language'                                  // 18 Undefined
     ]
     let n = 0
-    switch (this.region) {
+    switch (this.region[index]) {
       case 0: // West Europe
-        n = [0, 1, 2, 3, 4, 5, 6][this.language] // ['English', 'French', 'Swedish', 'Czech/Slovak', 'German', 'Spanish/Portuguese', 'Italian', undefined]
+        n = [0, 1, 2, 3, 4, 5, 6][this.language[index]] // ['English', 'French', 'Swedish', 'Czech/Slovak', 'German', 'Spanish/Portuguese', 'Italian', undefined]
         break
       case 1: // West Europe plus Polish
-        n = [7, 1, 2, 3, 4, 18, 6, 18][this.language] // ['Polish', 'French', 'Swedish', 'Czech/Slovak', 'German', undefined, 'Italian', undefined]
+        n = [7, 1, 2, 3, 4, 18, 6, 18][this.language[index]] // ['Polish', 'French', 'Swedish', 'Czech/Slovak', 'German', undefined, 'Italian', undefined]
         break
       case 2: // West Europe plus Turkish
-        n = [0, 1, 2, 8, 4, 5, 6, 18][this.language] // ['English', 'French', 'Swedish', 'Turkish', 'German', 'Spanish/Portuguese', 'Italian', undefined]
+        n = [0, 1, 2, 8, 4, 5, 6, 18][this.language[index]] // ['English', 'French', 'Swedish', 'Turkish', 'German', 'Spanish/Portuguese', 'Italian', undefined]
         break
       case 3: // Serbian/Croatian/Slovenian/Rumanian
-        n = [18, 18, 18, 18, 18, 9, 18, 10][this.language] // [undefined, undefined, undefined, undefined, undefined, 'Serbian', undefined, 'Rumanian']
+        n = [18, 18, 18, 18, 18, 9, 18, 10][this.language[index]] // [undefined, undefined, undefined, undefined, undefined, 'Serbian', undefined, 'Rumanian']
         break
       case 4: // Russian/Bulgarian
-        n = [9, 11, 12, 3, 4, 13, 14, 18][this.language] // ['Serbian', 'Russian/Bulgarian', 'Estonian', 'Czech/Slovak', 'German', 'Ukranian', 'Lettish/Lithuanian', undefined]
+        n = [9, 11, 12, 3, 4, 13, 14, 18][this.language[index]] // ['Serbian', 'Russian/Bulgarian', 'Estonian', 'Czech/Slovak', 'German', 'Ukranian', 'Lettish/Lithuanian', undefined]
         break
       case 6: // Turkish/Greek
-        n = [18, 18, 18, 8, 18, 18, 18, 15][this.language] // [undefined, undefined, undefined, 'Turkish', undefined, undefined, undefined, 'Greek']
+        n = [18, 18, 18, 8, 18, 18, 18, 15][this.language[index]] // [undefined, undefined, undefined, 'Turkish', undefined, undefined, undefined, 'Greek']
         break
       case 8: // Arabic
-        n = [0, 1, 18, 18, 18, 18, 18, 16][this.language] // ['English', 'French', undefined, undefined, undefined, undefined, undefined, 'Arabic']
+        n = [0, 1, 18, 18, 18, 18, 18, 16][this.language[index]] // ['English', 'French', undefined, undefined, undefined, undefined, undefined, 'Arabic']
         break
       case 10: // Hebrew
-        n = [18, 18, 18, 18, 18, 17, 18, 16][this.language] // [undefined, undefined, undefined, undefined, undefined, 'Hebrew', undefined, 'Arabic']
+        n = [18, 18, 18, 18, 18, 17, 18, 16][this.language[index]] // [undefined, undefined, undefined, undefined, undefined, 'Hebrew', undefined, 'Arabic']
         break
       default:
         n = 0

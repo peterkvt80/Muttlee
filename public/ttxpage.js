@@ -29,21 +29,21 @@ class MetaData {
     this.x28Packet = x28Packet
     /// @todo Add packets 26, 28, 29
 
-    this.mapping = new MAPCHAR(x28Packet.region(), x28Packet.language()) // Character mappings for region and language
+    this.mapping = new MAPCHAR(x28Packet.region(), x28Packet.language(), x28Packet.region(1), x28Packet.language(1)) // Character mappings for region and language
   }
   
   setTimer(t) {
     this.timer = t
   }
   
-  setLanguage(lang) {
-    this.mapping.setLanguage(lang) // Compatibility with non X28 decoders  
-    this.x28Packet.setLanguage(lang) // X28 G0G2 default language
+  setLanguage(lang, index) {
+    this.mapping.setLanguage(lang, index) // Compatibility with non X28 decoders  
+    this.x28Packet.setLanguage(lang, index) // X28 G0G2 default language
   }
   
-  setRegion(region) {
-    this.mapping.setRegion(region)
-    this.x28Packet.setRegion(region) // X28 G0G2 default language
+  setRegion(region, index) {
+    this.mapping.setRegion(region, index)
+    this.x28Packet.setRegion(region, index) // X28 G0G2 default language
   }
   
   /** Deep copy
@@ -1126,6 +1126,11 @@ function Row (ttxpage, page, y, str, metadata) {
 
         if (textmode || (ch.charCodeAt(0) >= 0x40 && ch.charCodeAt(0) < 0x60)) {
           ch = this.metadata.mapping.map(ch)
+          // @TODO Mapping is going to have an extra parameter in it so that
+          // the second set can be selected.
+          // THIS IS WHERE THAT VALUE GOES.
+          // It will be a member of MAPPING to indicate which character set is active
+
           // If cpos is negative, we can't be editing anything
           if (changed[i] && cpos >= 0) {
             fill(200, 100, 0) // If the text has been edited then make it orange until the server replies that it has been saved

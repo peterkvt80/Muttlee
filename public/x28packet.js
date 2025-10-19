@@ -148,10 +148,12 @@ class X28Packet {
     this.defaultG0G2CharacterSet = value
   }
   
+  setSecondG0G2CharacterSet(value) {
+    this.secondG0G2CharacterSet = value
+  }
+
   // Replace the language part of the character specification
   setLanguage(lang) {
-    // this.mapping.setLanguage(lang & 0x07) // TODO Mapping has to be set somewhere
-    // [!] TODO Check that this region supports this language
     this.defaultG0G2CharacterSet = this.defaultG0G2CharacterSet & 0x38 | lang & 0x07
   }
 
@@ -159,22 +161,17 @@ class X28Packet {
   setRegion(region) {
     let reg = (region & 0x0f) << 3
     let lang = this.defaultG0G2CharacterSet & 0x07
-    
-    //this.mapping.setRegion(region & 0x0f) // TODO Mapping has to be set somewhere
-    // [!] TODO Check that this language exists in this region
     this.defaultG0G2CharacterSet = (reg | lang)
   }
   
   setSecondLanguage(lang) {
-    this.mapping.setLanguage(lang & 0x07)
+    this.secondG0G2CharacterSet = this.secondG0G2CharacterSet & 0x38 | lang & 0x07
   }
 
   setSecondRegion(region) {
-    this.mapping.setRegion(region & 0x0f)
-  }
-
-  setSecondG0G2CharacterSet(value) {
-    this.secondG0G2CharacterSet = value
+    let reg = (region & 0x0f) << 3
+    let lang = this.secondG0G2CharacterSet & 0x07    
+    this.secondG0G2CharacterSet = (reg | lang)
   }
 
   setDefaultScreenColour(value) {
@@ -211,20 +208,20 @@ class X28Packet {
     this.blackBackgroundSub = bgFlag!=0
   }
   
-  region() {
-    return (this.defaultG0G2CharacterSet >> 3) & 0x0f
+  region(index) {
+    if (index) {
+      return (this.secondG0G2CharacterSet >> 3) & 0x0f
+    } else {
+      return (this.defaultG0G2CharacterSet >> 3) & 0x0f
+    }    
   }
 
-  language() {
-  // TODO Do we need to reverse the bits?
-  /*
-        charSet &= 0x07 // language is reversed
-      charSet =
-        ((charSet & 0x01) << 2) |
-        (charSet & 0x02) |
-        (charSet >> 2);
-   */
+  language(index) {
+    if (index) {
+      return this.secondG0G2CharacterSet & 0x07
+    } else {
     return this.defaultG0G2CharacterSet & 0x07
+    }    
   }
 
   /** Used by X28/0 to swap entire cluts

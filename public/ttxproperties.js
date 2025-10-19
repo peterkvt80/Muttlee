@@ -194,7 +194,7 @@ class TTXPROPERTIES {
         break;
       case 3: this.loadPage3() // X28 Language selection G0G2 default
         break;
-      case 4: this.loadPage3() // X28 Language selection G0G2 secondary
+      case 4: this.loadPage3() // X28 Language selection G0G2 second set
         break;
       default:
         print("[ttxproperties::updateIndex] Invalid index " + this.pageIndex)
@@ -718,9 +718,9 @@ class TTXPROPERTIES {
 
   }
   
-  // X28 language selection, default and secondary G0G2
+  // X28 language selection, default and second G0G2
   loadPage3() {
-    let secondary = this.pageIndex === 4
+    let index = this.pageIndex === 4?1:0 // 1 if this is the second G0G2 set?
     print(`loading page ${this.pageIndex}`)
     
     // Use the default CLUT for all rows
@@ -728,7 +728,7 @@ class TTXPROPERTIES {
       i.metadata.x28Packet.setRemap(0)
     }
     
-    this.drawHeader(secondary ? "X28 Language secondary set" : "X28 Language primary set")
+    this.drawHeader(index ? "X28 Language second set" : "X28 Language primary set")
     this.drawPageIndex(this.pageIndex + 1)
 
     this.drawBox(1,4,39,5,"Region")
@@ -741,7 +741,7 @@ class TTXPROPERTIES {
     this.editableFields = []
     
     //  ****** Regions ******
-    let region = this.metadata.mapping.region
+    let region = this.metadata.mapping.region[index]
 
 //      constructor(uiType, xLoc, yLoc, xWidth, yHeight, clutIndex, hint, enable = true) {
     let clutIndex = 0
@@ -762,7 +762,7 @@ class TTXPROPERTIES {
       this.editableFields.push(field) 
     }
     
-    this.setupLanguageRadioButtons(region)
+    this.setupLanguageRadioButtons(region, index)
 
     this.pageHandler = this.hintHandler
     this.updateFieldsPage3()
@@ -802,17 +802,17 @@ class TTXPROPERTIES {
     for (;y<10+8;++y) {
       this.blankRadioButton(x, y, w)
     }
-
   }
   
   /** Setup Language Radio Buttons according to the region
    * @param region - Region for the language buttons
+   * param index - 1 = Second, 0 = default
    */
-  setupLanguageRadioButtons(region) {
+  setupLanguageRadioButtons(region, index) {
     this.editableFields.length = 8
     //  ****** Languages ******
     // Vertical radio group
-    const language = this.metadata.mapping.language
+    const language = this.metadata.mapping.language[index]
     const languageStrings = MAPCHAR.getLanguageStrings(region)
     let i = 0
     let x = 4
@@ -828,8 +828,7 @@ class TTXPROPERTIES {
         this.editableFields.push(field) 
       }
       i++
-    }
-     
+    }     
    }
 
   
@@ -1185,8 +1184,9 @@ class TTXPROPERTIES {
       break
     case CONST.UI_FIELD.FIELD_RADIOBUTTON:
       print("[TTXPROPERTIES::updateField] radio button")
-      if (this.pageIndex === 3) { // Language/Region
+      if (this.pageIndex === 3 || this.pageIndex === 4) { // Language/Region, primary, second
         print(field)
+        let index = this.pageIndex === 4 ? 1 : 0 // Second G0G2?
         // The button reference is field
         // What value is it?
         let value = field.value
@@ -1197,10 +1197,10 @@ class TTXPROPERTIES {
           // Check that value is in regions[]
           if (this.regions.includes(value)) {
             // Update the underlying data 
-            this.metadata.setRegion(value)
+            this.metadata.setRegion(value, index)
             this.regionsRadioGroup.selected = field
             // If the region changed, the language set also changes
-            this.setupLanguageRadioButtons(value)
+            this.setupLanguageRadioButtons(value, index)
             
           } else {
             LOG.fn(
@@ -1215,9 +1215,9 @@ class TTXPROPERTIES {
           print("[TTXPROPERTIES::updateField] language group handler")          
           print(`language selected = ${value}`)
           this.languagesRadioGroup.selected = field
-          this.metadata.setLanguage(value)
+          this.metadata.setLanguage(value, index)
           // What is the sample phrase for this language?
-          let phrase = this.metadata.mapping.getLanguagePhrase()
+          let phrase = this.metadata.mapping.getLanguagePhrase(index)
           print("phrase = " + phrase)
           // Write the phrase on the page
           let row = 20
@@ -1229,17 +1229,16 @@ class TTXPROPERTIES {
             replace(txt.txt,
               String.fromCharCode(7) + lines[0],
               col))
-          txt.metadata.setLanguage(value)
-          txt.metadata.setRegion(this.metadata.mapping.region)
+          txt.metadata.setLanguage(value, index)
+          txt.metadata.setRegion(this.metadata.mapping.region[index], index)
+          txt.metadata.mapping.setSecond(index)
           txt = this.rows[row + 1]    
           txt.setrow(
             replace(txt.txt,
               String.fromCharCode(7) + lines[1],
               col))
-          txt.metadata.setLanguage(value)
-          txt.metadata.setRegion(this.metadata.mapping.region)
-           
-
+          txt.metadata.setLanguage(value, index)
+          txt.metadata.setRegion(this.metadata.mapping.region[index])           
           
         }
         // Make the widget redraw
