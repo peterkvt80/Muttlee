@@ -1076,6 +1076,9 @@ function Row (ttxpage, page, y, str, metadata) {
         case 29: // 29: new background
           bgColor = fgColor
           break
+        case 27: // 27: Escape 
+          print("[ttxpage::draw]TODO: HANDLE ESCAPE SWITCH")
+          break
         case 30: // 30: Hold graphics mode (set at)
           holdGfx = true
           printable = true // Because this will be replaced

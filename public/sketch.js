@@ -1216,6 +1216,17 @@ function keyPressed () {
         editMode = CONST.EDITMODE_EDIT
         break
 
+      case CONTROL: 
+        break
+        
+      case 83: // CTRL-S Insert a language switch ESC (todo)
+        if (editMode === CONST.EDITMODE_ESCAPE && keyIsDown(17)) { // Is CTRL being pressed at the same time?
+          processKey('\x1b')
+        } else {
+          handled = false // Pass the S onwards
+        } 
+        break
+
       case 33: // PAGE_UP (next subpage when in edit mode)
         if (editMode === CONST.EDITMODE_PROPERTIES) {
           // Forward page up to the properties page
@@ -1362,6 +1373,7 @@ function backSpace () {
 /** edit mode is entered if any non numeric code is typed
  *  edit mode exits if <esc> is pressed
  *  This p5js function doesn't fire on Ctrl, Alt, Shift etc.
+ *  For modifiers see keyPressed()
  */
 function keyTyped () {
   LOG.fn(
@@ -1382,7 +1394,7 @@ function keyTyped () {
       0
     )
 
-    return true // Don't prevent native event propagation on input element
+    return true // Allow native event propagation on input element
   } else if (focusedDescription) {
     // keypress in the description input field...
     console.log('[sketch, keyTyped] inputDescription happened. key = ' + key)
@@ -1502,9 +1514,10 @@ function processKey (keyPressed) {
     editMode = CONST.EDITMODE_INSERT
     myPage.setEditMode(editMode)
 
-    editTF(key)
-
-    return
+    if (keyPressed !== '\x1b') { // Don't put Escape/Switch language through editTF
+      editTF(key)
+      return
+    }
   }
 
   if (editMode !== CONST.EDITMODE_NORMAL) { // Numbers are typed into the page
