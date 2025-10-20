@@ -783,7 +783,7 @@ class TTXPROPERTIES {
     }
     
     // ***** LANGUAGE *****
-    const language = this.metadata.mapping.language
+    // APPARENTLY NOT USED ? const language = this.metadata.mapping.language
     let region = this.regionsRadioGroup.selected.value
     const languageStrings = MAPCHAR.getLanguageStrings(region)
     let i = 0
@@ -1223,7 +1223,7 @@ class TTXPROPERTIES {
           let row = 20
           let col = 1
           let txt = this.rows[row]
-          // Split the sentence into two rows
+          // Split the sentence into two rows, applying the selected language just to these rows
           let lines = this.splitPhrase(phrase)
           txt.setrow(
             replace(txt.txt,
@@ -1231,14 +1231,15 @@ class TTXPROPERTIES {
               col))
           txt.metadata.setLanguage(value, index)
           txt.metadata.setRegion(this.metadata.mapping.region[index], index)
-          txt.metadata.mapping.setSecond(index)
+          // txt.metadata.mapping.useSecondG0(index)
+          // Now do the second row
           txt = this.rows[row + 1]    
           txt.setrow(
             replace(txt.txt,
               String.fromCharCode(7) + lines[1],
               col))
           txt.metadata.setLanguage(value, index)
-          txt.metadata.setRegion(this.metadata.mapping.region[index])           
+          txt.metadata.setRegion(this.metadata.mapping.region[index], index)
           
         }
         // Make the widget redraw

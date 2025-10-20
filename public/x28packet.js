@@ -65,15 +65,15 @@
 ## be redefined for a particular page by packet X/28/4, or
 ##
 */
-'use strict';
+/* global color, print */
+'use strict'
 class X28Packet {
-  constructor() {
-    console.log ('Clut loaded')
+  constructor () {
     this.dc = 0 // Should always be 0 for this packet
     this.pageFunction = 0
     this.pageCoding = 0
-    this.defaultG0G2CharacterSet
-    this.secondG0G2CharacterSet
+    this.defaultG0G2CharacterSet = 0
+    this.secondG0G2CharacterSet = 0
     this.clut0 = new Array(8) // default full intensity colours
     this.clut1 = new Array(8) // default half intensity colours
     this.clut2 = new Array(8)
@@ -91,137 +91,142 @@ class X28Packet {
     this.resetTable()
 
     // Setters and Getters
-    let self = this // You'll thank me later
-    this.getDefaultScreenClut = function() {
+    const self = this // You'll thank me later
+    this.getDefaultScreenClut = function () {
       return (self.defaultScreenColour >> 3) & 0x03
     }
-    this.getDefaultScreenColourIndex = function() {
+    this.getDefaultScreenColourIndex = function () {
       return self.defaultScreenColour & 0x07
     }
-    this.getDefaultRowClut = function() {
+    this.getDefaultRowClut = function () {
       return (self.defaultRowColour >> 3) & 0x03
     }
-    this.getDefaultRowColourIndex = function() {
+    this.getDefaultRowColourIndex = function () {
       return self.defaultRowColour & 0x07
     }
 
-    /// Replace the screen clut value 
-    this.setDefaultScreenClut = function(value) {
+    /// Replace the screen clut value
+    this.setDefaultScreenClut = function (value) {
       self.defaultScreenColour &= 0x07
       self.defaultScreenColour |= value << 3
     }
-    
+
     /// Replace the screen colour index value
-    this.setDefaultScreenColourIndex = function(value) {
+    this.setDefaultScreenColourIndex = function (value) {
       self.defaultScreenColour &= 0x18
       self.defaultScreenColour |= (value & 0x07)
-    }   
-    
-    /// Replace the row clut value 
-    this.setDefaultRowClut = function(value) {
+    }
+
+    /// Replace the row clut value
+    this.setDefaultRowClut = function (value) {
       self.defaultRowColour &= 0x07
       self.defaultRowColour |= value << 3
     }
-    
+
     /// Replace the row colour index value
-    this.setDefaultRowColourIndex = function(value) {
+    this.setDefaultRowColourIndex = function (value) {
       self.defaultRowColour &= 0x18
       self.defaultRowColour |= (value & 0x07)
-    }   
+    }
   } // constructor
-  
+
   // Setters and getters
-    
-  setDC(value) {
+
+  setDC (value) {
     this.dc = value // Should always be 0
-  }  
+  }
 
-  setPageFunction(value) {
+  setPageFunction (value) {
     this.pageFunction = value
-  }  
+  }
 
-  setPageCoding(value) {
+  setPageCoding (value) {
     this.coding = value
-  }  
-
-  setDefaultG0G2CharacterSet(value) {
-    this.defaultG0G2CharacterSet = value
-  }
-  
-  setSecondG0G2CharacterSet(value) {
-    this.secondG0G2CharacterSet = value
   }
 
-  // Replace the language part of the character specification
-  setLanguage(lang) {
-    this.defaultG0G2CharacterSet = this.defaultG0G2CharacterSet & 0x38 | lang & 0x07
+  /**
+   * @param value - Combined 7 bit Region and language number
+   * @param index 0 = default, 1 = second
+   */
+  setG0CharacterSet (value, index) {
+    if (index === 1) {
+      this.secondG0G2CharacterSet = value
+    } else {
+      this.defaultG0G2CharacterSet = value
+    }
   }
 
-  // Replace the region part of the character set specification
-  setRegion(region) {
-    let reg = (region & 0x0f) << 3
-    let lang = this.defaultG0G2CharacterSet & 0x07
-    this.defaultG0G2CharacterSet = (reg | lang)
-  }
-  
-  setSecondLanguage(lang) {
-    this.secondG0G2CharacterSet = this.secondG0G2CharacterSet & 0x38 | lang & 0x07
+  // Replace the language part of the character specification (three bits)
+  setLanguage (lang, index) {
+    if (index === 1) {
+      this.secondG0G2CharacterSet = this.secondG0G2CharacterSet & 0x38 | lang & 0x07
+    } else {
+      this.defaultG0G2CharacterSet = this.defaultG0G2CharacterSet & 0x38 | lang & 0x07
+    }
   }
 
-  setSecondRegion(region) {
-    let reg = (region & 0x0f) << 3
-    let lang = this.secondG0G2CharacterSet & 0x07    
-    this.secondG0G2CharacterSet = (reg | lang)
+  // Replace the region part of the character set specification (four bits)
+  setRegion (region, index) {
+    const reg = (region & 0x0f) << 3
+    let lang
+    if (index === 1) {
+      lang = this.secondG0G2CharacterSet & 0x07
+      this.secondG0G2CharacterSet = (reg | lang)
+    } else {
+      lang = this.defaultG0G2CharacterSet & 0x07
+      this.defaultG0G2CharacterSet = (reg | lang)
+    }
   }
 
-  setDefaultScreenColour(value) {
+  setDefaultScreenColour (value) {
     // @todo Check that it is a 5 bit value
-    this.defaultScreenColour = value 
-  }   
-   
-  setDefaultRowColour(value) {
-    // @todo Check that it is a 5 bit value
-    this.defaultRowColour = value 
+    this.defaultScreenColour = value
   }
-  
-  setLeftColumns(value) {
+
+  setDefaultRowColour (value) {
+    // @todo Check that it is a 5 bit value
+    this.defaultRowColour = value
+  }
+
+  setLeftColumns (value) {
     // @todo Check that it is 20 or less
-    this.leftColumns = value 
+    this.leftColumns = value
   }
-  
-  setEnableLeftPanel(value) {
-    this.enableLeftPanel = value 
+
+  setEnableLeftPanel (value) {
+    this.enableLeftPanel = value
   }
-  
-  setEnableRightPanel(value) {
-    this.enableRightPanel = value 
+
+  setEnableRightPanel (value) {
+    this.enableRightPanel = value
   }
-  
-  setSidePanelStatusFlag(value) {
+
+  setSidePanelStatusFlag (value) {
     this.sidePanelStatusFlag = value
   }
-  setRemap(remap) {
+
+  setRemap (remap) {
     this.remap = remap & 0x7
   }
 
-  setBlackBackgroundSub(bgFlag) {
-    this.blackBackgroundSub = bgFlag!=0
+  setBlackBackgroundSub (bgFlag) {
+    this.blackBackgroundSub = bgFlag !== 0
   }
-  
-  region(index) {
+
+  region (index) {
     if (index) {
       return (this.secondG0G2CharacterSet >> 3) & 0x0f
     } else {
       return (this.defaultG0G2CharacterSet >> 3) & 0x0f
-    }    
+    }
   }
 
-  language(index) {
+  language (index) {
     if (index) {
       return this.secondG0G2CharacterSet & 0x07
     } else {
-    return this.defaultG0G2CharacterSet & 0x07
-    }    
+      return this.defaultG0G2CharacterSet & 0x07
+    }
   }
 
   /** Used by X28/0 to swap entire cluts
@@ -231,7 +236,7 @@ class X28Packet {
      * Given a colour, it maps the colour according to the remapping Table 4
      * and whether it is a background or a foreground colour
      */
-  remapColourTable(colourIndex, foreground) {
+  remapColourTable (colourIndex, foreground) {
     let clutIndex = 0
     if (foreground) {
       if (this.remap > 4) {
@@ -254,15 +259,15 @@ class X28Packet {
     }
     // Black Background Colour Substitution
     // If this is set, then colour 0 in a row is replaced by the default row colour
-    if (this.blackBackgroundSub && !foreground && colourIndex===0) {
-      let value = this.defaultRowColour
-      let clut = (value >> 3) & 0x03
-      let colour = value & 0x07
+    if (this.blackBackgroundSub && !foreground && colourIndex === 0) {
+      const value = this.defaultRowColour
+      const clut = (value >> 3) & 0x03
+      const colour = value & 0x07
       switch (clut) {
-      case 0: return this.clut0[colour]
-      case 1: return this.clut1[colour]
-      case 2: return this.clut2[colour]
-      case 3: return this.clut3[colour]
+        case 0: return this.clut0[colour]
+        case 1: return this.clut1[colour]
+        case 2: return this.clut2[colour]
+        case 3: return this.clut3[colour]
       }
       return color(0, 0, 255)
     }
@@ -273,7 +278,7 @@ class X28Packet {
     return this.getValue(clutIndex, colourIndex)
   }
 
-  resetTable() { // Default values from table 12.4
+  resetTable () { // Default values from table 12.4
     // CLUT 0 full intensity
     this.clut0[0] = color(0) // black
     this.clut0[1] = color(255, 0, 0) // red
@@ -285,7 +290,7 @@ class X28Packet {
     this.clut0[7] = color(255, 255, 255) // white
 
     // CLUT 1 half intensity
-    this.clut1[0] = color(0,0,0) // transparent @todo ?
+    this.clut1[0] = color(0, 0, 0) // transparent @todo ?
     this.clut1[1] = color(127, 0, 0) // half red
     this.clut1[2] = color(0, 127, 0) // half green
     this.clut1[3] = color(127, 127, 0) // half yellow
@@ -307,13 +312,13 @@ class X28Packet {
     // CLUT 3 more lovely colours
     this.clut3[0] = color(48, 48, 48) // pastel black
     this.clut3[1] = color(255, 127, 127) // pastel red
-    this.clut3[2] = color(127, 255,127) // pastel green
+    this.clut3[2] = color(127, 255, 127) // pastel green
     this.clut3[3] = color(255, 255, 127) // pastel yellow
     this.clut3[4] = color(127, 127, 255) // pastel blue
     this.clut3[5] = color(255, 127, 255) // pastel magenta
     this.clut3[6] = color(127, 255, 255) // pastel cyan
     this.clut3[7] = color(0xdd, 0xdd, 0xdd) // pastel white
-    
+
     this.blackBackgroundSub = false
     this.remap = 0 // Default to CLUT 0
   }
@@ -327,21 +332,21 @@ class X28Packet {
    * @param clutIndex CLUT index 0 to 3
    * @param clrIndex - 0..7 colour index
    */
-  setValue(colour, clutIndex, clrIndex) {
-    let colourI = clrIndex % 8 // need to trap this a bit better. This is masking a problem
+  setValue (colour, clutIndex, clrIndex) {
+    const colourI = clrIndex % 8 // need to trap this a bit better. This is masking a problem
     switch (clutIndex % 4) {
-    case 0:
-      this.clut0[colourI] = colour
-      break
-    case 1:
-      this.clut1[colourI] = colour
-      break
-    case 2:
-      this.clut2[colourI] = colour
-      break
-    case 3:
-      this.clut3[colourI] = colour
-      break
+      case 0:
+        this.clut0[colourI] = colour
+        break
+      case 1:
+        this.clut1[colourI] = colour
+        break
+      case 2:
+        this.clut2[colourI] = colour
+        break
+      case 3:
+        this.clut3[colourI] = colour
+        break
     }
     // console.log("clut value: clut" + clutIndex + " set[" + clrIndex + '] = ' + colour)
   }
@@ -352,7 +357,7 @@ class X28Packet {
    * @return colour - 12 bit web colour number eg. 0x1ab
    * // [!] Hmm seems to return p5js colour type?
    */
-  getValue(clutIndex, clrIndex) {
+  getValue (clutIndex, clrIndex) {
     clutIndex = clutIndex % 4
     clrIndex = clrIndex % 8
     // console.log("[getValue] clutIndex = " + clutIndex + " clrIndex = " + clrIndex)
@@ -362,7 +367,7 @@ class X28Packet {
       case 1:
         return this.clut1[clrIndex]
       case 2:
-      //console.log("colour selected = " + this.clut2[clrIndex])
+      // console.log("colour selected = " + this.clut2[clrIndex])
         return this.clut2[clrIndex]
       case 3:
         return this.clut3[clrIndex]
@@ -370,77 +375,77 @@ class X28Packet {
         return this.clut0[clrIndex] // just in case!
     }
   }
-  
+
   /** colour12to24
    * @param colour12 -  a 12 bit colour
    * @return -  p5js colour
    */
-  static colour12to24(colour12) {
+  static colour12to24 (colour12) {
     print(colour12)
     colour12 = parseInt(colour12, 16)
-    let r = (colour12 >> 8) & 0x0f
-    let g = (colour12 >> 4) & 0x0f
-    let b = colour12 & 0x0f    
+    const r = (colour12 >> 8) & 0x0f
+    const g = (colour12 >> 4) & 0x0f
+    const b = colour12 & 0x0f
     return color(
-      (r<<4 | r),
-      (g<<4 | g),
-      (b<<4 | b))
+      (r << 4 | r),
+      (g << 4 | g),
+      (b << 4 | b))
   }
 
   /** colour24to12
    * @param p5js colour
    * @return - colour12 -  a 12 bits of four bits per channel RGB colour
    */
-  static colour24to12(colour24) {
+  static colour24to12 (colour24) {
     print(colour24)
-    let c = colour24 // The p5js colour
+    const c = colour24 // The p5js colour
     // let cs = (c.levels[0]>>4) << 8 | (c.levels[1]>>4) << 4 | (c.levels[2]>>4) // The 12 bit colour
     let cs = 0
-    for (let i=0; i<3; ++i) {
-      let cv = c.levels[i] // 0 = red, 1= green, 2 = blue
+    for (let i = 0; i < 3; ++i) {
+      const cv = c.levels[i] // 0 = red, 1= green, 2 = blue
       // Truncate from 8 to 4 bits
-      let cval = (cv >> 4)
+      const cval = (cv >> 4)
       cs <<= 4 // Shift one nybble left
       cs += cval
     }
     return cs
   }
-  
+
   /** p5js colour to 12 bit hex code
    *  @param clr - three character hex number
    *  @return Three digit hex colour
    */
-  static colourToHex(clr) {
-    let clr12 = X28Packet.colour24to12(clr)
-    return ('00' + clr12.toString(16)).slice(-3)   // three digit hex colour
+  static colourToHex (clr) {
+    const clr12 = X28Packet.colour24to12(clr)
+    return ('00' + clr12.toString(16)).slice(-3) // three digit hex colour
   }
 
-  /** 
+  /**
    * Deep copy clut.
    */
-  static copyX28Packet(src, dest) {
+  static copyX28Packet (src, dest) {
     dest.defaultG0G2CharacterSet = src.defaultG0G2CharacterSet
     dest.secondG0G2CharacterSet = src.secondG0G2CharacterSet
-    for (let i=0; i<8; i++) {
-      if (typeof dest==='undefined') {
+    for (let i = 0; i < 8; i++) {
+      if (typeof dest === 'undefined') {
         console.log('PUT A BREAKPOINT HERE AND FIND OUT WHAT WENT WRONG - 1')
       }
-      if (typeof dest.clut0==='undefined') {
+      if (typeof dest.clut0 === 'undefined') {
         console.log('PUT A BREAKPOINT HERE AND FIND OUT WHAT WENT WRONG - 1a')
         return
       }
-      if (typeof src==='undefined') {
+      if (typeof src === 'undefined') {
         console.log('PUT A BREAKPOINT HERE AND FIND OUT WHAT WENT WRONG - 3')
       }
-      if (typeof src.clut0[i]==='undefined') {
+      if (typeof src.clut0[i] === 'undefined') {
         console.log('PUT A BREAKPOINT HERE AND FIND OUT WHAT WENT WRONG - 4')
       }
-      //print("clut dest = " + dest.clut0[i])
-      //print("clut src = " + src.clut0[i])
-      dest.clut0[i]=src.clut0[i] // Not sure CLUT 0 and 1 need to be done
-      dest.clut1[i]=src.clut1[i]
-      dest.clut2[i]=src.clut2[i]
-      dest.clut3[i]=src.clut3[i]
+      // print("clut dest = " + dest.clut0[i])
+      // print("clut src = " + src.clut0[i])
+      dest.clut0[i] = src.clut0[i] // Not sure CLUT 0 and 1 need to be done
+      dest.clut1[i] = src.clut1[i]
+      dest.clut2[i] = src.clut2[i]
+      dest.clut3[i] = src.clut3[i]
     }
     dest.defaultScreenColour = src.defaultScreenColour
     dest.defaultRowColour = src.defaultRowColour
@@ -448,15 +453,15 @@ class X28Packet {
     dest.blackBackgroundSub = src.blackBackgroundSub
     dest.enableLeftPanel = src.enableLeftPanel
     dest.enableRightPanel = src.enableRightPanel
-    dest.sidePanelStatusFlag = src.sidePanelStatusFlag 
+    dest.sidePanelStatusFlag = src.sidePanelStatusFlag
     dest.leftColumns = src.leftColumns
-    dest.rightColumns = src.rightColumns    
+    dest.rightColumns = src.rightColumns
   }
-  
+
   /** debug dump the clut contents
    *  Don't need this right now
    */
-   /*
+  /*
   dump() {
     console.log("[Dump] CLUT values")
     for (let i=0; i<8; i++) {
@@ -473,19 +478,18 @@ class X28Packet {
     print()
   }
   */
-  
+
   /** Return the 12 bit RGB value of the default screen colour
    */
-  getDefaultScreenRGB() {
-    let val = this.getValue(this.getDefaultScreenClut(), this.getDefaultScreenColourIndex())
-    print("screen clut = " + this.getDefaultScreenClut() + " screen index = " + this.getDefaultScreenColourIndex() + " value = " + val)
+  getDefaultScreenRGB () {
+    const val = this.getValue(this.getDefaultScreenClut(), this.getDefaultScreenColourIndex())
+    print('screen clut = ' + this.getDefaultScreenClut() + ' screen index = ' + this.getDefaultScreenColourIndex() + ' value = ' + val)
     return val
   }
 
   /** Return the 12 bit RGB value of the default screen colour
    */
-  getDefaultRowRGB() {
+  getDefaultRowRGB () {
     return this.getValue(this.getDefaultRowClut(), this.getDefaultRowColourIndex())
   }
-
 } // X28Packet

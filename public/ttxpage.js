@@ -250,8 +250,7 @@ window.TTXPAGE = function () {
     }
     this.rows = []
 
-    const clut = new X28Packet()
-    let metadata = new MetaData(7, clut)
+    let metadata = new MetaData(7, new X28Packet())
     this.metadata.push(metadata)
 
     // As rows go from 0 to 31 and pages start at 100, we can use the same parameter for both
@@ -978,7 +977,7 @@ function Row (ttxpage, page, y, str, metadata) {
       }
     }
 
-    // Set up all the display mode initial defaults
+    // These are the defaults at the start of the row
     let fgColor = 7 // color(255, 255, 255) // Foreground defaults to white
     let bgColor = 0 // color(0) // Background starts black
     let textmode = true // If false it is graphics mode
@@ -988,6 +987,8 @@ function Row (ttxpage, page, y, str, metadata) {
     let holdChar = ' '
     let flashMode = false
     let dblHeight = false
+    let toggleG0Set = false // false = primary, true = second
+    this.metadata.mapping.useSecondG0(toggleG0Set)
 
     textFont(ttxFont)
     textSize(CONFIG[CONST.CONFIG.TELETEXT_FONT_SIZE])
@@ -1076,8 +1077,9 @@ function Row (ttxpage, page, y, str, metadata) {
         case 29: // 29: new background
           bgColor = fgColor
           break
-        case 27: // 27: Escape 
-          print("[ttxpage::draw]TODO: HANDLE ESCAPE SWITCH")
+        case 27: // 27: Escape means toggle between G0 and G1 character sets
+          toggleG0Set = !toggleG0Set
+          this.metadata.mapping.useSecondG0(toggleG0Set)
           break
         case 30: // 30: Hold graphics mode (set at)
           holdGfx = true

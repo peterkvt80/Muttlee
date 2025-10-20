@@ -1,7 +1,9 @@
 'use strict'
 /* global CONFIG, CONST, loadFont, hex, io, textFont, textSize, textWidth, createCanvas, int, mouseX, mouseY, location, exportPage */
+/* global draw, color, PI, windowResized, keyTyped, preload, setup, print */
 /* global saveToHash, LOG, touchStarted, touchX, touchY, PI, createVector, pixelDensity, windowResized */
-/* global key, keyTyped, keyCode */
+/* global CONTROL, ESCAPE */
+/* global key, keyCode, keyIsDown */
 /* global page, TTXPAGE, background, noStroke, fill */
 /* global LEFT_ARROW, RIGHT_ARROW, UP_ARROW, DOWN_ARROW, TAB, BACKSPACE, ESCAPE. ENTER */
 /* global select, frameRate, CHARCHANGED, history, event */
@@ -76,7 +78,7 @@ let blockStart // block select
  * \return The mapped key
  */
 function mapKey (key) {
-return key // [!] These mappings conflict with mapchar
+  return key // [!] These mappings conflict with mapchar
   // These are english mappings
   // Don't need to do $, @, ^, | because they are the same
   // Don't need to do  [, ], \, ¬  because they can't be mapped
@@ -351,7 +353,6 @@ function setup () {
   // store a reference to the DOM elements
   menuButton = document.querySelector('#menuButton')
   canvasElement = document.querySelector('#defaultCanvas0')
-  
 
   serviceSelector = document.querySelector('#serviceSelector')
   serviceSelector2 = document.querySelector('#serviceSelector2')
@@ -554,9 +555,9 @@ function autoplayChange () {
 }
 
 function setTimer (data) {
-  let time = data.fastext[0] // Time in seconds. We don't do cycle time
-  let subPage = myPage.subPage // If we hit this early, it won't be defined. 
-  if (typeof subPage ==='undefined') {
+  const time = data.fastext[0] // Time in seconds. We don't do cycle time
+  let subPage = myPage.subPage // If we hit this early, it won't be defined.
+  if (typeof subPage === 'undefined') {
     subPage = 0
   }
   myPage.metadata[subPage].setTimer(time)
@@ -583,12 +584,12 @@ function setSubPage (data) {
 
 /** Mark the page as locked
  */
-function setLocked(r) {
+function setLocked (r) {
   if (!matchpage(r)) return // Not for us
 
   LOG.fn(
     ['sketch', 'setLocked'],
-    `This page is locked`,
+    'This page is locked',
     LOG.LOG_LEVEL_INFO
   )
   myPage.setLocked(true)
@@ -596,8 +597,19 @@ function setLocked(r) {
 
 /** Page control bits
  */
-function setControl(data) {
-  if (!matchpage(data)) return // Not for us
+function setControl (data) {
+  if (!matchpage(data)) {
+    return // Not our page?
+  }
+  if (data.id !== gClientID && gClientID !== null) {
+    return // Not for us?
+  }
+  
+  // Not right now, thanks
+  if (myPage.getEditMode() >= CONST.EDITMODE_PROPERTIES) {
+    return
+  }
+  
   print(data)
   LOG.fn(
     ['sketch', 'setControl'],
@@ -606,9 +618,9 @@ function setControl(data) {
   )
   // Really should decode these bits into TPOF for convenience
   // myPage.setControl(data.control)
-  
+
   // For now, just grab the language bits
-  let language = (data.control >> 7) & 0x07
+  const language = (data.control >> 7) & 0x07
   LOG.fn(
     ['sketch', 'setControl'],
     `Language =   ${language}`,
@@ -616,7 +628,7 @@ function setControl(data) {
   )
   // Reverse bits!
   // language = ((language & 0x01) << 2) | (language & 0x02) | ((language & 0x04) >> 2)
-  
+
   // [!] @todo resurrect this for whole magazine language mapping
   // myPage.mapChar.setCountry(language)
 
@@ -628,8 +640,7 @@ function setControl(data) {
     )
   }
   // Subpages can have different languages.
-  myPage.metadata[myPage.subPage].mapping.setLanguage(language)
-  
+  myPage.metadata[myPage.subPage].mapping.setLanguage(language, 0)
 }
 
 /** We MUST be sent the connection ID or we won't be able to display anything
@@ -715,7 +726,7 @@ function fastext (index) {
   if (myPage.getEditMode() >= CONST.EDITMODE_EDIT) {
     return
   }
-  
+
   let createPage = false // Special case. If yellow link is >0x0fff then create a page
   let page = 0
 
@@ -750,7 +761,7 @@ function fastext (index) {
     default:
       page = myPage.redLink
   }
-  
+
   // ETSI 7.3 pages XFF are time fillers, not a real page, so don't create a page or jump there
   if ((page & 0xff) === 0xff) {
     page = 0
@@ -967,7 +978,7 @@ function setRow (r) {
   // or execute it and our X28 properties page is overwritten and the UI is confusing
   // @todo Set a flag if while in X28 properties mode the page is updated but
   // ignore the update. Then on exiting ask to load the current state.
-  
+
   // If we are on the properties page then ignore any incoming page update
   if (editMode > CONST.EDITMODE_INSERT) {
     /// @todo Set a flag so that we can request a full page update when we exit the properties page
@@ -976,34 +987,46 @@ function setRow (r) {
   if (!matchpage(r)) return
   if (r.id !== gClientID && gClientID !== null) return // Not for us?
   if (r.y < 25) {
-    myPage.setRow(r.y, r.rowText)    
+    myPage.setRow(r.y, r.rowText)
   } else if (r.y === 28) {
     console.log(r.X28F1) // here is the data
-    if (myPage.subPage < myPage.metadata.length ) { // [!] Problem! The PN or SC number is greater than the actual subpages that we have
-      let x28 = myPage.metadata[myPage.subPage].x28Packet
+    if (myPage.subPage < myPage.metadata.length) { // [!] Problem! The PN or SC number is greater than the actual subpages that we have
+      const x28 = myPage.metadata[myPage.subPage].x28Packet
       for (let i = 0; i < 16; i++) {
-        let val = r.X28F1.colourMap[i] // The 12 bit colour value
+        const val = r.X28F1.colourMap[i] // The 12 bit colour value
         // convert to a p5.Color object
-        let hash = '#'+hex(val).substring(5) // eg. #c8f
-        let colourValue = color(hash)
-        let clutIndex = 2 + Math.trunc(i / 8) // Either CLUT 2 or 3 are updatable
-        let colourIndex = i % 8
+        const hash = '#' + hex(val).substring(5) // eg. #c8f
+        const colourValue = color(hash)
+        const clutIndex = 2 + Math.trunc(i / 8) // Either CLUT 2 or 3 are updatable
+        const colourIndex = i % 8
         x28.setValue(colourValue, clutIndex, colourIndex)
       }
       x28.setDC(r.X28F1.dc)
       x28.setPageFunction(r.X28F1.pageFunction)
       x28.setPageCoding(r.X28F1.pageCoding)
-      x28.setDefaultG0G2CharacterSet(r.X28F1.defaultG0G2CharacterSet)
-      x28.setSecondG0G2CharacterSet(r.X28F1.secondG0G2CharacterSet)
-      // The character set overrides the defaults
-      let charSet = r.X28F1.defaultG0G2CharacterSet & 0x7f // Mask extra bits
-      myPage.metadata[myPage.subPage].mapping.setRegion(charSet >> 3) // Region is not reversed
+      x28.setG0CharacterSet(r.X28F1.defaultG0G2CharacterSet, 0)
+      x28.setG0CharacterSet(r.X28F1.secondG0G2CharacterSet, 1)
+
+      // Set up the secondary character set
+      let charSet = r.X28F1.secondG0G2CharacterSet & 0x7f // Mask extra bits
+      myPage.metadata[myPage.subPage].mapping.setRegion(charSet >> 3, 1) // Region is not reversed
       charSet &= 0x07 // language is reversed
       charSet =
         ((charSet & 0x01) << 2) |
         (charSet & 0x02) |
-        (charSet >> 2);
-      myPage.metadata[myPage.subPage].setLanguage(charSet)
+        (charSet >> 2)
+      myPage.metadata[myPage.subPage].setLanguage(charSet, 1)
+
+      // Set up the primary character set
+      charSet = r.X28F1.defaultG0G2CharacterSet & 0x7f // Mask extra bits
+      myPage.metadata[myPage.subPage].mapping.setRegion(charSet >> 3, 0) // Region is not reversed
+      charSet &= 0x07 // language is reversed
+      charSet =
+        ((charSet & 0x01) << 2) |
+        (charSet & 0x02) |
+        (charSet >> 2)
+      myPage.metadata[myPage.subPage].setLanguage(charSet, 0)
+
       x28.setDefaultScreenColour(r.X28F1.defaultScreenColour)
       x28.setDefaultRowColour(r.X28F1.defaultRowColour)
       x28.setRemap(r.X28F1.colourTableRemapping)
@@ -1017,7 +1040,7 @@ function setRow (r) {
         ['sketch', 'setRow'],
         `Subpage out of range subpages=${myPage.metadata.length} requested subpage=${myPage.subPage}`, // PN are probably out of sequence
         LOG.LOG_LEVEL_ERROR
-      )      
+      )
     }
     // @TODO Save packet
     // remembering to clear packet on carousel, new or load page etc
@@ -1031,7 +1054,7 @@ function setBlank (data) { // 'blank' wsfn cpb
 
   myPage.setBlank()
   myPage.setLocked(false)
-  
+
   // For some reason, we can end up with CONST.EDITMODE_INSERT and this stops the cursor from blinking
   if (myPage.getEditMode() > CONST.EDITMODE_EDIT) {    myPage.setEditMode(CONST.EDITMODE_EDIT)
   }
@@ -1134,47 +1157,46 @@ function keyPressed () {
     // todo: Kill refresh cycles while the input is active.
     switch (keyCode) {
       case LEFT_ARROW:
-        if ( (editMode === CONST.EDITMODE_EDIT) ||
-            (editMode === CONST.EDITMODE_PROPERTIES) ) {
-            myPage.cursor.left()
+        if ((editMode === CONST.EDITMODE_EDIT) ||
+            (editMode === CONST.EDITMODE_PROPERTIES)) {
+          myPage.cursor.left()
         }
         break
 
       case RIGHT_ARROW:
-        if ( (editMode === CONST.EDITMODE_EDIT) ||
-            (editMode === CONST.EDITMODE_PROPERTIES) ) {
-            myPage.cursor.right()
+        if ((editMode === CONST.EDITMODE_EDIT) ||
+            (editMode === CONST.EDITMODE_PROPERTIES)) {
+          myPage.cursor.right()
         }
         break
 
       case UP_ARROW:
-        if ( (editMode === CONST.EDITMODE_EDIT) ||
-            (editMode === CONST.EDITMODE_PROPERTIES) ) {
-            myPage.cursor.up()
+        if ((editMode === CONST.EDITMODE_EDIT) ||
+            (editMode === CONST.EDITMODE_PROPERTIES)) {
+          myPage.cursor.up()
         }
         break
 
       case DOWN_ARROW:
-        if ( (editMode === CONST.EDITMODE_EDIT) ||
-            (editMode === CONST.EDITMODE_PROPERTIES) ) {
-            myPage.cursor.down()
+        if ((editMode === CONST.EDITMODE_EDIT) ||
+            (editMode === CONST.EDITMODE_PROPERTIES)) {
+          myPage.cursor.down()
         }
         break
-        
+
       case ENTER:
         if (editMode === CONST.EDITMODE_EDIT) myPage.cursor.newLine()
         break
 
       case ESCAPE: {
-      
         if (myPage.isLocked()) // If the page has an "LK," command, don't allow editing
-          break
-          
+        { break }
+
         // Property page does not use Escapes
         if (myPage.getEditMode() >= CONST.EDITMODE_PROPERTIES) {
           break
         }
-          
+
         const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][myPage.service]
 
         // Services that are editable
@@ -1202,7 +1224,6 @@ function keyPressed () {
         if (editMode === CONST.EDITMODE_PROPERTIES) {
           // Forward this tab to the properties page
           myPage.handlePropertiesKey(keyCode + 0x80) // Special flag
-
         } else {
           myPage.insertSpace() // Do our page
           insertSpace() // Any other clients
@@ -1216,22 +1237,21 @@ function keyPressed () {
         editMode = CONST.EDITMODE_EDIT
         break
 
-      case CONTROL: 
+      case CONTROL:
         break
-        
+
       case 83: // CTRL-S Insert a language switch ESC (todo)
         if (editMode === CONST.EDITMODE_ESCAPE && keyIsDown(17)) { // Is CTRL being pressed at the same time?
           processKey('\x1b')
         } else {
           handled = false // Pass the S onwards
-        } 
+        }
         break
 
       case 33: // PAGE_UP (next subpage when in edit mode)
         if (editMode === CONST.EDITMODE_PROPERTIES) {
           // Forward page up to the properties page
           myPage.handlePropertiesKey(keyCode + 0x80) // Special flag
-
         } else {
           if (editMode === CONST.EDITMODE_EDIT) {
             myPage.nextSubpage()
@@ -1268,7 +1288,7 @@ function keyPressed () {
 
       case 46: // DELETE - Delete a subpage then revert to edit mode
         if (editMode === CONST.EDITMODE_ESCAPE) {
-          let saveSubpage = myPage.subPage
+          const saveSubpage = myPage.subPage
           if (myPage.removeSubPage()) { // Remove the subpage locally
             // If OK then also do it on the server
             deleteSubpage(saveSubpage)
@@ -1420,19 +1440,18 @@ function keyTyped () {
 function processKey (keyPressed) {
   // @todo need to map codes to national options at this point.
   // @todo Also need to fix alphaInGraphics when I do this
-  
+
   // In properties mode, the keys work completely differently, as does the page renderer
   if (editMode === CONST.EDITMODE_PROPERTIES) {
     // Now we handle the UI elements on the properties pages.
     myPage.handlePropertiesKey(key)
-    
-    
-    if (key ==='x' || key === 'q') {
+
+    if (key === 'x' || key === 'q') {
       editMode = CONST.EDITMODE_EDIT
       myPage.setEditMode(editMode)
       // Return the modified clut to the server
       /// TEST - Delete this section
-      print("X28 Properties exits\n" + myPage.editProperties.metadata.x28Packet)
+      print('X28 Properties exits\n' + myPage.editProperties.metadata.x28Packet)
       // print("X28 Properties exits\n" + myPage.metadata[myPage.subPage].x28Packet)
       /// \TEST
       if (key === 'q') { // Restore the original X28 settings
@@ -1442,34 +1461,34 @@ function processKey (keyPressed) {
       if (key === 'x') { // Transmit the changed CLUT back to the server
         // Copy the clut to the corresponding X28F1 message format
         // Make a row 28 object
-        let x28 = myPage.metadata[myPage.subPage].x28Packet
-        let X28F1 = {
-          dc : x28.dc,
-          pageFunction : x28.pageFunction,
-          pageCoding : x28.pageCoding,
-          defaultG0G2CharacterSet : x28.defaultG0G2CharacterSet,
-          secondG0G2CharacterSet : x28.secondG0G2CharacterSet,
-          colourMap : [],
-          defaultScreenColour : x28.defaultScreenColour, // 5 bits
-          defaultRowColour : x28.defaultRowColour, // 5 bits
-          colourTableRemapping : x28.remap, // 3 bits
-          blackBackgroundSubRow : x28.blackBackgroundSub, // 1 bit
-          enableLeftPanel : x28.enableLeftPanel, // 1 bit
-          enableRightPanel : x28.enableRightPanel, // 1 bit
-          sidePanelStatusFlag : x28.sidePanelStatusFlag, // 1 bit
-          leftColumns : x28.leftColumns  // 4 bits
+        const x28 = myPage.metadata[myPage.subPage].x28Packet
+        const X28F1 = {
+          dc: x28.dc,
+          pageFunction: x28.pageFunction,
+          pageCoding: x28.pageCoding,
+          defaultG0G2CharacterSet: x28.defaultG0G2CharacterSet,
+          secondG0G2CharacterSet: x28.secondG0G2CharacterSet,
+          colourMap: [],
+          defaultScreenColour: x28.defaultScreenColour, // 5 bits
+          defaultRowColour: x28.defaultRowColour, // 5 bits
+          colourTableRemapping: x28.remap, // 3 bits
+          blackBackgroundSubRow: x28.blackBackgroundSub, // 1 bit
+          enableLeftPanel: x28.enableLeftPanel, // 1 bit
+          enableRightPanel: x28.enableRightPanel, // 1 bit
+          sidePanelStatusFlag: x28.sidePanelStatusFlag, // 1 bit
+          leftColumns: x28.leftColumns // 4 bits
         }
         // Packet X28 only affects CLUT 2 and 3
-        for (let i=0; i<16; ++i) {
-          let clutIndex = Math.floor(i/8) + 2
-          let colourIndex = i % 8
-          let colour = x28.getValue(clutIndex, colourIndex)
+        for (let i = 0; i < 16; ++i) {
+          const clutIndex = Math.floor(i / 8) + 2
+          const colourIndex = i % 8
+          const colour = x28.getValue(clutIndex, colourIndex)
           X28F1.colourMap.push(X28Packet.colour24to12(colour))
         }
-        // Send X28F1 to the server        
+        // Send X28F1 to the server
         print(X28F1)
         // Wrap it up in an identifier packet
-        let packet28 = {
+        const packet28 = {
           S: myPage.service,
           p: myPage.pageNumber,
           s: myPage.subPage,
@@ -1483,8 +1502,8 @@ function processKey (keyPressed) {
         // Make a fastext json packet
         // Copy the fastext links from ttxproperties
         // Send fastext to the server
-        
-        let fastextPacket = {
+
+        const fastextPacket = {
           S: myPage.service,
           p: myPage.pageNumber,
           s: myPage.subPage,
@@ -1506,10 +1525,10 @@ function processKey (keyPressed) {
     }
     // @todo Think about this. If we delete the object, it loses all state.
     // The UI might be nicer if it remembers state, like which properties page it was on last.
-    //delete myPage.editProperties // Finished editing.
+    // delete myPage.editProperties // Finished editing.
     return
   }
-  
+
   if (editMode === CONST.EDITMODE_ESCAPE) {
     editMode = CONST.EDITMODE_INSERT
     myPage.setEditMode(editMode)
@@ -1702,7 +1721,7 @@ function touchEnded () {
   /* Guess we aren't doing this yet. Stop "standard" from complaining
   const heading = blockEnd.heading()
   const dir = 4 * heading / PI
-  */ 
+  */
   return false
 }
 
@@ -1918,14 +1937,12 @@ function editTF (key) {
     case 'x' :
       myPage.showGrid = !myPage.showGrid
       return // toggle grid display
-      
+
     // Enter properties mode, for setting page properties like description
     case 'X' :
       if (editMode === CONST.EDITMODE_PROPERTIES) { // This doesn't work
         editMode = CONST.EDITMODE_NORMAL
-      }
-      else
-      {
+      } else {
         editMode = CONST.EDITMODE_PROPERTIES
       }
       myPage.setEditMode(editMode)
@@ -1983,15 +2000,17 @@ function editTF (key) {
     case 'Z' : { // clear screen // wsfn cpb clear page bug
       // @todo At this point, send a signal to the server
       // Send the page details so we know which page to clear!
-      
+
       // This bit was added as clearPage seems to have a bug in it, but it makes it worse. Race hazard?
-      if (false) for (let i=1; i<24; i++) {
-        myPage.setRow(i, '                                        ')
-        sendRow(i, '                                        ')
+      if (false) {
+        for (let i = 1; i < 24; i++) {
+          myPage.setRow(i, '                                        ')
+          sendRow(i, '                                        ')
+        }
       }
       // @todo Add the default header and fastext
       // @todo Put "click here to add description" in the description field
-      
+
       const data = {
         S: myPage.service, // service number
         p: myPage.pageNumber,
@@ -2008,10 +2027,10 @@ function editTF (key) {
 
       return
     }
-    
+
     // Go to page 990 special edit page
-    case '?' : { 
-      let page = 0x0990
+    case '?' : {
+      const page = 0x0990
       myPage.setPage(page) // We now have a different page number
 
       const data = {
@@ -2024,11 +2043,11 @@ function editTF (key) {
         id: gClientID
       }
 
-      //if (createPage) { // Special case
-//        socket.emit('create', data)
-      //} else {
-        socket.emit('load', data)
-      //}
+      // if (createPage) { // Special case
+      //        socket.emit('create', data)
+      // } else {
+      socket.emit('load', data)
+      // }
       return
     }
     /*
@@ -2067,12 +2086,12 @@ function editTF (key) {
   socket.emit('keystroke', data)
 
   newChar(data)
-  
+
   // This may need to be at the top of this function?
   // If we have a problem with a vanishing cursor, this would be the problem
   if (editMode === CONST.EDITMODE_INSERT) {
     editMode = CONST.EDITMODE_EDIT
-  }  
+  }
 }
 
 /** Transmit a row of text
