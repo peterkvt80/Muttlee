@@ -8,7 +8,7 @@
 /* global LEFT_ARROW, RIGHT_ARROW, UP_ARROW, DOWN_ARROW, TAB, BACKSPACE, ESCAPE. ENTER */
 /* global select, frameRate, CHARCHANGED, history, event */
 // current state values (initialize to defaults)
-let service = CONFIG[CONST.CONFIG.DEFAULT_SERVICE]
+let serviceName = CONFIG[CONST.CONFIG.DEFAULT_SERVICE]
 let controls = CONFIG[CONST.CONFIG.DEFAULT_CONTROLS]
 let display = CONFIG[CONST.CONFIG.DEFAULT_DISPLAY]
 let scale = CONFIG[CONST.CONFIG.DEFAULT_SCALE]
@@ -141,14 +141,14 @@ function startTimer () {
 function autoplayChangePage () {
   if (
     (autoplay === CONST.AUTOPLAY_NONE) ||
-    (!serviceManifests[service] || (typeof serviceManifests[service].pages !== 'object'))
+    (!serviceManifests[serviceName] || (typeof serviceManifests[service].pages !== 'object'))
   ) {
     return
   }
 
   // refresh manifest page numbers store?
   if (manifestPageNumbers.length === 0) {
-    manifestPageNumbers = Object.keys(serviceManifests[service].pages)
+    manifestPageNumbers = Object.keys(serviceManifests[serviceName].pages)
   }
 
   const currentPageNumber = hex(myPage.pageNumber, 3)
@@ -186,8 +186,8 @@ function autoplayChangePage () {
 
 function preload () {
   // load font files
-  ttxFont = loadFont('assets/teletext2.ttf') // Normal
-  ttxFontDH = loadFont('assets/teletext4.ttf') // Double height
+  ttxFont = loadFont('./assets/teletext2.ttf') // Normal
+  ttxFontDH = loadFont('./assets/teletext4.ttf') // Double height
 }
 
 function setup () {
@@ -198,7 +198,7 @@ function setup () {
 
   for (const [key, value] of searchParams) {
     if (key === 'service') {
-      service = value
+      serviceName = value
     } else if (key === 'scale') {
       scale = value
     } else if (key === 'controls') {
@@ -232,11 +232,11 @@ function setup () {
   }
 
   // ensure service name is valid
-  if (!service || !CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][service]) {
-    service = CONFIG[CONST.CONFIG.DEFAULT_SERVICE]
+  if (!serviceName || !CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][serviceName]) {
+    serviceName = CONFIG[CONST.CONFIG.DEFAULT_SERVICE]
   }
 
-  const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][service]
+  const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][serviceName]
 
   // determine socket server URL
   let serviceUrl = serviceData.url + ':' + serviceData.port
@@ -247,14 +247,18 @@ function setup () {
     // if viewer is being served over https and requests a http service, prefix its URL with 'http'
     serviceUrl = 'http:' + serviceUrl
   }
-
+  // Need to fix this for SSL [!] @todo
+  
+  let serverPath = "/muttlee/socket.io"
+  
   // connect via socket.io to server
-  socket = io.connect(
-    `${serviceUrl}/?service=${service}`,
-    {
-      rejectUnauthorized: CONFIG[CONST.CONFIG.TELETEXT_VIEWER_HTTPS_REJECT_UNAUTHORIZED]
+  socket = io.connect({
+    path: serverPath,    
+    rejectUnauthorized: CONFIG[CONST.CONFIG.TELETEXT_VIEWER_HTTPS_REJECT_UNAUTHORIZED],    
+    query: {
+      service: serviceName
     }
-  )
+  })
 
   // preload service manifest data
   loadManifestData()
@@ -318,7 +322,7 @@ function setup () {
       ? parseInt(page, 16)
       : CONST.PAGE_MIN,
 
-    service
+    serviceName
   )
 
   // message events
@@ -342,7 +346,7 @@ function setup () {
   frameRate(4) // Low because Muttlee chews CPU
 
   // set specific initial state values as a custom attribute on the body element (for CSS targeting)
-  document.body.setAttribute(CONST.ATTR_DATA_SERVICE, service)
+  document.body.setAttribute(CONST.ATTR_DATA_SERVICE, serviceName)
   document.body.setAttribute(CONST.ATTR_DATA_SERVICE_EDITABLE, serviceData.isEditable)
 
   document.body.setAttribute(CONST.ATTR_DATA_SCALE, scale)
@@ -367,10 +371,10 @@ function setup () {
 
   // set initial state values into their UI elements...
   if (serviceSelector) {
-    serviceSelector.value = service
+    serviceSelector.value = serviceName 
   }
   if (serviceSelector2) {
-    serviceSelector2.value = service
+    serviceSelector2.value = serviceName
   }
 
   if (scaleSelector) {
@@ -466,8 +470,8 @@ function randomPage (event) {
     event.preventDefault()
   }
 
-  if (serviceManifests[service] && serviceManifests[service].pages) {
-    const manifestPageNumbers = Object.keys(serviceManifests[service].pages)
+  if (serviceManifests[service] && serviceManifests[serviceName].pages) {
+    const manifestPageNumbers = Object.keys(serviceManifests[serviceName].pages)
 
     // get random page from manifest
     const randomIndex = (manifestPageNumbers.length * Math.random() | 0)
@@ -2285,11 +2289,11 @@ function renderManifestData (data) {
 }
 
 function loadManifestData () {
-  if (!serviceManifests[service]) {
-    fetch(`/manifest.json?service=${service}`)
+  if (!serviceManifests[serviceName]) {
+    fetch(`./manifest.json?service=${serviceName}`)
       .then((response) => response.json())
       .then((data) => {
-        serviceManifests[service] = data
+        serviceManifests[serviceName] = data
 
         if (data && data.pages) {
           // update custom attribute on body element
@@ -2304,7 +2308,7 @@ function toggleManifest () {
     manifestModal.classList.toggle('manifest--visible')
 
     renderManifestData(
-      serviceManifests[service]
+      serviceManifests[serviceName]
     )
   }
 }

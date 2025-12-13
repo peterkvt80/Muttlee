@@ -19,28 +19,28 @@
     {% endif %}
 
     {% if IS_DEV %}
-      <script src="libraries/socket.io.min.js"></script>
-      <script src="libraries/p5.js"></script>
+      <script src="./libraries/socket.io.min.js"></script>
+      <script src="./libraries/p5.js"></script>
     {% else %}
-      <script src="libraries/socket.io.min.js"></script>
-      <script src="libraries/p5.min.js"></script>
+      <script src="./libraries/socket.io.min.js"></script>
+      <script src="./libraries/p5.min.js"></script>
     {% endif %}
 
-    <script src="constants.js"></script>
-    <script src="config.js"></script>
-    <script src="log.js"></script>
+    <script src="./constants.js"></script>
+    <script src="./config.js"></script>
+    <script src="./log.js"></script>
 
-    <script src="uifield.js"></script>
-    <script src="ttxproperties.js"></script>
-    <script src="ttxpage.js"></script>
-    <script src="edittf.js"></script>
-    <script src="charchanged.js"></script>
-    <script src="sketch.js"></script>
-    <script src="cursor.js"></script>
-    <script src="x28packet.js"></script>
-    <script src="mapchar.js"></script>
+    <script src="./uifield.js"></script>
+    <script src="./ttxproperties.js"></script>
+    <script src="./ttxpage.js"></script>
+    <script src="./edittf.js"></script>
+    <script src="./charchanged.js"></script>
+    <script src="./sketch.js"></script>
+    <script src="./cursor.js"></script>
+    <script src="./x28packet.js"></script>
+    <script src="./mapchar.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="muttlee.css">
+    <link rel="stylesheet" type="text/css" href="./muttlee.css">
   </head>
 
   <body{% if LOGO_SVG %} data-has-logo="true"{% endif %}>
@@ -359,7 +359,7 @@
         <header>
           <h2>
             Cheatsheet
-            <a href="#" onclick="window.open('/assets/WikiTelFax.pdf');">
+            <a href="#" onclick="window.open('./assets/WikiTelFax.pdf');">
               PDF
             </a>
           </h2>

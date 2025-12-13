@@ -435,7 +435,7 @@ function newConnection (socket) {
     return
   }
   // determine parameters from socket URL
-  console.log(clientIp)
+  console.log("[teletextServer::newConnection] clientIp="+clientIp)
   console.log(socket.handshake.headers.referer)
   const viewerUrl = new URL(socket.handshake.headers.referer)
   const viewerSearchParams = new URLSearchParams(viewerUrl.search)
@@ -458,7 +458,7 @@ function newConnection (socket) {
 
   LOG.fn(
     ['teletextserver', 'newConnection'],
-    `service=${service}, page=${page}`,
+    `service=${service}, page=${page}, requested service was=${socketSearchParams.get('service')} socket.handshake.url=${socket.handshake.url}`,
     LOG.LOG_LEVEL_VERBOSE
   )
 

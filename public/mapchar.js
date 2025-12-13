@@ -372,7 +372,7 @@ class MAPCHAR {
 
   MapRussianBulgarian (ch) { // 4:0
     switch (ch) {
-      // Coloumn 20-2f
+      // Column 20-2f
       case '&' : return char(0x044B) // ы
       // Nat. opt. 2. Column 40-4f
       case '@' : return char(0x042e) // Cyrillic Capital Letter Yu
