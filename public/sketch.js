@@ -2368,7 +2368,7 @@ function exportPage () {
 
     // Download the tti page
     const svc = myPage.getService()
-    const url3 = `/pages/${svc}/p${pg}${CONST.PAGE_EXT_TTI}`
+    const url3 = `/muttlee/pages/${svc}/p${pg}${CONST.PAGE_EXT_TTI}`
 
     // update grab link items text and URL...
     const dynamicLink = document.querySelector('#dynamicLink')

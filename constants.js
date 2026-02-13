@@ -77,6 +77,7 @@ const CONST = {
   SERVICE_ARCHIVE: 'readback',
   SERVICE_TURNER: 'turner',
   SERVICE_WIKI: 'wtf',
+  SERVICE_XENOFAX: 'xenofax',
   //SERVICE_CHANNEL19: 'channel19',
   //SERVICE_CHRISLUCA: 'chrisluca',
   

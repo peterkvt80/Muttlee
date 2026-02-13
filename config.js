@@ -61,8 +61,8 @@ const CONFIG = {
   // (will raise a warning in the visitor's web browser):
   //    > openssl req -x509 -newkey rsa:2048 -keyout keytmp.pem -out cert.pem -days 365
   //    > openssl rsa -in keytmp.pem -out key.pem
-  [CONST.CONFIG.TELETEXT_VIEWER_SERVE_HTTPS_KEY_PATH]: '/var/www/key.pem',
-  [CONST.CONFIG.TELETEXT_VIEWER_SERVE_HTTPS_CERT_PATH]: '/var/www/cert.pem',
+  [CONST.CONFIG.TELETEXT_VIEWER_SERVE_HTTPS_KEY_PATH]: '/var/ssl/fullchain.pem',
+  [CONST.CONFIG.TELETEXT_VIEWER_SERVE_HTTPS_CERT_PATH]: '/var/ssl/privkey.pem',
 
   // Allow the viewer to make HTTPS socket.io connections even if SSL certificate is not fully valid?
   // DO NOT SET THIS TO TRUE IN PRODUCTION!
@@ -224,6 +224,18 @@ const CONFIG = {
       updateInterval: 10,
 
       isEditable: true,
+    },
+
+    [CONST.SERVICE_XENOFAX]: {
+      name: 'xenofax',
+      url: '//www.xenoxxx.com',
+      port: 80,
+
+      repoType: '',
+      updateUrl: '',
+      updateInterval: 1440,
+
+      isEditable: false,
     },
 
 

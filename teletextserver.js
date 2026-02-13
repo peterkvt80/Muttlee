@@ -99,6 +99,10 @@ const env = nunjucks.configure(
 
 app.set('view engine', 'html')
 
+// For Express apps on ports 3000, 3001, 8080
+app.set('trust proxy', true);
+// This makes req.protocol return 'https' when X-Forwarded-Proto is set
+
 env.addFilter(
   'featureEnabled',
   function (features, featureName) {
