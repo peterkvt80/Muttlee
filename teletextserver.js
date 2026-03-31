@@ -11,7 +11,8 @@ const express = require('express')
 const nunjucks = require('nunjucks')
 
 // socket.io documentation is helpful: https://socket.io/docs/emit-cheatsheet/
-const socket = require('socket.io')
+//const socket = require('socket.io')
+const { Server } = require('socket.io');
 
 // import constants and config for use server-side
 const CONST = require('./constants.js')
@@ -342,7 +343,7 @@ if (CONFIG.TELETEXT_VIEWER_SERVE_HTTPS) {
 LOG.blank()
 
 // instantiate socket.io server
-const io = socket(
+const io = new Server(
   (CONFIG.TELETEXT_VIEWER_SERVE_HTTPS)
     ? serverHttps
     : serverHttp,
@@ -355,7 +356,12 @@ const io = socket(
         'Referrer-Policy': 'no-referrer-when-downgrade'
       })
       res.end()
-    }
+    },
+	cors: {
+		origin: "https://www.xenoxxx.com",
+		credentials: true
+	}
+
   }
 )
 

@@ -227,6 +227,11 @@ async function updateServices () {
           silent: !options.verbose
         })
 
+		// Define the security bypass flags
+		const trustArgs = [
+		  '--non-interactive',
+		  '--trust-server-cert-failures=cn-mismatch,unknown-ca,expired'
+		];
         if (!fs.existsSync(serviceTargetDir)) {
           if (!options.silent) {
             console.log(
@@ -237,10 +242,11 @@ async function updateServices () {
           }
           if (serviceData.repoType === 'svn') {
             // checkout svn service pages...
-            await svnClient.checkout(
-              serviceData.updateUrl,
-              serviceTargetDir
-            )
+			await svnClient.cmd('checkout', [
+			  serviceData.updateUrl, 
+			  serviceTargetDir, 
+			  ...trustArgs
+			]);
           } else {
             // checkout git service pages...
             await git().clone(
@@ -256,10 +262,19 @@ async function updateServices () {
           }
           // update service pages...
           if (serviceData.repoType === 'svn') {
-            await svnClient.update(
-              serviceTargetDir
-            )
-          } else {
+			try {
+			  await svnClient.update(serviceTargetDir);
+			} catch (err) {
+			  if (err.message.includes('E155017')) {
+				console.log("Checksum mismatch detected. Performing fresh checkout...");
+				// Use fs-extra or similar to remove the directory
+				fs.rmSync(serviceTargetDir, { recursive: true, force: true });
+				await svnClient.checkout(serviceData.updateUrl, serviceTargetDir);
+			  } else {
+				throw err; // Rethrow other unexpected errors
+			  }
+			}
+         } else {
             await git().pull(
             )
           }

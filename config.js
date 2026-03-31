@@ -221,7 +221,7 @@ const CONFIG = {
 
       repoType: 'git',
       updateUrl: 'git@github.com:peterkvt80/service-wiki.git',
-      updateInterval: 10,
+      updateInterval: 1440,
 
       isEditable: true,
     },
@@ -230,10 +230,10 @@ const CONFIG = {
       name: 'xenofax',
       url: '//www.xenoxxx.com',
       port: 80,
-
-      repoType: '',
-      updateUrl: '',
-      updateInterval: 1440,
+	  
+      repoType: 'git',
+	  updateUrl: 'https://github.com/teletexx/xenofax.git',
+      updateInterval: 60,
 
       isEditable: false,
     },
