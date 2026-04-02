@@ -8,32 +8,32 @@
 // $ pm2 delete update-service-pages.js
 // $ node update-service-pages.js -v
 'use strict'
+
 const fs = require('fs')
 const path = require('path')
+const util = require('util')
+const exec = util.promisify(require('child_process').exec)
 
 const commandLineArgs = require('command-line-args')
 const commandLineUsage = require('command-line-usage')
 const colorette = require('colorette')
 
 const svn = require('@taiyosen/easy-svn')
-const git = require('simple-git')
-git().clean(git.CleanOptions.FORCE)
+const simpleGit = require('simple-git')
 
-const deletedDiff = require('deep-object-diff').deletedDiff
+const { deletedDiff } = require('deep-object-diff')
 const xxhash = require('@pacote/xxhash')
 
 // import package.json so we can get the current version
-const PACKAGE_JSON = JSON.parse(
-  fs.readFileSync('./package.json')
-)
+const PACKAGE_JSON = JSON.parse(fs.readFileSync('./package.json'))
 
 // import constants and config for use server-side
 const CONST = require('./constants.js')
 const CONFIG = require('./config.js')
 
-// variables
-const PAGE_FILE_EXT = '.tti'
+// ── Constants ────────────────────────────────────────────────────────────────
 
+const PAGE_FILE_EXT = '.tti'
 const FILE_ENCODING_INPUT = CONST.ENCODING_ASCII
 const FILE_ENCODING_OUTPUT = CONST.ENCODING_ASCII
 
@@ -41,463 +41,354 @@ const FILE_CHAR_REPLACEMENTS = {
   '\x8d': '\x1bM'
 }
 
-const DESCRIPTION_NULLIFY = [
-  'Description goes here'
+const DESCRIPTION_NULLIFY = ['Description goes here']
+
+// SVN flags used on every svn command so self-signed / expired certs don't block us
+const SVN_TRUST_ARGS = [
+  '--non-interactive',
+  '--trust-server-cert-failures=cn-mismatch,unknown-ca,expired'
 ]
 
-// parse command line options
+// ── CLI options ──────────────────────────────────────────────────────────────
+
 const availableOptions = [
-  {
-    name: 'help',
-    description: 'Print this usage guide.',
-    alias: 'h',
-    type: Boolean
-  },
-
-  {
-    name: 'silent',
-    description: 'No log messages output to the console.',
-    alias: 's',
-    type: Boolean
-  },
-  {
-    name: 'verbose',
-    description: 'Verbose log messages output to the console.',
-    alias: 'v',
-    type: Boolean
-  },
-
-  {
-    name: 'force',
-    description: 'Force an update of all services, regardless of last update time',
-    alias: 'f',
-    type: Boolean
-  }
+  { name: 'help',    description: 'Print this usage guide.',                                      alias: 'h', type: Boolean },
+  { name: 'silent',  description: 'No log messages output to the console.',                       alias: 's', type: Boolean },
+  { name: 'verbose', description: 'Verbose log messages output to the console.',                  alias: 'v', type: Boolean },
+  { name: 'force',   description: 'Force an update of all services, regardless of last update time', alias: 'f', type: Boolean }
 ]
 
 const options = commandLineArgs(availableOptions)
 
 if (options.help) {
-  const usage = commandLineUsage(
-    [
-      {
-        header: 'update-service-pages.js',
-        content: 'Fetches / updates teletext services pages from remote repositories to a local location (as defined in config.js)'
-      },
-      {
-        header: 'Options',
-        optionList: availableOptions
-      }
-    ]
-  )
-
-  console.log(usage)
-
+  console.log(commandLineUsage([
+    {
+      header: 'update-service-pages.js',
+      content: 'Fetches / updates teletext services pages from remote repositories to a local location (as defined in config.js)'
+    },
+    { header: 'Options', optionList: availableOptions }
+  ]))
   process.exit(0)
 }
 
-// initialise hasher
+// ── Hasher ───────────────────────────────────────────────────────────────────
+
 const hasher = xxhash.xxh64(2654435761)
 
-let global_changed = []
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
-/** For editable services, write back the pages
- */
+function log (msg)        { if (!options.silent)  console.log(msg) }
+function logVerbose (msg) { if (options.verbose)  console.log(msg) }
+function logError (msg)   { if (!options.silent)  console.error(msg) }
+
+/** Copy files with --update (only overwrites if src is newer).
+ *  Returns true if any file was actually copied. */
+async function cpUpdate (src, dest) {
+  const { stdout, stderr } = await exec(`cp --update -v ${src} ${dest}`)
+  if (stderr) logError(`cp stderr: ${stderr}`)
+  logVerbose(`cp stdout: ${stdout}`)
+  return stdout.length > 0
+}
+
+/** Return a git client rooted at the given directory. */
+function gitAt (dir) {
+  return simpleGit(dir)
+}
+
+// ── readBackServices ─────────────────────────────────────────────────────────
+
+/** For editable services, copy on-air pages back to the repo and push.
+ *  Returns a Set of serviceIds that had changes (these must not be
+ *  overwritten by the subsequent updateServices pass). */
 async function readBackServices () {
-  // For all the services
-  global_changed = new Array() // If an editable service changed, then add it to the list of services not to be overwritten
+  const changed = new Set()
+
   for (const serviceId in CONFIG[CONST.CONFIG.SERVICES_AVAILABLE]) {
     const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][serviceId]
-    // Filter only the editable services
-    if (serviceData.isEditable) {
-      console.log('[readBackServices] editable Service id = ' + serviceId)
-      // cd /var/www/teletext-services
-      // cp /var/www/private/onair/<service>/*.tti .
+    if (!serviceData.isEditable) continue
 
-      /// /// copy changed onair pages back to teletext-service //////
-      const serviceRepoDir = path.join(
-        CONFIG[CONST.CONFIG.SERVICE_PAGES_DIR],
-        serviceId
-      )
+    log(`[readBackServices] editable service id = ${serviceId}`)
 
-      const serviceOnairDir = path.join(
-        CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],
-        serviceId
-      )
-      console.log('from:' + serviceOnairDir + ' to ' + serviceRepoDir)
-      const util = require('util')
-      const exec = util.promisify(require('child_process').exec)
+    const serviceRepoDir = path.join(CONFIG[CONST.CONFIG.SERVICE_PAGES_DIR],       serviceId)
+    const serviceOnairDir = path.join(CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR], serviceId)
 
-      // Copy updated files
-      async function cp (src, dest) {
-        // const { stdout, stderr } = await exec('cp --update -v ' + src + ' ' + dest + '2>/dev/null || :') //fail silently the first time this is run
-        const { stdout, stderr } = await exec('cp --update -v ' + src + ' ' + dest)
-        console.log('src:', src)
-        console.log('dest:', dest)
-        console.log('stdout:', stdout)
-        console.log('stderr:', stderr)
-        if (stdout.length > 0) {
-          console.log('A page file changed')
-          global_changed.push(serviceId)
-        }
+    log(`from: ${serviceOnairDir}  to: ${serviceRepoDir}`)
+
+    try {
+      // Copy updated .tti files from on-air dir back into the repo dir
+      const anyCopied = await cpUpdate(`${serviceOnairDir}/*.tti`, `${serviceRepoDir}/`)
+      if (anyCopied) {
+        log('[readBackServices] one or more page files changed')
+        changed.add(serviceId)
       }
-      cp(serviceOnairDir + '/*.tti', serviceRepoDir)
+    } catch (err) {
+      // cp exits non-zero when the glob matches nothing — treat that as "no changes"
+      logVerbose(`[readBackServices] cp skipped for ${serviceId}: ${err.message}`)
+    }
 
-      /// /// Add pages to repo. Warning. Only Git repos can be made editable //////
-      console.log('Destination URL = ' + serviceData.updateUrl)
-      git(serviceRepoDir)
+    // Only Git repos are editable; stage, commit and push any changes
+    logVerbose(`[readBackServices] pushing ${serviceId} → ${serviceData.updateUrl}`)
+    try {
+      await gitAt(serviceRepoDir)
         .add('*.tti')
-        .commit('Muttlee auto commit v1', ['-a'])
+        .commit('Muttlee auto commit v1', ['-a', '--allow-empty'])
         .push()
-    } // editable service
-  } // for each service
-} // readBackServices
+    } catch (err) {
+      logError(`[readBackServices] git push failed for ${serviceId}: ${err.message}`)
+      // Don't rethrow — a push failure shouldn't abort the whole run
+    }
+  }
 
-async function updateServices () {
+  return changed
+}
+
+// ── updateServices ───────────────────────────────────────────────────────────
+
+async function updateServices (changed) {
   for (const serviceId in CONFIG[CONST.CONFIG.SERVICES_AVAILABLE]) {
-    // console.log("Service id = " + serviceId);
-
-    // If the read back changed something, then DO NOT let the repo update
-    // or we risk losing a few keystrokes
-    if (global_changed.includes(serviceId)) { // It changed?
-      if (options.verbose) {
-        console.log("Skipping update of " + serviceId) // Updating could overwrite, so don't do it
-      }
+    // If readBackServices detected local changes, skip pulling this service
+    // so we don't overwrite edits that haven't been pushed yet
+    if (changed.has(serviceId)) {
+      logVerbose(`Skipping update of ${serviceId} (local changes detected)`)
       continue
     }
 
     const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][serviceId]
 
-    const serviceTargetDir = path.join(
-      CONFIG[CONST.CONFIG.SERVICE_PAGES_DIR],
-      serviceId
-    )
+    const serviceTargetDir  = path.join(CONFIG[CONST.CONFIG.SERVICE_PAGES_DIR],       serviceId)
+    const serviceServeDir   = path.join(CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],  serviceId)
+    const serviceManifestFile = path.join(serviceServeDir, 'manifest.json')
 
-    const serviceServeDir = path.join(
-      CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],
-      serviceId
-    )
+    // ── Read / initialise manifest ──────────────────────────────────────────
 
-    const serviceManifestFile = path.join(
-      serviceServeDir,
-      'manifest.json'
-    )
-
-    // read / initialise service manifest file
-    let serviceManifest = {}
-
+    let serviceManifest = { id: serviceId }
     if (fs.existsSync(serviceManifestFile)) {
-      serviceManifest = JSON.parse(
-        fs.readFileSync(serviceManifestFile)
-      )
-    } else {
-      // initialise
-      serviceManifest.id = serviceId
+      try {
+        serviceManifest = JSON.parse(fs.readFileSync(serviceManifestFile, 'utf8'))
+      } catch (err) {
+        logError(`WARNING: Could not parse manifest for ${serviceId}, reinitialising. (${err.message})`)
+        serviceManifest = { id: serviceId }
+      }
     }
 
-    if (!serviceManifest.pages) {
-      serviceManifest.pages = {}
-    }
+    if (!serviceManifest.pages) serviceManifest.pages = {}
+
+    // ── Decide whether to pull from remote ─────────────────────────────────
 
     let shouldUpdate = false
 
-    // if service has an update URL...
     if (serviceData.updateUrl) {
-      // ...and was last updated outside of its updateInterval...
-      shouldUpdate = (
-        !serviceData.updateInterval ||
-        !serviceManifest.lastUpdated
-      )
-
-      if (serviceManifest.lastUpdated) {
-        shouldUpdate = ((Date.parse(serviceManifest.lastUpdated) + (serviceData.updateInterval * 1000 * 60)) < Date.now())
-        if (options.verbose) {
-          console.log(
-            'Service id = ' + serviceId +
-              ' shouldUpdate = ' + shouldUpdate +
-              ' mins to next update = ' + parseInt(((Date.parse(serviceManifest.lastUpdated) + (serviceData.updateInterval * 1000 * 60)) - Date.now()) / 60000) // minutes to next update
-          )
-        }
+      if (!serviceData.updateInterval || !serviceManifest.lastUpdated) {
+        shouldUpdate = true
+      } else {
+        const nextUpdateAt = Date.parse(serviceManifest.lastUpdated) + (serviceData.updateInterval * 60 * 1000)
+        shouldUpdate = nextUpdateAt < Date.now()
+        logVerbose(
+          `Service ${serviceId}: shouldUpdate=${shouldUpdate}, ` +
+          `mins to next update=${Math.round((nextUpdateAt - Date.now()) / 60000)}`
+        )
       }
 
       if (shouldUpdate || options.force) {
-        // ...use Subversion (or git) to checkout / update pages...
         const svnClient = new svn.SVNClient()
-        svnClient.setConfig({
-          silent: !options.verbose
-        })
+        svnClient.setConfig({ silent: !options.verbose })
 
-		// Define the security bypass flags
-		const trustArgs = [
-		  '--non-interactive',
-		  '--trust-server-cert-failures=cn-mismatch,unknown-ca,expired'
-		];
         if (!fs.existsSync(serviceTargetDir)) {
-          if (!options.silent) {
-            console.log(
-              colorette.blueBright(
-                `First time checkout of '${serviceId}' service page files (to ${serviceTargetDir})...`
-              )
-            )
-          }
+          // ── First-time checkout ───────────────────────────────────────────
+          log(colorette.blueBright(
+            `First time checkout of '${serviceId}' service page files (to ${serviceTargetDir})...`
+          ))
+
           if (serviceData.repoType === 'svn') {
-            // checkout svn service pages...
-			await svnClient.cmd('checkout', [
-			  serviceData.updateUrl, 
-			  serviceTargetDir, 
-			  ...trustArgs
-			]);
+            await svnClient.cmd('checkout', [serviceData.updateUrl, serviceTargetDir, ...SVN_TRUST_ARGS])
           } else {
-            // checkout git service pages...
-            await git().clone(
-              serviceData.updateUrl,
-              serviceTargetDir
-            )
+            await gitAt('.').clone(serviceData.updateUrl, serviceTargetDir)
           }
         } else {
-          if (!options.silent) {
-            console.log(
-              `Updating '${serviceId}' service page files...`
-            )
-          }
-          // update service pages...
+          // ── Subsequent update ─────────────────────────────────────────────
+          log(`Updating '${serviceId}' service page files...`)
+
           if (serviceData.repoType === 'svn') {
-			try {
-			  await svnClient.update(serviceTargetDir);
-			} catch (err) {
-			  if (err.message.includes('E155017')) {
-				console.log("Checksum mismatch detected. Performing fresh checkout...");
-				// Use fs-extra or similar to remove the directory
-				fs.rmSync(serviceTargetDir, { recursive: true, force: true });
-				await svnClient.checkout(serviceData.updateUrl, serviceTargetDir);
-			  } else {
-				throw err; // Rethrow other unexpected errors
-			  }
-			}
-         } else {
-            await git().pull(
-            )
+            try {
+              await svnClient.cmd('update', [serviceTargetDir, ...SVN_TRUST_ARGS])
+            } catch (err) {
+              if (err.message.includes('E155017')) {
+                // Checksum mismatch — nuke and re-checkout
+                logError(`Checksum mismatch for ${serviceId}. Performing fresh checkout...`)
+                fs.rmSync(serviceTargetDir, { recursive: true, force: true })
+                await svnClient.cmd('checkout', [serviceData.updateUrl, serviceTargetDir, ...SVN_TRUST_ARGS])
+              } else {
+                logError(`SVN update failed for ${serviceId}: ${err.message}`)
+                continue // Skip this service rather than crashing the whole run
+              }
+            }
+          } else {
+            // Pull in the correct repo directory
+            await gitAt(serviceTargetDir).pull()
           }
-        } // update or pull repo
-      } // if shouldupdate
-    } // if has updateURL
-
-    // The repos have now been updated
-    // Now update the service folders
-
-    // ensure service serve directory exists
-    if (!fs.existsSync(serviceServeDir)) {
-      // create directory
-      if (options.verbose) {
-        console.log(
-          `Creating ${serviceServeDir} output directory`
-        )
+        }
       }
+    }
 
+    // ── Ensure serve directory exists ───────────────────────────────────────
+
+    if (!fs.existsSync(serviceServeDir)) {
+      logVerbose(`Creating ${serviceServeDir} output directory`)
       fs.mkdirSync(serviceServeDir, { recursive: true })
     }
 
-    // copy service pages to serve directory, renamed to be compatible with server expectations
-    if (!options.silent) {
-      console.log(
-        `\nChecking '${serviceId}' for updates...`
-      )
-    }
+    // ── Scan and sync page files ────────────────────────────────────────────
+
+    log(`\nChecking '${serviceId}' for updates...`)
 
     const recalculatedManifestPages = {}
+    let manifestChanged = false
 
-    const servicePageFiles = fs.readdirSync(serviceTargetDir)
-    let manifestChanged = false // Flag if the manifest needs rewriting
-    if (servicePageFiles.length > 1) { // Problem if there is a service with no pages
+    let servicePageFiles
+    try {
+      servicePageFiles = fs.readdirSync(serviceTargetDir)
+    } catch (err) {
+      logError(`Could not read ${serviceTargetDir}: ${err.message}`)
+      continue
+    }
 
-      for (const filename of servicePageFiles) {
-        if (options.verbose && false) {
-          console.log(
-          `\nChecking 'file ${filename}' for updates...`
-          )
-        }
-        if (filename.endsWith(PAGE_FILE_EXT)) {
-          // determine full source filepath
-          const sourceFilePath = path.join(
-            serviceTargetDir,
-            filename
-          )
+    if (servicePageFiles.length <= 1) {
+      logError(`WARNING: '${serviceId}' appears to have no page files — skipping sync.`)
+      continue
+    }
 
-          // read file content as a string
-          let fileContent = fs.readFileSync(
-            sourceFilePath,
-            FILE_ENCODING_INPUT
-          ).toString()
+    for (const filename of servicePageFiles) {
+      if (!filename.endsWith(PAGE_FILE_EXT)) continue
 
-          // hash the original file content string
-          hasher.reset()
-          const fileContentHash = hasher.update(fileContent).digest('hex')
+      const sourceFilePath = path.join(serviceTargetDir, filename)
 
-          // make specified character replacements
-          for (const char in FILE_CHAR_REPLACEMENTS) {
-            fileContent = fileContent.replace(char, FILE_CHAR_REPLACEMENTS[char])
-          }
-
-          // hash the modified (above) file content string
-          hasher.reset()
-          const fileContentUpdatedHash = hasher.update(fileContent).digest('hex')
-
-          // attempt to extract useful data items from the file content...
-          let description
-          let pageNumber
-
-          const fileContentLines = fileContent.split('\n')
-
-          for (const i in fileContentLines) {
-            if (fileContentLines[i].startsWith('DE,')) {
-              description = fileContentLines[i].slice(3)
-            }
-
-            if (fileContentLines[i].startsWith('PN,')) {
-              pageNumber = fileContentLines[i].slice(3, 6)
-            }
-          }
-
-          // normalise the description data item
-          if (!description) {
-            description = null
-          } else {
-            description = description.trim()
-
-            if (!description || DESCRIPTION_NULLIFY.includes(description)) {
-              description = null
-            }
-          }
-
-          // if we have a valid page number...
-          if (pageNumber) {
-            if (recalculatedManifestPages[pageNumber]) {
-              console.log(
-                colorette.redBright(
-                  `ERROR: p${pageNumber} already defined in ${recalculatedManifestPages[pageNumber].f}, please fix this in ${filename} (change to an unused page number)`
-                )
-              )
-
-              continue // next service page file
-            }
-
-            // if no changes to this page file, no further processing needed...
-            if (serviceManifest.pages[pageNumber] && (serviceManifest.pages[pageNumber].oh === fileContentHash)) {
-              // add unmodified manifest page object into processed data structure
-              recalculatedManifestPages[pageNumber] = serviceManifest.pages[pageNumber]
-
-              continue // next service page file
-            }
-            manifestChanged = true // something changed
-
-            // if changes have been made to this page file, freshly recreate its manifest page object
-            const manifestPageEntry = {
-              f: filename,
-              p: pageNumber,
-              oh: fileContentHash
-            }
-
-            if (fileContentUpdatedHash !== fileContentHash) {
-              manifestPageEntry.nh = fileContentUpdatedHash
-            }
-
-            if (description) {
-              manifestPageEntry.d = description
-            }
-
-            recalculatedManifestPages[pageNumber] = manifestPageEntry
-
-            // determine new filename and target file path
-            const targetFilePath = path.join(
-              serviceServeDir,
-              filename
-            )
-
-            // write file contents out to file
-            try {
-              fs.writeFileSync(
-                targetFilePath,
-                fileContent,
-                FILE_ENCODING_OUTPUT
-              )
-
-              if (options.verbose) {
-                console.log(
-                  `p${pageNumber} (${filename}) has changed, copied to live`
-                )
-              }
-            } catch (err) {
-              if (!options.silent) {
-                console.error(err)
-              }
-            }
-
-            // update the last modified timestamp
-            serviceManifest.lastModified = new Date() // [!] Not sure if we need to do something with manifestChanged at this point
-          } else {
-            // page number could not be extracted
-            if (!options.silent) {
-              console.log(`ERROR: Page number could not be extracted from ${sourceFilePath}`)
-            }
-          }
-        }
-      } // for all servicePageFiles  (continue resumes here)
-
-      // if pages have been removed from the repository since the last run, also delete them from the target directory
-      const deletedPageFiles = deletedDiff(serviceManifest.pages, recalculatedManifestPages)
-
-      if (Object.keys(deletedPageFiles).length > 0) {
-        for (const pageNumber in deletedPageFiles) {
-          try {
-            fs.unlinkSync(
-              path.join(serviceServeDir, serviceManifest.pages[pageNumber].f)
-            )
-
-            if (options.verbose) {
-              console.log(
-                `Page removed from source, deleting p${pageNumber} (${serviceManifest.pages[pageNumber].f})`
-              )
-            }
-          } catch (err) {}
-        }
-
-        // update the last modified timestamp
-        serviceManifest.lastModified = new Date()
-        manifestChanged = true
+      let fileContent
+      try {
+        fileContent = fs.readFileSync(sourceFilePath, FILE_ENCODING_INPUT).toString()
+      } catch (err) {
+        logError(`Could not read ${sourceFilePath}: ${err.message}`)
+        continue
       }
-    } // If service has pages
-    // update manifest fields
+
+      // Hash original content
+      hasher.reset()
+      const fileContentHash = hasher.update(fileContent).digest('hex')
+
+      // Apply character replacements
+      for (const [from, to] of Object.entries(FILE_CHAR_REPLACEMENTS)) {
+        fileContent = fileContent.replace(from, to)
+      }
+
+      // Hash post-replacement content
+      hasher.reset()
+      const fileContentUpdatedHash = hasher.update(fileContent).digest('hex')
+
+      // Extract metadata from file
+      let description = null
+      let pageNumber = null
+
+      for (const line of fileContent.split('\n')) {
+        if (line.startsWith('DE,')) {
+          const raw = line.slice(3).trim()
+          description = (raw && !DESCRIPTION_NULLIFY.includes(raw)) ? raw : null
+        }
+        if (line.startsWith('PN,')) {
+          pageNumber = line.slice(3, 6)
+        }
+      }
+
+      if (!pageNumber) {
+        log(`ERROR: Page number could not be extracted from ${sourceFilePath}`)
+        continue
+      }
+
+      if (recalculatedManifestPages[pageNumber]) {
+        logError(colorette.redBright(
+          `ERROR: p${pageNumber} already defined in ${recalculatedManifestPages[pageNumber].f}, ` +
+          `please fix this in ${filename} (change to an unused page number)`
+        ))
+        continue
+      }
+
+      // If the file is unchanged, carry the existing manifest entry forward as-is
+      if (
+        serviceManifest.pages[pageNumber] &&
+        serviceManifest.pages[pageNumber].oh === fileContentHash
+      ) {
+        recalculatedManifestPages[pageNumber] = serviceManifest.pages[pageNumber]
+        continue
+      }
+
+      // File is new or changed — rebuild its manifest entry
+      manifestChanged = true
+
+      const manifestPageEntry = { f: filename, p: pageNumber, oh: fileContentHash }
+      if (fileContentUpdatedHash !== fileContentHash) manifestPageEntry.nh = fileContentUpdatedHash
+      if (description) manifestPageEntry.d = description
+
+      recalculatedManifestPages[pageNumber] = manifestPageEntry
+
+      // Write updated file to serve directory
+      const targetFilePath = path.join(serviceServeDir, filename)
+      try {
+        fs.writeFileSync(targetFilePath, fileContent, FILE_ENCODING_OUTPUT)
+        logVerbose(`p${pageNumber} (${filename}) has changed, copied to live`)
+      } catch (err) {
+        logError(`Could not write ${targetFilePath}: ${err.message}`)
+      }
+
+      serviceManifest.lastModified = new Date()
+    }
+
+    // ── Remove pages deleted from the repo ──────────────────────────────────
+
+    const deletedPages = deletedDiff(serviceManifest.pages, recalculatedManifestPages)
+
+    if (Object.keys(deletedPages).length > 0) {
+      for (const pageNumber of Object.keys(deletedPages)) {
+        const filename = serviceManifest.pages[pageNumber]?.f
+        if (!filename) continue
+        try {
+          fs.unlinkSync(path.join(serviceServeDir, filename))
+          logVerbose(`Page removed from source, deleting p${pageNumber} (${filename})`)
+        } catch (err) {
+          logVerbose(`Could not delete ${filename}: ${err.message}`)
+        }
+      }
+      serviceManifest.lastModified = new Date()
+      manifestChanged = true
+    }
+
+    // ── Write manifest if anything changed ──────────────────────────────────
+
     if (manifestChanged) {
-      serviceManifest.systemName = PACKAGE_JSON.name
-      serviceManifest.systemVersion = PACKAGE_JSON.version
-      serviceManifest.lastUpdated = new Date()
-      if (options.verbose) {
-        console.log(
-          'Manifest updated - lastUpdated = ' + serviceManifest.lastUpdated
-        )
-      }
-
-      if (serviceData.updateInterval) {
-        serviceManifest.updateInterval = serviceData.updateInterval
-      }
-
+      serviceManifest.systemName     = PACKAGE_JSON.name
+      serviceManifest.systemVersion  = PACKAGE_JSON.version
+      serviceManifest.lastUpdated    = new Date()
+      if (serviceData.updateInterval) serviceManifest.updateInterval = serviceData.updateInterval
       serviceManifest.pages = recalculatedManifestPages
 
-      // write out updated service file manifest
-      fs.writeFileSync(
-        serviceManifestFile,
-        JSON.stringify(
-          serviceManifest
-        )
-      ) // write out manifest
-    }
-  } // for each service (contnue here if there are no manifest updates)
-  console.log("UpdateServices completed")
-    
-  process.exit(0) // Not sure why we need to do this. The process hung about doing nothing
-} // updateServices
+      logVerbose(`Manifest updated — lastUpdated = ${serviceManifest.lastUpdated}`)
 
-// For editable pages, write them back to the repo
-const changed = readBackServices()
-// run update function
-updateServices(changed)
+      try {
+        fs.writeFileSync(serviceManifestFile, JSON.stringify(serviceManifest))
+      } catch (err) {
+        logError(`Could not write manifest for ${serviceId}: ${err.message}`)
+      }
+    }
+  }
+
+  log('updateServices completed')
+}
+
+// ── Entry point ──────────────────────────────────────────────────────────────
+
+async function main () {
+  const changed = await readBackServices()
+  await updateServices(changed)
+}
+
+main().catch(err => {
+  console.error('Fatal error:', err)
+  process.exit(1)
+})

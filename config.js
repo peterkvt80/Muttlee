@@ -232,8 +232,8 @@ const CONFIG = {
       port: 80,
 	  
       repoType: 'git',
-	  updateUrl: 'https://github.com/teletexx/xenofax.git',
-      updateInterval: 60,
+	  updateUrl: 'git@github.com:teletexx/xenofax.git',
+      updateInterval: 5,
 
       isEditable: false,
     },
