@@ -109,33 +109,35 @@ async function readBackServices () {
 
     log(`[readBackServices] editable service id = ${serviceId}`)
 
-    const serviceRepoDir = path.join(CONFIG[CONST.CONFIG.SERVICE_PAGES_DIR],       serviceId)
+    const serviceRepoDir = path.join(CONFIG[CONST.CONFIG.SERVICE_PAGES_DIR], serviceId)
     const serviceOnairDir = path.join(CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR], serviceId)
 
-    log(`from: ${serviceOnairDir}  to: ${serviceRepoDir}`)
+    log(`from: ${serviceOnairDir} to: ${serviceRepoDir}`)
 
+    let anyCopied = false
     try {
       // Copy updated .tti files from on-air dir back into the repo dir
-      const anyCopied = await cpUpdate(`${serviceOnairDir}/*.tti`, `${serviceRepoDir}/`)
+      anyCopied = await cpUpdate(`${serviceOnairDir}/*.tti`, `${serviceRepoDir}/`)
       if (anyCopied) {
         log('[readBackServices] one or more page files changed')
         changed.add(serviceId)
       }
     } catch (err) {
-      // cp exits non-zero when the glob matches nothing — treat that as "no changes"
       logVerbose(`[readBackServices] cp skipped for ${serviceId}: ${err.message}`)
     }
 
-    // Only Git repos are editable; stage, commit and push any changes
+	// Only Git repos are editable; stage, commit and push any changes
+	// Only commit/push when cpUpdate actually copied something
+    if (!anyCopied) continue
+
     logVerbose(`[readBackServices] pushing ${serviceId} → ${serviceData.updateUrl}`)
     try {
       await gitAt(serviceRepoDir)
         .add('*.tti')
-        .commit('Muttlee auto commit v1', ['-a', '--allow-empty'])
+        .commit('Muttlee auto commit v1', ['-a'])   // drop --allow-empty
         .push()
     } catch (err) {
       logError(`[readBackServices] git push failed for ${serviceId}: ${err.message}`)
-      // Don't rethrow — a push failure shouldn't abort the whole run
     }
   }
 
