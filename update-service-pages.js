@@ -82,12 +82,20 @@ function logVerbose (msg) { if (options.verbose)  console.log(msg) }
 function logError (msg)   { if (!options.silent)  console.error(msg) }
 
 /** Copy files with --update (only overwrites if src is newer).
- *  Returns true if any file was actually copied. */
+ *  Returns an array of filenames that were actually copied (empty if none). */
 async function cpUpdate (src, dest) {
   const { stdout, stderr } = await exec(`cp --update -v ${src} ${dest}`)
   if (stderr) logError(`cp stderr: ${stderr}`)
   logVerbose(`cp stdout: ${stdout}`)
-  return stdout.length > 0
+
+  // Each copied line looks like: 'path/to/src/PAGE100.tti' -> 'path/to/dest/PAGE100.tti'
+  return stdout
+    .split('\n')
+    .filter(Boolean)
+    .map(line => {
+      const match = line.match(/->\s*'.*\/([^/']+)'\s*$/)
+      return match ? match[1] : line.trim()
+    })
 }
 
 /** Return a git client rooted at the given directory. */
@@ -114,11 +122,11 @@ async function readBackServices () {
 
     log(`from: ${serviceOnairDir} to: ${serviceRepoDir}`)
 
-    let anyCopied = false
+    let copiedFiles = []
     try {
       // Copy updated .tti files from on-air dir back into the repo dir
-      anyCopied = await cpUpdate(`${serviceOnairDir}/*.tti`, `${serviceRepoDir}/`)
-      if (anyCopied) {
+      copiedFiles = await cpUpdate(`${serviceOnairDir}/*.tti`, `${serviceRepoDir}/`)
+      if (copiedFiles.length > 0) {
         log('[readBackServices] one or more page files changed')
         changed.add(serviceId)
       }
@@ -128,13 +136,15 @@ async function readBackServices () {
 
 	// Only Git repos are editable; stage, commit and push any changes
 	// Only commit/push when cpUpdate actually copied something
-    if (!anyCopied) continue
+    if (copiedFiles.length === 0) continue
+
+    const commitMessage = `Updated at: ${new Date().toISOString()}. Pages : ${copiedFiles.join(', ')}`
 
     logVerbose(`[readBackServices] pushing ${serviceId} → ${serviceData.updateUrl}`)
     try {
       await gitAt(serviceRepoDir)
         .add('*.tti')
-        .commit('Muttlee auto commit v1', ['-a'])   // drop --allow-empty
+        .commit(commitMessage, ['-a'])   // drop --allow-empty
         .push()
     } catch (err) {
       logError(`[readBackServices] git push failed for ${serviceId}: ${err.message}`)
