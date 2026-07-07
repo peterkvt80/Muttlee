@@ -157,6 +157,8 @@ async function updateServices (changed) {
 
     const serviceData = CONFIG[CONST.CONFIG.SERVICES_AVAILABLE][serviceId]
 
+    try {
+
     const serviceTargetDir  = path.join(CONFIG[CONST.CONFIG.SERVICE_PAGES_DIR],       serviceId)
     const serviceServeDir   = path.join(CONFIG[CONST.CONFIG.SERVICE_PAGES_SERVE_DIR],  serviceId)
     const serviceManifestFile = path.join(serviceServeDir, 'manifest.json')
@@ -204,7 +206,12 @@ async function updateServices (changed) {
           if (serviceData.repoType === 'svn') {
             await svnClient.cmd('checkout', [serviceData.updateUrl, serviceTargetDir, ...SVN_TRUST_ARGS])
           } else {
-            await gitAt('.').clone(serviceData.updateUrl, serviceTargetDir)
+            try {
+              await gitAt('.').clone(serviceData.updateUrl, serviceTargetDir)
+            } catch (err) {
+              logError(`Git clone failed for ${serviceId}: ${err.message}`)
+              continue // Skip this service rather than crashing the whole run
+            }
           }
         } else {
           // ── Subsequent update ─────────────────────────────────────────────
@@ -226,7 +233,12 @@ async function updateServices (changed) {
             }
           } else {
             // Pull in the correct repo directory
-            await gitAt(serviceTargetDir).pull()
+            try {
+              await gitAt(serviceTargetDir).pull()
+            } catch (err) {
+              logError(`Git pull failed for ${serviceId}: ${err.message}`)
+              continue // Skip this service rather than crashing the whole run
+            }
           }
         }
       }
@@ -377,6 +389,13 @@ async function updateServices (changed) {
       } catch (err) {
         logError(`Could not write manifest for ${serviceId}: ${err.message}`)
       }
+    }
+
+    } catch (err) {
+      // Catch-all so a single misconfigured/broken service can't abort
+      // processing of every other service in this run
+      logError(`Unexpected error while updating '${serviceId}': ${err.message}`)
+      continue
     }
   }
 
