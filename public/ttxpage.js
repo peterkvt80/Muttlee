@@ -1083,8 +1083,11 @@ function Row (ttxpage, page, y, str, metadata) {
           break
         case 30: // 30: Hold graphics mode (set at)
           holdGfx = true
-          printable = true // Because this will be replaced
-          break
+		  if (!textmode)
+		  {
+			printable = true // Because this will be replaced
+          }
+		  break
         case 31: // 31 Release hold mode (set after)
           break
         case 32: // Space is not printable but it is still a mosaic. Intentional fall through
@@ -1100,7 +1103,7 @@ function Row (ttxpage, page, y, str, metadata) {
       if (!textmode && holdGfx) {
         printable = true
       }
-
+	  
       // Paint the background colour always
       noStroke()
       let myColour = this.metadata.x28Packet.remapColourTable(bgColor, false)
